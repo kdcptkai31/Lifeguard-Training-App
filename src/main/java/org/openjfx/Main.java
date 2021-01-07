@@ -1,7 +1,7 @@
 package org.openjfx;
 
 import javafx.application.Application;
-import org.openjfx.view.LifeguardTrainingApplication;
+import org.openjfx.controller.LifeguardTrainingApplication;
 
 public class Main {
 

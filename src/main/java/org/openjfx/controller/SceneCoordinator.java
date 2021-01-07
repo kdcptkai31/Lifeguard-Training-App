@@ -29,11 +29,23 @@ public class SceneCoordinator {
      * Fetches the login scene.
      * @throws Exception
      */
-    public void showLoginScene() throws IOException {
+    public void showHomeScene() throws IOException {
         URL url = new File("src/main/resources/org/openjfx/layout/homepage.fxml").toURL();
         Parent layout = FXMLLoader.load(url);
         this.window.setScene(new Scene(layout));
 
     }
+
+    /**
+     * Closes the application.
+     */
+    public void onExitRequested(){System.exit(0);}
+
+    //Getters
+    /**
+     *
+     * @return the controller
+     */
+    public Controller getController(){return controller;}
 
 }
