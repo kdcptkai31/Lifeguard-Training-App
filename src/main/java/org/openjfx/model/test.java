@@ -1,6 +1,8 @@
 package org.openjfx.model;
 
-public class test {
+import java.io.Serializable;
+
+public class test implements Serializable {
 
     private String name;
     private float points;
