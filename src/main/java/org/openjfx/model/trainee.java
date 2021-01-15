@@ -8,13 +8,12 @@ import java.util.Date;
  */
 public class trainee implements Serializable {
 
-    //All data is in order of the google forms trainees fill out.
-
+    private int id;
     //Initial Information
     private String           firstName;
     private String           middleName;
     private String           lastName;
-    private Date             birthDate;
+    private String           birthDate;
     private String           city;
     private String           state;
     private String           phoneNumber;
@@ -23,9 +22,14 @@ public class trainee implements Serializable {
     private boolean          isLodging;
     private EmergencyContact emergencyContact;
 
+    private int hoursAttended;
+
     //Extra Information
     public boolean isQuestionnaire1Complete;
     public boolean isQuestionnaire2Complete;
+    public boolean isActive; //False if trainee failed
+    private int    year;
+    private int    session;
 
     //Questionnaire 1 Information
     private String  shirtSize;

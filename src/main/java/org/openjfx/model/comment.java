@@ -1,11 +1,11 @@
 package org.openjfx.model;
 
 import java.io.Serializable;
-import java.util.Date;
 
 public class comment implements Serializable {
 
-    private Date date;
+    private int id;
+    private String date;
     private String rotation;
     private String instructorName;
     private String traineeName;
@@ -13,5 +13,7 @@ public class comment implements Serializable {
     private String incidentDescription;
     private String instructorActions;
     private String nextSteps;
+    private int year;
+    private int session;
 
 }

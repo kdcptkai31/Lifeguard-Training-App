@@ -4,4 +4,13 @@ public class Controller {
 
     private static DBManager dbManager;
 
+    /**
+     * Constructor
+     */
+    public Controller(){
+
+        dbManager = new DBManager();
+
+    }
+
 }

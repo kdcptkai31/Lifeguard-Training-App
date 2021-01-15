@@ -2,8 +2,7 @@ package org.openjfx.controller;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
-import org.openjfx.controller.Controller;
-import org.openjfx.controller.SceneCoordinator;
+
 
 public class LifeguardTrainingApplication extends Application {
 

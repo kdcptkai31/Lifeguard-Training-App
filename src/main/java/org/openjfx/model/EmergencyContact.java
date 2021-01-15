@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class EmergencyContact implements Serializable {
 
     //Information
-    private String name;
+    private String fullName;
     private String relationship;
     private String phoneNumber;
     private String address;

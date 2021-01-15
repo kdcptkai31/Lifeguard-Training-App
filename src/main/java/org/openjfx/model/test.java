@@ -5,6 +5,8 @@ import java.io.Serializable;
 public class test implements Serializable {
 
     private String name;
-    private float points;
+    private int points;
+    private int year;
+    private int session;
 
 }
