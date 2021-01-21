@@ -76,7 +76,7 @@ public class Trainee implements Serializable {
     public Trainee(){emergencyContact = null;}
 
     /**
-     * Initial Info Constructor
+     * Constructor
      * @param id
      * @param fName
      * @param mName
@@ -118,6 +118,35 @@ public class Trainee implements Serializable {
         isActive = isA;
         this.year = year;
         this.session = session;
+
+    }
+
+    /**
+     * Initial Info Constructor: No id parameter, as it has yet to be produced by the db
+     * @param fName
+     * @param mName
+     * @param lName
+     * @param bDay
+     * @param city
+     * @param state
+     * @param pNumber
+     * @param email
+     * @param dChoice
+     * @param isLodge
+     * @param ec
+     * @param hAttended
+     * @param isQ1Com
+     * @param isQ2Com
+     * @param isA
+     * @param year
+     * @param session
+     */
+    public Trainee(String fName, String mName, String lName, String bDay, String city, String state,
+                   String pNumber, String email, String dChoice, boolean isLodge, EmergencyContact ec, int hAttended,
+                   boolean isQ1Com, boolean isQ2Com, boolean isA, int year, int session){
+
+        this(0, fName, mName, lName, bDay, city, state, pNumber, email, dChoice, isLodge, ec, hAttended, isQ1Com,
+                isQ2Com, isA, year, session);
 
     }
 

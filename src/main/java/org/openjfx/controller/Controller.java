@@ -13,4 +13,6 @@ public class Controller {
 
     }
 
+    public DBManager getDBManager(){return dbManager;}
+
 }

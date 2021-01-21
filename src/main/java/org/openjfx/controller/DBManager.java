@@ -124,7 +124,7 @@ public class DBManager {
                 + "oceanSwimFreq TEXT,\n"
                 + "runningFreq TEXT,\n"
                 + "surfingFreq TEXT,\n"
-                + "INTEGER,\n"//End of Questionnaire 2 Info
+                + "isDisabled INTEGER,\n"//End of Questionnaire 2 Info
                 + "PRIMARY KEY(tid)"
                 + ");";
 
@@ -922,5 +922,190 @@ public class DBManager {
      ******************************SETTERS*********************************
      **********************************************************************/
 
+    /*
+     ****************************** TRAINEE ***************************************
+     */
+
+    /**
+     * Adds the initial data from the google form to populate the initial data in the trainee db. A tid is generated
+     * when the row is added, and all questionnaire 1 and 2 values are defaulted to null.
+     * @param tToAdd
+     * @return true if successful, false if not
+     */
+    public static boolean addInitialTrainee(Trainee tToAdd){
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("INSERT INTO trainees(tid, firstName, middleName, lastName, birthDate, city, state, "
+                + "phoneNumber, email, districtChoice, isLodging, hoursAttended, isQuestionnaire1Complete, "
+                + "isQuestionnaire2Complete, isActive, year, session, shirtSize, shortSize, swimSuitSize, "
+                + "isReturningTrainee, whyReturning, whyBeStateLG, whatWantLearnTraining, isJG, jgInfo, "
+                + "isOpenWaterLG, openWaterLGInfo, isPoolLG, poolLGInfo, isEMT, emtInfo, "
+                + "isOtherAdvancedMedicalTraining, advancedMedicalTrainingInfo, isFirstJob, jobExperienceInfo, "
+                + "anyExtraInfo, expectedBiggestTrainingChallengeInfo, preparationInfo, medicalConfidence, "
+                + "cprConfidence, physicalConfidence, mentalConfidence, preTrainingSeminarsAttended, "
+                + "organizedSwimPoloFreq, personalSwimFreq, gymFreq, oceanSwimFreq, runningFreq, surfingFreq, "
+                + "isDisabled) VALUES(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, null, null, null, null, "
+                + "null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "
+                + "null, null, null, null, null, null, null, null, null, null, null, null, null, null)");
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql.toString());
+            stmt.setString(1, tToAdd.getFirstName());
+            stmt.setString(2, tToAdd.getMiddleName());
+            stmt.setString(3, tToAdd.getLastName());
+            stmt.setString(4, tToAdd.getBirthDate());
+            stmt.setString(5, tToAdd.getCity());
+            stmt.setString(6, tToAdd.getState());
+            stmt.setString(7, tToAdd.getPhoneNumber());
+            stmt.setString(8, tToAdd.getEmail());
+            stmt.setString(9, tToAdd.getDistrictChoice());
+            stmt.setInt(10, tToAdd.isLodging() ? 1 : 0);
+            stmt.setInt(11, tToAdd.getHoursAttended());
+            stmt.setInt(12, tToAdd.isQuestionnaire1Complete() ? 1 : 0);
+            stmt.setInt(13, tToAdd.isQuestionnaire2Complete() ? 1 : 0);
+            stmt.setInt(14, tToAdd.isActive() ? 1 : 0);
+            stmt.setInt(15, tToAdd.getYear());
+            stmt.setInt(16, tToAdd.getSession());
+            stmt.executeUpdate();
+            return true;
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+
+        return false;
+
+    }
+
+    /**
+     * Adds the questionnaire 1 data to the given trainee.
+     * @param tToAdd
+     * @return true if successful, false if not
+     */
+    public static boolean addExistingTraineeQuestionnaire1Data(Trainee tToAdd){
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("UPDATE trainees SET shirtSize = ?, shortSize = ?, swimSuitSize = ?, isReturningTrainee = ?, "
+                    + "whyReturning = ?, whyBeStateLG = ?, whatWantLearnTraining = ?, isJG = ?, jgInfo = ?, "
+                    + "isOpenWaterLG = ?, openWaterLGInfo = ?, isPoolLG = ?, poolLGInfo = ?, isEMT = ?, emtInfo = ?, "
+                    + "isOtherAdvancedMedicalTraining = ?, advancedMedicalTrainingInfo = ?, isFirstJob = ?, "
+                    + "jobExperienceInfo = ?, anyExtraInfo = ? WHERE tid = ?");
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql.toString());
+            stmt.setString(1, tToAdd.getShirtSize());
+            stmt.setString(2, tToAdd.getShortSize());
+            stmt.setString(3, tToAdd.getSwimSuitSize());
+            stmt.setInt(4, tToAdd.isReturningTrainee() ? 1 : 0);
+            stmt.setString(5, tToAdd.getWhyReturning());
+            stmt.setString(6, tToAdd.getWhyBeStateLG());
+            stmt.setString(7, tToAdd.getWhatWantLearnTraining());
+            stmt.setInt(8, tToAdd.isJG() ? 1 : 0);
+            stmt.setString(9, tToAdd.getJgInfo());
+            stmt.setInt(10, tToAdd.isOpenWaterLG() ? 1 : 0);
+            stmt.setString(11, tToAdd.getOpenWaterLGInfo());
+            stmt.setInt(12, tToAdd.isPoolLG() ? 1 : 0);
+            stmt.setString(13, tToAdd.getPoolLGInfo());
+            stmt.setInt(14, tToAdd.isEMT() ? 1 : 0);
+            stmt.setString(15, tToAdd.getEmtInfo());
+            stmt.setInt(16, tToAdd.isOtherAdvancedMedicalTraining() ? 1 : 0);
+            stmt.setString(17, tToAdd.getAdvancedMedicalTrainingInfo());
+            stmt.setInt(18, tToAdd.isFirstJob() ? 1 : 0);
+            stmt.setString(19, tToAdd.getJobExperienceInfo());
+            stmt.setString(20, tToAdd.getAnyExtraInfo());
+            stmt.setInt(21, tToAdd.getId());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Adds the questionnaire 2 data to the given trainee.
+     * @param tToAdd
+     * @return
+     */
+    public static boolean addExistingTraineeQuestionnaire2Data(Trainee tToAdd){
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("UPDATE trainees SET expectedBiggestTrainingChallengeInfo = ?, preparationInfo = ?, "
+                    + "medicalConfidence = ?, cprConfidence = ?, physicalConfidence = ?, mentalConfidence = ?, "
+                    + "preTrainingSeminarsAttended = ?, organizedSwimPoloFreq = ?, personalSwimFreq = ?, gymFreq = ?, "
+                    + "oceanSwimFreq = ?, runningFreq = ?, surfingFreq = ?, isDisabled = ? WHERE tid = ?");
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql.toString());
+            stmt.setString(1, tToAdd.getExpectedBiggestTrainingChallengeInfo());
+            stmt.setString(2, tToAdd.getPreparationInfo());
+            stmt.setInt(3, tToAdd.getMedicalConfidence());
+            stmt.setInt(4, tToAdd.getCprConfidence());
+            stmt.setInt(5, tToAdd.getPhysicalConfidence());
+            stmt.setInt(6, tToAdd.getMentalConfidence());
+            stmt.setInt(7, tToAdd.getPreTrainingSeminarsAttended());
+            stmt.setString(8, tToAdd.getOrganizedSwimPoloFreq());
+            stmt.setString(9, tToAdd.getPersonalSwimFreq());
+            stmt.setString(10, tToAdd.getGymFreq());
+            stmt.setString(11, tToAdd.getOceanSwimFreq());
+            stmt.setString(12, tToAdd.getRunningFreq());
+            stmt.setString(13, tToAdd.getSurfingFreq());
+            stmt.setInt(14, tToAdd.isDisabled() ? 1 : 0);
+            stmt.setInt(15, tToAdd.getId());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /*
+     ****************************** COMMENT ***************************************
+     */
+
+    /*
+     ****************************** TEST ***************************************
+     */
+
+    /*
+     ****************************** TEST SCORES ***************************************
+     */
+
+    /*
+     ****************************** EVENT ***************************************
+     */
+
+    /*
+     ****************************** EVENT SCORES ***************************************
+     */
+
+    /*
+     ****************************** SESSION ***************************************
+     */
+
+    /*
+     ****************************** DISTRICTS ***************************************
+     */
+
+    /*
+     ****************************** INSTRUCTORS ***************************************
+     */
+
+    /*
+     ****************************** HELPERS ***************************************
+     */
 
 }
