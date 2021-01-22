@@ -1,9 +1,15 @@
 package org.openjfx.controller;
 
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.image.Image;
 import javafx.util.Pair;
 import org.openjfx.model.*;
+import org.openjfx.model.Event;
 
+import javax.imageio.ImageIO;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+
 import java.sql.*;
 import java.util.Collections;
 import java.util.Vector;
@@ -87,6 +93,7 @@ public class DBManager {
                 + "districtChoice TEXT,\n"
                 + "isLodging INTEGER,\n"
                 + "hoursAttended INTEGER,\n"
+                + "image BLOB,\n"
                 + "isQuestionnaire1Complete INTEGER,\n"
                 + "isQuestionnaire2Complete INTEGER,\n"
                 + "isActive INTEGER,\n"
@@ -247,6 +254,24 @@ public class DBManager {
             Statement stmt = connection.createStatement();
             stmt.execute(sqlEventScores);
         }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        String sqlFindDefaultTrainee = "SELECT * FROM trainees WHERE tid = 1";
+
+        try{
+
+            Statement stmt = connection.createStatement();
+            ResultSet rs = stmt.executeQuery(sqlFindDefaultTrainee);
+            if(!rs.next()){
+
+                addInitialTrainee(new Trainee(null, null, null, null, null, null,
+                        null, null, null, false, null, -1,
+                        false, false, false, -1, -1));
+
+            }
+
+        }catch(SQLException e){
             e.printStackTrace();
         }
 
@@ -827,6 +852,7 @@ public class DBManager {
                 tmp.setEmergencyContact(null);
 
             tmp.setHoursAttended(rs.getInt("hoursAttended"));
+            tmp.setImage(new Image(rs.getBlob("image").getBinaryStream()));
             tmp.setQuestionnaire1Complete((1 == rs.getInt("isQuestionnaire1Complete")));
             tmp.setQuestionnaire2Complete((1 == rs.getInt("isQuestionnaire2Complete")));
             tmp.setActive((1 == rs.getInt("isActive")));
@@ -1009,7 +1035,7 @@ public class DBManager {
 
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT INTO trainees(tid, firstName, middleName, lastName, birthDate, city, state, "
-                + "phoneNumber, email, districtChoice, isLodging, hoursAttended, isQuestionnaire1Complete, "
+                + "phoneNumber, email, districtChoice, isLodging, hoursAttended, image, isQuestionnaire1Complete, "
                 + "isQuestionnaire2Complete, isActive, year, session, shirtSize, shortSize, swimSuitSize, "
                 + "isReturningTrainee, whyReturning, whyBeStateLG, whatWantLearnTraining, isJG, jgInfo, "
                 + "isOpenWaterLG, openWaterLGInfo, isPoolLG, poolLGInfo, isEMT, emtInfo, "
@@ -1017,7 +1043,7 @@ public class DBManager {
                 + "anyExtraInfo, expectedBiggestTrainingChallengeInfo, preparationInfo, medicalConfidence, "
                 + "cprConfidence, physicalConfidence, mentalConfidence, preTrainingSeminarsAttended, "
                 + "organizedSwimPoloFreq, personalSwimFreq, gymFreq, oceanSwimFreq, runningFreq, surfingFreq, "
-                + "isDisabled) VALUES(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, null, null, null, null, "
+                + "isDisabled) VALUES(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, null, ?, ?, ?, ?, ?, null, null, null, null, "
                 + "null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "
                 + "null, null, null, null, null, null, null, null, null, null, null, null, null, null)");
 
@@ -1048,6 +1074,35 @@ public class DBManager {
             return true;
 
         }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Adds the given image to the database for the trainee.
+     * @param tToAdd
+     * @return true if successful, false if not
+     */
+    public static boolean addTraineeProfileImage(Trainee tToAdd){
+
+        String sql = "UPDATE trainees SET image = ? WHERE tid = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
+            ImageIO.write(SwingFXUtils.fromFXImage(tToAdd.getImage(), null), "jgp", byteOutput);
+            Blob imageBlob = connection.createBlob();
+            imageBlob.setBytes(0, byteOutput.toByteArray());
+            stmt.setBlob(1, imageBlob);
+            stmt.setInt(2, tToAdd.getId());
+
+            return true;
+
+        }catch(Exception e){
             e.printStackTrace();
         }
 
@@ -1161,7 +1216,7 @@ public class DBManager {
 
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT INTO emergencyContacts (traineeID, fullName, relationship, phoneNumber, "
-                 + "address, city, state, zipcode VALUES (?, ?, ?, ?, ?, ?, ?, ?");
+                 + "address, city, state, zipcode) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 
         try{
 
@@ -1597,14 +1652,48 @@ public class DBManager {
      ******************************DELETES*********************************
      **********************************************************************/
 
-MAKE SURE TO ADD THE DEFAULT TRAINEE WITH ID = 1 WHEN THE DATABASE FILE IS INITIALIZED
+
+            ADD PFP TO INSTRUCTORS
+
+    NOT DONE
     public static boolean deleteTrainee(Trainee tToDelete){
 
+        String sql = "DELETE FROM trainee WHERE tid = ?";
+
         try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, tToDelete.getId());
+            stmt.executeUpdate();
 
             return true;
 
         }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Deletes the stored image for the given trainee, returning it to null and will be processed as a default pfp.
+     * @param tToDelete
+     * @return true if successful, false if not.
+     */
+    public static boolean deleteTraineeProfileImage(Trainee tToDelete){
+
+        String sql = "UPDATE trainee SET image = null where tid = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, tToDelete.getId());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch(SQLException e){
             e.printStackTrace();
         }
 

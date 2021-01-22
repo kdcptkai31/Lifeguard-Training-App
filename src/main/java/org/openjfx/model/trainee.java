@@ -1,5 +1,7 @@
 package org.openjfx.model;
 
+import javafx.scene.image.Image;
+
 import java.io.Serializable;
 
 /**
@@ -22,6 +24,7 @@ public class Trainee implements Serializable {
     private EmergencyContact emergencyContact;
 
     private int hoursAttended;
+    private Image image;
 
     //Extra Information
     private boolean isQuestionnaire1Complete;
@@ -73,7 +76,7 @@ public class Trainee implements Serializable {
     /**
      * Default Constructor
      */
-    public Trainee(){emergencyContact = null;}
+    public Trainee(){emergencyContact = null; image = null;}
 
     /**
      * Constructor
@@ -98,7 +101,7 @@ public class Trainee implements Serializable {
      */
     public Trainee(int id, String fName, String mName, String lName, String bDay, String city, String state,
                    String pNumber, String email, String dChoice, boolean isLodge, EmergencyContact ec, int hAttended,
-                   boolean isQ1Com, boolean isQ2Com, boolean isA, int year, int session){
+                   Image imag, boolean isQ1Com, boolean isQ2Com, boolean isA, int year, int session){
 
         this.id = id;
         firstName = fName;
@@ -113,6 +116,7 @@ public class Trainee implements Serializable {
         isLodging = isLodge;
         emergencyContact = ec;
         hoursAttended = hAttended;
+        image = imag;
         isQuestionnaire1Complete = isQ1Com;
         isQuestionnaire2Complete = isQ2Com;
         isActive = isA;
@@ -145,8 +149,8 @@ public class Trainee implements Serializable {
                    String pNumber, String email, String dChoice, boolean isLodge, EmergencyContact ec, int hAttended,
                    boolean isQ1Com, boolean isQ2Com, boolean isA, int year, int session){
 
-        this(0, fName, mName, lName, bDay, city, state, pNumber, email, dChoice, isLodge, ec, hAttended, isQ1Com,
-                isQ2Com, isA, year, session);
+        this(0, fName, mName, lName, bDay, city, state, pNumber, email, dChoice, isLodge, ec, hAttended, null,
+                isQ1Com, isQ2Com, isA, year, session);
 
     }
 
@@ -202,6 +206,8 @@ public class Trainee implements Serializable {
     public int getHoursAttended() {
         return hoursAttended;
     }
+
+    public Image getImage() {return image;}
 
     public boolean isQuestionnaire1Complete() {
         return isQuestionnaire1Complete;
@@ -411,6 +417,8 @@ public class Trainee implements Serializable {
     public void setHoursAttended(int hoursAttended) {
         this.hoursAttended = hoursAttended;
     }
+
+    public void setImage(Image i){image = i;}
 
     public void setQuestionnaire1Complete(boolean questionnaire1Complete) {
         isQuestionnaire1Complete = questionnaire1Complete;

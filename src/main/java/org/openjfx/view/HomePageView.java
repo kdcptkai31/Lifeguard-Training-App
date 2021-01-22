@@ -13,16 +13,16 @@ public class HomePageView {
     @FXML
     protected void initialize(){
 
-        controller = LifeguardTrainingApplication.getController();
-        if(controller.getDBManager().addInitialTrainee(new Trainee("bob", "m", "smith", "12313",
-                "san clemente", "CA", "434-534-1231", "ddd@gmail.com", "San CLemente", true,
-                new EmergencyContact(0, "Veronika", "MOM",
-                        "434-645-7676", "14312312", "SAN CLEMENTE",
-                        "CA", "23424"), 45, false, false, true, 2021,
-                1)))
-            System.out.println("WORKED");
-
-        System.out.println("DONE");
+//        controller = LifeguardTrainingApplication.getController();
+//        if(controller.getDBManager().addInitialTrainee(new Trainee("bob", "m", "smith", "12313",
+//                "san clemente", "CA", "434-534-1231", "ddd@gmail.com", "San CLemente", true,
+//                new EmergencyContact(0, "Veronika", "MOM",
+//                        "434-645-7676", "14312312", "SAN CLEMENTE",
+//                        "CA", "23424"), 45, false, false, true, 2021,
+//                1)))
+//            System.out.println("WORKED");
+//
+//        System.out.println("DONE");
 
     }
 
