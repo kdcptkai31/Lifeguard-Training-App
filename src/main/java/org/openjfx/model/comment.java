@@ -1,5 +1,7 @@
 package org.openjfx.model;
 
+import org.openjfx.controller.LifeguardTrainingApplication;
+
 import java.io.Serializable;
 
 public class Comment implements Serializable {
@@ -18,9 +20,76 @@ public class Comment implements Serializable {
     private int session;
 
     /**
-     * Constructor
+     * Default Constructor
      */
     public Comment(){}
+
+    /**
+     * Main Constructor
+     * @param tID
+     * @param cID
+     * @param d
+     * @param r
+     * @param iN
+     * @param tN
+     * @param iT
+     * @param iDes
+     * @param iA
+     * @param nS
+     * @param y
+     * @param s
+     */
+    public Comment(int tID, int cID, String d, String r, String iN, String tN, String iT, String iDes, String iA,
+                   String nS, int y, int s){
+
+        traineeID = tID;
+        id = cID;
+        date = d;
+        rotation = r;
+        instructorName = iN;
+        traineeName = tN;
+        incidentType = iT;
+        incidentDescription = iDes;
+        instructorActions = iA;
+        nextSteps = nS;
+        year = y;
+        session = s;
+
+    }
+
+    /**
+     * Initial Comment Constructor: The id has not been generated yet.
+     * @param d
+     * @param r
+     * @param iN
+     * @param tN
+     * @param iT
+     * @param iDes
+     * @param iA
+     * @param nS
+     * @param y
+     * @param s
+     */
+    public Comment(String d, String r, String iN, String tN, String iT, String iDes, String iA,
+                   String nS, int y, int s){
+
+        int tmpInt = LifeguardTrainingApplication.getController().getDBManager().getTIDFromNameAndSession(tN, y, s);
+        if(tmpInt == 0)
+            tmpInt = 1; //Default 'no-name' traineeID
+        traineeID = tmpInt;
+        id = 0;
+        date = d;
+        rotation = r;
+        instructorName = iN;
+        traineeName = tN;
+        incidentType = iT;
+        incidentDescription = iDes;
+        instructorActions = iA;
+        nextSteps = nS;
+        year = y;
+        session = s;
+
+    }
 
     //Getters
     public int getTraineeID() { return traineeID; }

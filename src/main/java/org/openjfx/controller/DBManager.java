@@ -5,6 +5,7 @@ import org.openjfx.model.*;
 
 import java.io.File;
 import java.sql.*;
+import java.util.Collections;
 import java.util.Vector;
 
 public class DBManager {
@@ -339,6 +340,78 @@ public class DBManager {
         return null;
 
     }
+
+    /**
+     * Returns the trainee from a given tID.
+     * @param tID
+     * @return
+     */
+    public static Trainee getTraineeFromTID(int tID){
+
+        String sql = "SELECT * FROM trainees WHERE tid = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, tID);
+            ResultSet rs = stmt.executeQuery();
+            return getTraineesHelper(rs).elementAt(0);
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    /**
+     * For use with the Comment Constructor, takes the name from the comment google form and figures out if it is a full
+     * name, or last name, and finds the corresponding TID for the trainee, also with the given year and session.
+     * @param name
+     * @param year
+     * @param session
+     * @return The tid of the corresponding trainee, 0 if not found.
+     */
+    public static int getTIDFromNameAndSession(String name, int year, int session){
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT tid FROM trainees WHERE year = ?, session = ?");
+        String[] nameAR = name.split(" ");
+        Vector<String> names = new Vector<>();
+        Collections.addAll(names, nameAR);
+
+        try{
+
+            if(names.size() == 0)
+                throw new Exception("Bad name");
+            else if(names.size() == 1)
+                sql.append(", lastName = ?");
+            else if(names.size() >= 2)
+                sql.append(", lastName = ?, firstName = ?");
+
+            PreparedStatement stmt = connection.prepareStatement(sql.toString());
+            stmt.setInt(1, year);
+            stmt.setInt(2, session);
+            if(names.size() >= 2)
+                stmt.setString(4, names.get(0));
+            stmt.setString(3, names.get(names.size() - 1));
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next())
+                return rs.getInt("tid");
+
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return 0;
+
+    }
+
+    /*
+     ****************************** EmergencyContact ***************************************
+     */
 
     /*
      ****************************** Comment ***************************************
@@ -968,12 +1041,15 @@ public class DBManager {
             stmt.setInt(15, tToAdd.getYear());
             stmt.setInt(16, tToAdd.getSession());
             stmt.executeUpdate();
+
+            if(tToAdd.getEmergencyContact() != null)
+                addEmergencyContact(tToAdd.getEmergencyContact());
+
             return true;
 
         }catch(SQLException e){
             e.printStackTrace();
         }
-
 
         return false;
 
@@ -1032,7 +1108,7 @@ public class DBManager {
     /**
      * Adds the questionnaire 2 data to the given trainee.
      * @param tToAdd
-     * @return
+     * @return true if successful, false if not
      */
     public static boolean addExistingTraineeQuestionnaire2Data(Trainee tToAdd){
 
@@ -1073,24 +1149,354 @@ public class DBManager {
     }
 
     /*
+     ****************************** EMERGENCY CONTACT ***************************************
+     */
+
+    /**
+     * Adds the given emergency contact to the database.
+     * @param ecToAdd
+     * @return true if successful, false if not.
+     */
+    public static boolean addEmergencyContact(EmergencyContact ecToAdd){
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("INSERT INTO emergencyContacts (traineeID, fullName, relationship, phoneNumber, "
+                 + "address, city, state, zipcode VALUES (?, ?, ?, ?, ?, ?, ?, ?");
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql.toString());
+            stmt.setInt(1, ecToAdd.getTraineeID());
+            stmt.setString(2, ecToAdd.getFullName());
+            stmt.setString(3, ecToAdd.getRelationship());
+            stmt.setString(4, ecToAdd.getPhoneNumber());
+            stmt.setString(5, ecToAdd.getAddress());
+            stmt.setString(6, ecToAdd.getCity());
+            stmt.setString(7, ecToAdd.getState());
+            stmt.setString(8, ecToAdd.getZipcode());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /*
      ****************************** COMMENT ***************************************
      */
+
+    /**
+     * Adds a given comment to the database.
+     * @param cToAdd
+     * @return true if successful, false if not.
+     */
+    public static boolean addComment(Comment cToAdd){
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("INSERT INTO comments(traineeID, commentID, date, rotation, instructorName, incidentType, "
+                 + "incidentDescription, instructorActions, nextSteps, year, session) VALUES (?, null, ?, ?, ?, ?, "
+                 + "?, ?, ?, ?, ?)");
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql.toString());
+            stmt.setInt(1, cToAdd.getTraineeID());
+            stmt.setString(2, cToAdd.getDate());
+            stmt.setString(3, cToAdd.getRotation());
+            stmt.setString(4, cToAdd.getInstructorName());
+            stmt.setString(5, cToAdd.getIncidentType());
+            stmt.setString(6, cToAdd.getIncidentDescription());
+            stmt.setString(7, cToAdd.getInstructorActions());
+            stmt.setString(8, cToAdd.getNextSteps());
+            stmt.setInt(9, cToAdd.getYear());
+            stmt.setInt(10, cToAdd.getSession());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Updates a given comment with the new data, only the commentID, year, and session cannot be tampered with.
+     * @param cToAdd
+     * @return true if successful, false if not
+     */
+    public static boolean updateComment(Comment cToAdd){
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("UPDATE comments SET traineeID = ?, date = ?, rotation = ?, instructorName = ?, incidentType = ?, "
+                 + "incidentDescription = ?, instructorActions = ?, nextSteps = ? WHERE commentID = ?");
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql.toString());
+            stmt.setInt(1, cToAdd.getTraineeID());
+            stmt.setString(2, cToAdd.getDate());
+            stmt.setString(3, cToAdd.getRotation());
+            stmt.setString(4, cToAdd.getInstructorName());
+            stmt.setString(5, cToAdd.getIncidentType());
+            stmt.setString(6, cToAdd.getIncidentDescription());
+            stmt.setString(7, cToAdd.getInstructorActions());
+            stmt.setString(8, cToAdd.getNextSteps());
+            stmt.setInt(9, cToAdd.getId());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
 
     /*
      ****************************** TEST ***************************************
      */
 
+    /**
+     * Adds a given test to the database, generating the testID within the db.
+     * @param tToAdd
+     * @return true if successful, false if not.
+     */
+    public static boolean addTest(Test tToAdd){
+
+        String sql = "INSERT INTO tests (testID, name, points, year, session) VALUES (null, ?, ?, ?, ?)";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setString(1, tToAdd.getName());
+            stmt.setInt(2, tToAdd.getPoints());
+            stmt.setInt(3, tToAdd.getYear());
+            stmt.setInt(4, tToAdd.getSession());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Updates a given test with the new name and point values.
+     * @param tToAdd
+     * @return true if successful, false if not.
+     */
+    public static boolean updateTest(Test tToAdd){
+
+        String sql = "UPDATE tests SET name = ?, points = ? WHERE testID = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setString(1, tToAdd.getName());
+            stmt.setInt(2, tToAdd.getPoints());
+            stmt.setInt(3, tToAdd.getTestID());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
     /*
      ****************************** TEST SCORES ***************************************
      */
+
+    /**
+     * Adds a test score to the db.
+     * @param tsToAdd
+     * @return true if successful, false if not.
+     */
+    public static boolean addTestScore(TestScore tsToAdd){
+
+        String sql = "INSERT INTO testScores (testID, traineeID, score) VALUES (?, ?, ?)";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, tsToAdd.getTestID());
+            stmt.setInt(2, tsToAdd.getTraineeID());
+            stmt.setInt(3, tsToAdd.getScore());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Updates a trainee's test score.
+     * @param tsToAdd
+     * @return true if successful, false if not.
+     */
+    public static boolean updateTestScore(TestScore tsToAdd){
+
+        String sql = "UPDATE testScores SET score = ? WHERE testID = ?, traineeID = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, tsToAdd.getScore());
+            stmt.setInt(2, tsToAdd.getTestID());
+            stmt.setInt(3, tsToAdd.getTraineeID());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
 
     /*
      ****************************** EVENT ***************************************
      */
 
+    /**
+     * Adds the initial event data to the database. A eventID is generated by the db.
+     * @param eToAdd
+     * @return true if successful, false if not.
+     */
+    public static boolean addInitialEvent(Event eToAdd){
+
+        String sql = "INSERT INTO events (eventID, name, points, notes, year, session) VALUES (null, ?, ?, ?, ?, ?)";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setString(1, eToAdd.getName());
+            stmt.setInt(2, eToAdd.getPoints());
+            stmt.setString(3, eToAdd.getNotes());
+            stmt.setInt(4, eToAdd.getYear());
+            stmt.setInt(5, eToAdd.getSession());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Updates a given event with the new information.
+     * @param eToAdd
+     * @return true if successful, false if not.
+     */
+    public static boolean updateEvent(Event eToAdd){
+
+        String sql = "UPDATE events SET name = ?, points = ?, notes = ? WHERE eventID = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setString(1, eToAdd.getName());
+            stmt.setInt(2, eToAdd.getPoints());
+            stmt.setString(3, eToAdd.getNotes());
+            stmt.setInt(4, eToAdd.getEventID());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
     /*
      ****************************** EVENT SCORES ***************************************
      */
+
+    /**
+     * Adds a event score to the db.
+     * @param esToAdd
+     * @return true if successful, false if not.
+     */
+    public static boolean addEventScore(EventScore esToAdd){
+
+        String sql = "INSERT INTO eventScores (eventID, traineeID, score) VALUES (?, ?, ?)";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, esToAdd.getEventID());
+            stmt.setInt(2, esToAdd.getTraineeID());
+            stmt.setInt(3, esToAdd.getScore());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Updates an event score with the new data.
+     * @param esToAdd
+     * @return true if successful, false if not.
+     */
+    public static boolean updateEventScore(EventScore esToAdd){
+
+        String sql = "UPDATE eventScores SET score = ? WHERE eventID = ?, traineeID = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, esToAdd.getScore());
+            stmt.setInt(2, esToAdd.getEventID());
+            stmt.setInt(3, esToAdd.getTraineeID());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
 
     /*
      ****************************** SESSION ***************************************
@@ -1100,12 +1506,222 @@ public class DBManager {
      ****************************** DISTRICTS ***************************************
      */
 
+    /**
+     * Adds a district to the db.
+     * @param dToAdd
+     * @return true if successful, false if not.
+     */
+    public static boolean addDistrict(District dToAdd){
+
+        String sql = "INSERT INTO districts (year, session, district, superEmail) VALUES (?, ?, ?, ?)";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, dToAdd.getYear());
+            stmt.setInt(2, dToAdd.getSession());
+            stmt.setString(3, dToAdd.getName());
+            stmt.setString(4, dToAdd.getSupervisorEmail());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Updates a given district with a new supervisor email address.
+     * @param dToAdd
+     * @return true if successful, false if not.
+     */
+    public static boolean updateDistrict(District dToAdd){
+
+        String sql = "UPDATE districts SET superEmail = ? WHERE year = ?, session = ?, district = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setString(1, dToAdd.getSupervisorEmail());
+            stmt.setInt(2, dToAdd.getYear());
+            stmt.setInt(3, dToAdd.getSession());
+            stmt.setString(4, dToAdd.getName());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
     /*
      ****************************** INSTRUCTORS ***************************************
      */
 
-    /*
-     ****************************** HELPERS ***************************************
+    /**
+     * Adds the given instructor to the db.
+     * @param iToAdd
+     * @return true if successful, false if not.
      */
+    public static boolean addInstructor(Instructor iToAdd){
+
+        String sql = "INSERT INTO instructors (year, session, name) VALUES (?, ?, ?)";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, iToAdd.getYear());
+            stmt.setInt(2, iToAdd.getSession());
+            stmt.setString(3, iToAdd.getName());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**********************************************************************
+     ******************************DELETES*********************************
+     **********************************************************************/
+
+MAKE SURE TO ADD THE DEFAULT TRAINEE WITH ID = 1 WHEN THE DATABASE FILE IS INITIALIZED
+    public static boolean deleteTrainee(Trainee tToDelete){
+
+        try{
+
+            return true;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    public static boolean deleteEmergencyContact(EmergencyContact ecToDelete){
+
+        try{
+
+            return true;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    public static boolean deleteComment(Comment cToDelete){
+
+        try{
+
+            return true;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    public static boolean deleteTest(Test tToDelete){
+
+        try{
+
+            return true;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    public static boolean deleteTestScore(TestScore tsToDelete){
+
+        try{
+
+            return true;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    public static boolean deleteEvent(Event eToDelete){
+
+        try{
+
+            return true;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    public static boolean deleteEventScore(EventScore esToDelete){
+
+        try{
+
+            return true;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    public static boolean deleteDistrict(District dToDelete){
+
+        try{
+
+            return true;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    public static boolean deleteInstructor(Instructor iToDelete){
+
+        try{
+
+            return true;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
 
 }

@@ -11,6 +11,13 @@ public class Event implements Serializable {
     private int year;
     private int session;
 
+    //Constructors
+
+    /**
+     * Default Constructor
+     */
+    public Event(){}
+
     /**
      * Constructor
      * @param eID
@@ -28,6 +35,20 @@ public class Event implements Serializable {
         notes = n;
         year = y;
         session = s;
+
+    }
+
+    /**
+     * Initial Event Constructor: No id parameter, as it has yet to be produced by the db.
+     * @param name
+     * @param p
+     * @param n
+     * @param y
+     * @param s
+     */
+    public Event(String name, int p, String n, int y, int s){
+
+        this(0, name, p, n, y, s);
 
     }
 
