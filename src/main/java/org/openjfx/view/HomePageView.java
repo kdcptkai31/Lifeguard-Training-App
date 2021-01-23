@@ -13,7 +13,7 @@ public class HomePageView {
     @FXML
     protected void initialize(){
 
-//        controller = LifeguardTrainingApplication.getController();
+        controller = LifeguardTrainingApplication.getController();
 //        if(controller.getDBManager().addInitialTrainee(new Trainee("bob", "m", "smith", "12313",
 //                "san clemente", "CA", "434-534-1231", "ddd@gmail.com", "San CLemente", true,
 //                new EmergencyContact(0, "Veronika", "MOM",

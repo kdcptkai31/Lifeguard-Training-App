@@ -68,6 +68,7 @@ public class DBManager {
                 + "year INTEGER,\n"
                 + "session INTEGER,\n"
                 + "name TEXT,\n"
+                + "image BLOB,\n"
                 + "FOREIGN KEY(year, session) REFERENCES sessions(year, session),\n"
                 + "PRIMARY KEY(year, session, name)"
                 + ");";
@@ -676,7 +677,7 @@ public class DBManager {
 
     /**
      * Returns the most current session, used to initialize the application.
-     * @return
+     * @return a pair containing the most current session.
      */
     public static Pair<Integer, Integer> getCurrentSession(){
 
@@ -708,31 +709,6 @@ public class DBManager {
         }
 
         return null;
-
-    }
-
-    /**
-     * Adds a new year and session to the db.
-     * @param newYear
-     * @param newSession
-     * @return
-     */
-    public static boolean addNewSession(int newYear, int newSession){
-
-        String sql = "INSERT INTO sessions(year, session) VALUES(?, ?)";
-
-        try{
-            PreparedStatement stmt = connection.prepareStatement(sql);
-            stmt.setInt(1, newYear);
-            stmt.setInt(2, newSession);
-            stmt.executeUpdate();
-            return true;
-
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-
-        return false;
 
     }
 
@@ -796,7 +772,7 @@ public class DBManager {
 
             while(rs.next())
                 results.add(new Instructor(rs.getInt("year"), rs.getInt("session"),
-                        rs.getString("name")));
+                        rs.getString("name"), new Image(rs.getBlob("image").getBinaryStream())));
 
             return results;
 
@@ -1557,6 +1533,31 @@ public class DBManager {
      ****************************** SESSION ***************************************
      */
 
+    /**
+     * Adds a new year and session to the db.
+     * @param newYear
+     * @param newSession
+     * @return true if successful, false if not.
+     */
+    public static boolean addNewSession(int newYear, int newSession){
+
+        String sql = "INSERT INTO sessions(year, session) VALUES(?, ?)";
+
+        try{
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, newYear);
+            stmt.setInt(2, newSession);
+            stmt.executeUpdate();
+            return true;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
     /*
      ****************************** DISTRICTS ***************************************
      */
@@ -1628,7 +1629,7 @@ public class DBManager {
      */
     public static boolean addInstructor(Instructor iToAdd){
 
-        String sql = "INSERT INTO instructors (year, session, name) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO instructors (year, session, name, image) VALUES (?, ?, ?, ?)";
 
         try{
 
@@ -1636,11 +1637,16 @@ public class DBManager {
             stmt.setInt(1, iToAdd.getYear());
             stmt.setInt(2, iToAdd.getSession());
             stmt.setString(3, iToAdd.getName());
+            ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
+            ImageIO.write(SwingFXUtils.fromFXImage(iToAdd.getImage(), null), "jpg", byteOutput);
+            Blob imageBlob = connection.createBlob();
+            imageBlob.setBytes(0, byteOutput.toByteArray());
+            stmt.setBlob(4, imageBlob);
             stmt.executeUpdate();
 
             return true;
 
-        }catch(SQLException e){
+        }catch(Exception e){
             e.printStackTrace();
         }
 
@@ -1652,13 +1658,19 @@ public class DBManager {
      ******************************DELETES*********************************
      **********************************************************************/
 
-
-            ADD PFP TO INSTRUCTORS
-
-    NOT DONE
+    /**
+     * Deletes the given trainee and all associated data in the database, including test scores, event scores, all
+     * comments, and their emergency contact.
+     * @param tToDelete
+     * @return true if successful, false if not.
+     */
     public static boolean deleteTrainee(Trainee tToDelete){
 
-        String sql = "DELETE FROM trainee WHERE tid = ?";
+        if(!deleteAllTestScoresOfATrainee(tToDelete.getId()) || !deleteAllOfATraineeComments(tToDelete.getId()) ||
+           !deleteEmergencyContact(tToDelete.getId()) || !deleteAllEventScoresOfATrainee(tToDelete.getId()))
+            return false;
+
+        String sql = "DELETE FROM trainees WHERE tid = ?";
 
         try{
 
@@ -1677,23 +1689,29 @@ public class DBManager {
     }
 
     /**
-     * Deletes the stored image for the given trainee, returning it to null and will be processed as a default pfp.
+     * Replaces the trainee's pfp with the default pfp.
      * @param tToDelete
      * @return true if successful, false if not.
      */
     public static boolean deleteTraineeProfileImage(Trainee tToDelete){
 
-        String sql = "UPDATE trainee SET image = null where tid = ?";
+        String sql = "UPDATE trainees SET image = ? where tid = ?";
 
         try{
 
             PreparedStatement stmt = connection.prepareStatement(sql);
-            stmt.setInt(1, tToDelete.getId());
+            ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
+            ImageIO.write(SwingFXUtils.fromFXImage(new Image("resources/org/openjfx/images/blankpfp.png"), null),
+                                                   "jpg", byteOutput);
+            Blob imageBlob = connection.createBlob();
+            imageBlob.setBytes(0, byteOutput.toByteArray());
+            stmt.setBlob(1, imageBlob);
+            stmt.setInt(2, tToDelete.getId());
             stmt.executeUpdate();
 
             return true;
 
-        }catch(SQLException e){
+        }catch(Exception e){
             e.printStackTrace();
         }
 
@@ -1701,9 +1719,20 @@ public class DBManager {
 
     }
 
-    public static boolean deleteEmergencyContact(EmergencyContact ecToDelete){
+    /**
+     * Deletes the emergency contact that matches the given trainee ID.
+     * @param tid
+     * @return true if successful, false if not.
+     */
+    public static boolean deleteEmergencyContact(int tid){
+
+        String sql = "DELETE FROM emergencyContacts WHERE traineeID = ?";
 
         try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, tid);
+            stmt.executeUpdate();
 
             return true;
 
@@ -1715,9 +1744,46 @@ public class DBManager {
 
     }
 
+    /**
+     * Deletes all comments associated with the given trainee ID.
+     * @param tid
+     * @return true if successful, false if not.
+     */
+    public static boolean deleteAllOfATraineeComments(int tid){
+
+        String sql = "DELETE FROM comments WHERE traineeID = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, tid);
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Deletes the given comment.
+     * @param cToDelete
+     * @return true if successful, false if not.
+     */
     public static boolean deleteComment(Comment cToDelete){
 
+        String sql = "DELETE FROM comments WHERE traineeID = ?, commentID = ?";
+
         try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, cToDelete.getTraineeID());
+            stmt.setInt(2, cToDelete.getId());
+            stmt.executeUpdate();
 
             return true;
 
@@ -1729,9 +1795,23 @@ public class DBManager {
 
     }
 
+    /**
+     * Deletes the given test from the database.
+     * @param tToDelete
+     * @return true if successful, false if not.
+     */
     public static boolean deleteTest(Test tToDelete){
 
+        if(!deleteAllTestScoresOfATest(tToDelete.getTestID()))
+            return false;
+
+        String sql = "DELETE FROM tests WHERE testID = ?";
+
         try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, tToDelete.getTestID());
+            stmt.executeUpdate();
 
             return true;
 
@@ -1743,9 +1823,71 @@ public class DBManager {
 
     }
 
+    /**
+     * Deletes all scores from a given test ID.
+     * @param testID
+     * @return true if successful, false if not.
+     */
+    public static boolean deleteAllTestScoresOfATest(int testID){
+
+        String sql = "DELETE FROM testScores WHERE testID = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, testID);
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Deletes all scores of a given trainee ID.
+     * @param traineeID
+     * @return true if successful, false if not.
+     */
+    public static boolean deleteAllTestScoresOfATrainee(int traineeID){
+
+        String sql = "DELETE FROM testScores WHERE traineeID = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, traineeID);
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Deletes a specific test score.
+     * @param tsToDelete
+     * @return true if successful, false if not.
+     */
     public static boolean deleteTestScore(TestScore tsToDelete){
 
+        String sql = "DELETE FROM testScores WHERE testID = ?, traineeID = ?";
+
         try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, tsToDelete.getTestID());
+            stmt.setInt(2, tsToDelete.getTraineeID());
+            stmt.executeUpdate();
 
             return true;
 
@@ -1757,9 +1899,23 @@ public class DBManager {
 
     }
 
+    /**
+     * Deletes a given event, first deleting all event scores associated.
+     * @param eToDelete
+     * @return true if successful, false if not.
+     */
     public static boolean deleteEvent(Event eToDelete){
 
+        if(!deleteAllEventScoresOfAnEvent(eToDelete.getEventID()))
+            return false;
+
+        String sql = "DELETE FROM events WHERE eventID = ?";
+
         try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, eToDelete.getEventID());
+            stmt.executeUpdate();
 
             return true;
 
@@ -1771,9 +1927,71 @@ public class DBManager {
 
     }
 
+    /**
+     * Deletes all event scores from a given event ID.
+     * @param eventID
+     * @return true if successful, false if not.
+     */
+    public static boolean deleteAllEventScoresOfAnEvent(int eventID){
+
+        String sql = "DELETE FROM eventScores WHERE eventID = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, eventID);
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Deletes all event scores from a given trainee ID.
+     * @param traineeID
+     * @return true if successful, false if not.
+     */
+    public static boolean deleteAllEventScoresOfATrainee(int traineeID){
+
+        String sql = "DELETE FROM eventScores WHERE traineeID = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, traineeID);
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Deletes the given event score.
+     * @param esToDelete
+     * @return true if successful, false if not.
+     */
     public static boolean deleteEventScore(EventScore esToDelete){
 
+        String sql = "DELETE FROM eventScores WHERE eventID = ?, traineeID = ?";
+
         try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, esToDelete.getEventID());
+            stmt.setInt(2, esToDelete.getTraineeID());
+            stmt.executeUpdate();
 
             return true;
 
@@ -1785,9 +2003,22 @@ public class DBManager {
 
     }
 
+    /**
+     * Deletes the given district.
+     * @param dToDelete
+     * @return true if successful, false if not.
+     */
     public static boolean deleteDistrict(District dToDelete){
 
+        String sql = "DELETE FROM districts WHERE year = ?, session = ?, district = ?";
+
         try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, dToDelete.getYear());
+            stmt.setInt(2, dToDelete.getSession());
+            stmt.setString(3, dToDelete.getName());
+            stmt.executeUpdate();
 
             return true;
 
@@ -1799,9 +2030,22 @@ public class DBManager {
 
     }
 
+    /**
+     * Deletes the given instructor.
+     * @param iToDelete
+     * @return true if successful, false if not.
+     */
     public static boolean deleteInstructor(Instructor iToDelete){
 
+        String sql = "DELETE FROM instructors WHERE year = ?, session = ?, name = ?";
+
         try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, iToDelete.getYear());
+            stmt.setInt(2, iToDelete.getSession());
+            stmt.setString(3, iToDelete.getName());
+            stmt.executeUpdate();
 
             return true;
 

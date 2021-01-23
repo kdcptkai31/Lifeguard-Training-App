@@ -2,6 +2,8 @@ package org.openjfx.model;
 
 import javafx.scene.image.Image;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.Serializable;
 
 /**
@@ -116,6 +118,15 @@ public class Trainee implements Serializable {
         isLodging = isLodge;
         emergencyContact = ec;
         hoursAttended = hAttended;
+        if(imag == null){
+
+            try {
+                FileInputStream inputstream = new FileInputStream("src\\main\\resources\\org\\openjfx\\images\\blankpfp.png");
+                imag = new Image(inputstream);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
         image = imag;
         isQuestionnaire1Complete = isQ1Com;
         isQuestionnaire2Complete = isQ2Com;
