@@ -1,6 +1,6 @@
 .idea
 target
-resources
+externalResources
 Save_Files
 pom.xml
 *.iml

@@ -11,8 +11,8 @@ import java.net.URL;
 
 public class SceneCoordinator {
 
-    private Controller controller;
     private Stage window;
+    private Controller controller;
 
     /**
      * Initializes the game controller into the scene coordinator for use throughout the application.
@@ -25,14 +25,43 @@ public class SceneCoordinator {
 
     }
 
+    public void showSetUpScene() throws IOException {
+
+        URL url = new File("src/main/resources/org/openjfx/layout/setup.fxml").toURI().toURL();
+        this.window.setScene(new Scene(FXMLLoader.load(url)));
+
+    }
+
     /**
-     * Fetches the login scene.
+     * Fetches the overview scene.
      * @throws Exception
      */
-    public void showHomeScene() throws IOException {
-        URL url = new File("src/main/resources/org/openjfx/layout/homepage.fxml").toURL();
-        Parent layout = FXMLLoader.load(url);
-        this.window.setScene(new Scene(layout));
+    public void showOverviewScene() throws IOException {
+
+        URL url = new File("src/main/resources/org/openjfx/layout/overview.fxml").toURI().toURL();
+        this.window.setScene(new Scene(FXMLLoader.load(url)));
+
+    }
+
+    /**
+     * Fetches the edit import scene.
+     * @throws IOException
+     */
+    public void showEditImportScene() throws IOException {
+
+        URL url = new File("src/main/resources/org/openjfx/layout/editImport.fxml").toURI().toURL();
+        this.window.setScene(new Scene(FXMLLoader.load(url)));
+
+    }
+
+    /**
+     * Fetches the reports scene.
+     * @throws IOException
+     */
+    public void showReportsScene() throws IOException {
+
+        URL url = new File("src/main/resources/org/openjfx/layout/reports.fxml").toURI().toURL();
+        this.window.setScene(new Scene(FXMLLoader.load(url)));
 
     }
 
@@ -42,9 +71,10 @@ public class SceneCoordinator {
     public void onExitRequested(){System.exit(0);}
 
     //Getters
+
     /**
      *
-     * @return the controller
+     * @return the controller.
      */
     public Controller getController(){return controller;}
 

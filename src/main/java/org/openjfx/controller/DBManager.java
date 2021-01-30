@@ -686,6 +686,8 @@ public class DBManager {
             //Extract all years and sessions
             Statement stmt = connection.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
+
+            //Extract data from result set
             Vector<Pair<Integer, Integer>> results = new Vector<>();
             while(rs.next()) {
                 Pair<Integer, Integer> tmp = new Pair<>(rs.getInt("year"), rs.getInt("session"));

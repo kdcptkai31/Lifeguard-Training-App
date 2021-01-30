@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.effect.InnerShadow?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="900.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openjfx.view.SetUpView">
+    <top>
+        <HBox alignment="TOP_CENTER" spacing="10.0" style="-fx-background-color: FCE2AF;">
+            <children>
+                <ImageView fitHeight="144.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@../images/dprSeal.png" />
+                    </image>
+                    <HBox.margin>
+                        <Insets left="-150.0" top="3.0" />
+                    </HBox.margin>
+                </ImageView>
+                <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="150.0" prefWidth="200.0" spacing="10.0">
+                    <children>
+                        <Label text="Insert Program Name">
+                            <font>
+                                <Font name="System Bold" size="18.0" />
+                            </font>
+                        </Label>
+                        <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="50.0" prefWidth="200.0" spacing="20.0">
+                            <children>
+                                <Label fx:id="yearLabel" text="20XX">
+                                    <font>
+                                        <Font name="System Bold" size="18.0" />
+                                    </font></Label>
+                                <Label fx:id="sessionLabel" text="Session 0">
+                                    <font>
+                                        <Font name="System Bold" size="24.0" />
+                                    </font></Label>
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+            </children>
+            <BorderPane.margin>
+                <Insets />
+            </BorderPane.margin>
+            <cursor>
+                <Cursor fx:constant="DEFAULT" />
+            </cursor>
+            <effect>
+                <InnerShadow blurType="GAUSSIAN" />
+            </effect>
+        </HBox>
+    </top>
+    <center>
+        <VBox prefHeight="200.0" prefWidth="100.0" style="-fx-background-color: #3476f7;" BorderPane.alignment="CENTER">
+            <effect>
+                <InnerShadow blurType="GAUSSIAN" />
+            </effect></VBox>
+    </center>
+</BorderPane>

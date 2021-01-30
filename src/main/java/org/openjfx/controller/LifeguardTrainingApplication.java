@@ -11,7 +11,7 @@ public class LifeguardTrainingApplication extends Application {
 
     //Constants
     final private static int defaultWidth = 1200;
-    final private static int defaultHeight = 1000;
+    final private static int defaultHeight = 900;
 
     @Override
     public void start(Stage window) throws Exception {
@@ -21,8 +21,12 @@ public class LifeguardTrainingApplication extends Application {
         Window.show();
         Window.setResizable(false);
 
+        //Initializes the SceneCoordinator which also initializes the DBManager, which will initialize a DB if needed.
         coordinator = new SceneCoordinator(Window);
-        coordinator.showHomeScene();
+        if(coordinator.getController().getCurrentYear() == 0)
+            coordinator.showSetUpScene();
+        else
+            coordinator.showOverviewScene();
 
     }
 
