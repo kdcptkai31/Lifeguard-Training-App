@@ -1,49 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.Cursor?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.effect.InnerShadow?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="900.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openjfx.view.SetUpView">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="900.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openjfx.view.SetUpView">
     <top>
-        <HBox alignment="TOP_CENTER" spacing="10.0" style="-fx-background-color: FCE2AF;">
+        <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: FCE2AF;">
             <children>
                 <ImageView fitHeight="144.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
                     <image>
                         <Image url="@../images/dprSeal.png" />
                     </image>
                     <HBox.margin>
-                        <Insets left="-150.0" top="3.0" />
+                        <Insets left="20.0" top="3.0" />
                     </HBox.margin>
                 </ImageView>
-                <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="150.0" prefWidth="200.0" spacing="10.0">
-                    <children>
+            <VBox alignment="TOP_CENTER">
+               <HBox.margin>
+                  <Insets />
+               </HBox.margin>
+               <children>
                         <Label text="Insert Program Name">
                             <font>
                                 <Font name="System Bold" size="18.0" />
                             </font>
+                     <VBox.margin>
+                        <Insets top="20.0" />
+                     </VBox.margin>
                         </Label>
-                        <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="50.0" prefWidth="200.0" spacing="20.0">
-                            <children>
-                                <Label fx:id="yearLabel" text="20XX">
-                                    <font>
-                                        <Font name="System Bold" size="18.0" />
-                                    </font></Label>
-                                <Label fx:id="sessionLabel" text="Session 0">
-                                    <font>
-                                        <Font name="System Bold" size="24.0" />
-                                    </font></Label>
-                            </children>
-                        </HBox>
-                    </children>
-                </VBox>
+                  <Label text="Setup" underline="true">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets top="40.0" />
+                     </VBox.margin>
+                  </Label>
+               </children>
+            </VBox>
             </children>
             <BorderPane.margin>
                 <Insets />
@@ -57,9 +56,66 @@
         </HBox>
     </top>
     <center>
-        <VBox prefHeight="200.0" prefWidth="100.0" style="-fx-background-color: #3476f7;" BorderPane.alignment="CENTER">
+        <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" spacing="10.0" style="-fx-background-color: #3476f7;" BorderPane.alignment="CENTER">
             <effect>
                 <InnerShadow blurType="GAUSSIAN" />
-            </effect></VBox>
+            </effect>
+         <children>
+            <Label style="-fx-text-fill: #efb748;" text="Welcome! Please enter the current year and session. All other data can be added or changed later.">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+               <VBox.margin>
+                  <Insets left="15.0" top="15.0" />
+               </VBox.margin>
+            </Label>
+            <HBox alignment="CENTER" spacing="10.0">
+               <children>
+                  <TextField fx:id="yearTextField" alignment="CENTER" focusTraversable="false" prefHeight="25.0" prefWidth="75.0" promptText="Year" />
+                  <TextField fx:id="sessionTextField" alignment="CENTER" focusTraversable="false" prefHeight="25.0" prefWidth="75.0" promptText="Session" />
+               </children>
+            </HBox>
+            <Label fx:id="yearSessionErrorLabel" text="*ERROR* Year must be 2XXX and Session must be a digit" textFill="RED" visible="false" />
+            <HBox alignment="CENTER" prefHeight="500.0" prefWidth="1200.0">
+               <children>
+                  <VBox alignment="TOP_CENTER" prefHeight="500.0" prefWidth="300.0" spacing="10.0">
+                     <children>
+                        <Label alignment="CENTER" text="Add Districts" textFill="#efb748">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font></Label>
+                        <HBox alignment="TOP_CENTER" prefHeight="30.0" prefWidth="300.0" spacing="10.0">
+                           <children>
+                              <TextField fx:id="districtNameTextField" alignment="CENTER" focusTraversable="false" prefHeight="25.0" prefWidth="124.0" promptText="District Name" />
+                              <TextField fx:id="supervisorEmailTextField" alignment="CENTER" focusTraversable="false" promptText="Supervisor Email" />
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER" prefHeight="30.0" prefWidth="300.0" spacing="28.0">
+                           <VBox.margin>
+                              <Insets top="-20.0" />
+                           </VBox.margin>
+                           <children>
+                              <Label fx:id="districtNameErrorLabel" text="   Enter Valid Name" textFill="RED" visible="false" />
+                              <Label fx:id="supervisorEmailErrorLabel" text="  Enter Valid Email Address" textFill="RED" visible="false" />
+                           </children>
+                        </HBox>
+                        <Button fx:id="addDistrictButton" focusTraversable="false" mnemonicParsing="false" onMouseClicked="#onAddDistrictClicked" text="Add District">
+                           <VBox.margin>
+                              <Insets top="-10.0" />
+                           </VBox.margin>
+                        </Button>
+                        <ListView fx:id="districtListView" focusTraversable="false" prefHeight="350.0" prefWidth="300.0" />
+                        <Button focusTraversable="false" mnemonicParsing="false" onMouseClicked="#onDeleteDistrictClicked" text="Delete Selected District">
+                           <VBox.margin>
+                              <Insets top="-5.0" />
+                           </VBox.margin>
+                        </Button>
+                     </children></VBox>
+                  <VBox layoutX="460.0" layoutY="10.0" prefHeight="500.0" prefWidth="300.0" />
+                  <VBox layoutX="610.0" layoutY="10.0" prefHeight="500.0" prefWidth="300.0" />
+                  <VBox layoutX="760.0" layoutY="10.0" prefHeight="500.0" prefWidth="300.0" />
+               </children>
+            </HBox>
+         </children></VBox>
     </center>
 </BorderPane>
