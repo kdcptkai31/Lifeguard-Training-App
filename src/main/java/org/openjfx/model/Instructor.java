@@ -24,13 +24,6 @@ public class Instructor {
         year = y;
         session = s;
         name = n;
-        if(i == null)
-            try {
-                FileInputStream inputstream = new FileInputStream("src\\main\\resources\\org\\openjfx\\images\\blankpfp.png");
-                i = new Image(inputstream);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
         image = i;
 
     }

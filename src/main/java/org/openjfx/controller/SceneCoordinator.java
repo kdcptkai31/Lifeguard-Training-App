@@ -27,9 +27,8 @@ public class SceneCoordinator {
 
     public void showSetUpScene() throws IOException {
 
-        URL url = new File("src/main/resources/org/openjfx/layout/setup.fxml").toURI().toURL();
-        this.window.setScene(new Scene(FXMLLoader.load(url)));
-
+        this.window.setScene(new Scene(FXMLLoader.load(
+                                getClass().getClassLoader().getResource("org/openjfx/layout/setup.fxml"))));
     }
 
     /**
@@ -38,8 +37,8 @@ public class SceneCoordinator {
      */
     public void showOverviewScene() throws IOException {
 
-        URL url = new File("src/main/resources/org/openjfx/layout/overview.fxml").toURI().toURL();
-        this.window.setScene(new Scene(FXMLLoader.load(url)));
+        this.window.setScene(new Scene(FXMLLoader.load(
+                                getClass().getClassLoader().getResource("org/openjfx/layout/overview.fxml"))));
 
     }
 
@@ -49,8 +48,8 @@ public class SceneCoordinator {
      */
     public void showEditImportScene() throws IOException {
 
-        URL url = new File("src/main/resources/org/openjfx/layout/editImport.fxml").toURI().toURL();
-        this.window.setScene(new Scene(FXMLLoader.load(url)));
+        this.window.setScene(new Scene(FXMLLoader.load(
+                                getClass().getClassLoader().getResource("org/openjfx/layout/editImport.fxml"))));
 
     }
 
@@ -60,8 +59,8 @@ public class SceneCoordinator {
      */
     public void showReportsScene() throws IOException {
 
-        URL url = new File("src/main/resources/org/openjfx/layout/reports.fxml").toURI().toURL();
-        this.window.setScene(new Scene(FXMLLoader.load(url)));
+        this.window.setScene(new Scene(FXMLLoader.load(
+                getClass().getClassLoader().getResource("org/openjfx/layout/reports.fxml"))));
 
     }
 
@@ -77,5 +76,7 @@ public class SceneCoordinator {
      * @return the controller.
      */
     public Controller getController(){return controller;}
+
+    public Stage getStage(){return window;}
 
 }

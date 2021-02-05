@@ -53,7 +53,7 @@ public class DBManager {
                 + "district TEXT,\n"
                 + "superEmail TEXT,\n"
                 + "FOREIGN KEY(year, session) REFERENCES sessions(year, session),\n"
-                + "PRIMARY KEY(year, session)"
+                + "PRIMARY KEY(year, session, district)"
                 + ");";
 
         try{
@@ -258,8 +258,8 @@ public class DBManager {
             e.printStackTrace();
         }
 
+        //Adds
         String sqlFindDefaultTrainee = "SELECT * FROM trainees WHERE tid = 1";
-
         try{
 
             Statement stmt = connection.createStatement();
@@ -1421,7 +1421,7 @@ public class DBManager {
      * @param eToAdd
      * @return true if successful, false if not.
      */
-    public static boolean addInitialEvent(Event eToAdd){
+    public static boolean addEvent(Event eToAdd){
 
         String sql = "INSERT INTO events (eventID, name, points, notes, year, session) VALUES (null, ?, ?, ?, ?, ?)";
 
@@ -1639,11 +1639,13 @@ public class DBManager {
             stmt.setInt(1, iToAdd.getYear());
             stmt.setInt(2, iToAdd.getSession());
             stmt.setString(3, iToAdd.getName());
+
             ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
             ImageIO.write(SwingFXUtils.fromFXImage(iToAdd.getImage(), null), "jpg", byteOutput);
-            Blob imageBlob = connection.createBlob();
-            imageBlob.setBytes(0, byteOutput.toByteArray());
-            stmt.setBlob(4, imageBlob);
+            //Blob imageBlob = connection.createBlob();
+            //imageBlob.setBytes(0, byteOutput.toByteArray());
+            //stmt.setBlob(4, imageBlob);
+            stmt.setBytes(4, byteOutput.toByteArray());
             stmt.executeUpdate();
 
             return true;

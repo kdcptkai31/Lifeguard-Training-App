@@ -3,7 +3,6 @@ package org.openjfx.controller;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
-
 public class LifeguardTrainingApplication extends Application {
 
     private static SceneCoordinator coordinator;
@@ -11,10 +10,11 @@ public class LifeguardTrainingApplication extends Application {
 
     //Constants
     final private static int defaultWidth = 1200;
-    final private static int defaultHeight = 900;
+    final private static int defaultHeight = 850;
 
     @Override
-    public void start(Stage window) throws Exception {
+    public void start(Stage window) {
+
         Window = window;
         Window.setTitle("Lifeguard Training");
         setToDefaultWindowSize();
@@ -23,10 +23,14 @@ public class LifeguardTrainingApplication extends Application {
 
         //Initializes the SceneCoordinator which also initializes the DBManager, which will initialize a DB if needed.
         coordinator = new SceneCoordinator(Window);
-        if(coordinator.getController().getCurrentYear() == 0)
-            coordinator.showSetUpScene();
-        else
-            coordinator.showOverviewScene();
+        try {
+            if (coordinator.getController().getCurrentYear() == 0)
+                coordinator.showSetUpScene();
+            else
+                coordinator.showOverviewScene();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
     }
 
