@@ -1,9 +1,13 @@
 package org.openjfx.model;
 
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class Instructor {
 
@@ -44,6 +48,30 @@ public class Instructor {
     public String getName() { return name; }
 
     public Image getImage() { return image; }
+
+    /**
+     * Sends the default pfp image if the variable image is null, else sends the real pfp.
+     * @return
+     */
+    public Image getActualImage(){
+
+        if(image == null){
+
+            try {
+
+                BufferedImage bufferedImage = ImageIO.read(getClass().getClassLoader().getResource("org/openjfx/images/blankpfp.png"));
+                return SwingFXUtils.toFXImage(bufferedImage, null);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }else
+            return image;
+
+        return null;
+
+    }
 
     //Setters
     public void setYear(int year) { this.year = year; }

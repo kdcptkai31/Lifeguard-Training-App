@@ -1,5 +1,6 @@
 package org.openjfx.controller;
 
+import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import javafx.util.Pair;
@@ -7,6 +8,7 @@ import org.openjfx.model.*;
 import org.openjfx.model.Event;
 
 import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 
@@ -384,6 +386,38 @@ public class DBManager {
             return getTraineesHelper(rs).elementAt(0);
 
         }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    /**
+     * Returns the trainee from the given data.
+     * @param fName
+     * @param mName
+     * @param lName
+     * @param year
+     * @param session
+     * @return
+     */
+    public static Trainee getTraineeFromData(String fName, String mName, String lName, int year, int session){
+
+        String sql = "SELECT * FROM trainees WHERE firstName = ? AND middleName = ? AND lastName = ? AND year = ? AND session = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setString(1, fName);
+            stmt.setString(2, mName);
+            stmt.setString(3, lName);
+            stmt.setInt(4, year);
+            stmt.setInt(5, session);
+            ResultSet rs = stmt.executeQuery();
+            return getTraineesHelper(rs).elementAt(0);
+
+        }catch (SQLException e){
             e.printStackTrace();
         }
 
@@ -772,9 +806,16 @@ public class DBManager {
             ResultSet rs = stmt.executeQuery();
             Vector<Instructor> results = new Vector<>();
 
-            while(rs.next())
-                results.add(new Instructor(rs.getInt("year"), rs.getInt("session"),
-                        rs.getString("name"), new Image(rs.getBlob("image").getBinaryStream())));
+            while(rs.next()){
+
+                if(rs.getBinaryStream("image") == null)
+                    results.add(new Instructor(rs.getInt("year"), rs.getInt("session"),
+                            rs.getString("name")));
+                else
+                    results.add(new Instructor(rs.getInt("year"), rs.getInt("session"),
+                            rs.getString("name"), new Image(rs.getBinaryStream("image"))));
+
+            }
 
             return results;
 
@@ -830,7 +871,11 @@ public class DBManager {
                 tmp.setEmergencyContact(null);
 
             tmp.setHoursAttended(rs.getInt("hoursAttended"));
-            tmp.setImage(new Image(rs.getBlob("image").getBinaryStream()));
+            if(rs.getBinaryStream("image") == null)
+                tmp.setImage(null);
+            else
+                tmp.setImage(new Image(rs.getBinaryStream("image")));
+
             tmp.setQuestionnaire1Complete((1 == rs.getInt("isQuestionnaire1Complete")));
             tmp.setQuestionnaire2Complete((1 == rs.getInt("isQuestionnaire2Complete")));
             tmp.setActive((1 == rs.getInt("isActive")));
@@ -1046,8 +1091,16 @@ public class DBManager {
             stmt.setInt(16, tToAdd.getSession());
             stmt.executeUpdate();
 
-            if(tToAdd.getEmergencyContact() != null)
+            Trainee tmp = getTraineeFromData(tToAdd.getFirstName(), tToAdd.getMiddleName(), tToAdd.getLastName(),
+                                             tToAdd.getYear(), tToAdd.getSession());
+
+            if(tToAdd.getEmergencyContact() != null){
+
+                tToAdd.getEmergencyContact().setTraineeID(tmp.getId());
                 addEmergencyContact(tToAdd.getEmergencyContact());
+
+            }
+
 
             return true;
 
@@ -1071,11 +1124,16 @@ public class DBManager {
         try{
 
             PreparedStatement stmt = connection.prepareStatement(sql);
-            ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
-            ImageIO.write(SwingFXUtils.fromFXImage(tToAdd.getImage(), null), "jgp", byteOutput);
-            Blob imageBlob = connection.createBlob();
-            imageBlob.setBytes(0, byteOutput.toByteArray());
-            stmt.setBlob(1, imageBlob);
+            if(tToAdd.getImage() == null)
+                stmt.setBytes(1, null);
+            else{
+
+                ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
+                ImageIO.write(SwingFXUtils.fromFXImage(tToAdd.getImage(), null), "png", byteOutput);
+                stmt.setBytes(1, byteOutput.toByteArray());
+
+            }
+
             stmt.setInt(2, tToAdd.getId());
 
             return true;
@@ -1212,7 +1270,7 @@ public class DBManager {
             return true;
 
         }catch(SQLException e){
-            e.printStackTrace();
+            System.out.println(ecToAdd.getFullName() + " not added!(Duplicate)");
         }
 
         return false;
@@ -1640,12 +1698,16 @@ public class DBManager {
             stmt.setInt(2, iToAdd.getSession());
             stmt.setString(3, iToAdd.getName());
 
-            ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
-            ImageIO.write(SwingFXUtils.fromFXImage(iToAdd.getImage(), null), "jpg", byteOutput);
-            //Blob imageBlob = connection.createBlob();
-            //imageBlob.setBytes(0, byteOutput.toByteArray());
-            //stmt.setBlob(4, imageBlob);
-            stmt.setBytes(4, byteOutput.toByteArray());
+            if(iToAdd.getImage() == null)
+                stmt.setBytes(4, null);
+            else{
+
+                ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
+                ImageIO.write(SwingFXUtils.fromFXImage(iToAdd.getImage(), null), "png", byteOutput);
+                stmt.setBytes(4, byteOutput.toByteArray());
+
+            }
+
             stmt.executeUpdate();
 
             return true;

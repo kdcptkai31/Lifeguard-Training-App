@@ -1,15 +1,21 @@
 package org.openjfx.view;
 
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
 import javafx.util.Pair;
 import org.openjfx.controller.Controller;
 import org.openjfx.controller.LifeguardTrainingApplication;
 import org.openjfx.model.EmergencyContact;
+import org.openjfx.model.Instructor;
 import org.openjfx.model.Trainee;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Vector;
 
 public class OverviewView {
 
@@ -27,15 +33,8 @@ public class OverviewView {
         yearLabel.setText(String.valueOf(controller.getCurrentYear()));
         sessionLabel.setText("Session " + controller.getCurrentSession());
 
-//        if(controller.getDBManager().addInitialTrainee(new Trainee("bob", "m", "smith", "12313",
-//                "san clemente", "CA", "434-534-1231", "ddd@gmail.com", "San CLemente", true,
-//                new EmergencyContact(0, "Veronika", "MOM",
-//                        "434-645-7676", "14312312", "SAN CLEMENTE",
-//                        "CA", "23424"), 45, false, false, true, 2021,
-//                1)))
-//            System.out.println("WORKED");
-//
-//        System.out.println("DONE");
+        Vector<Instructor> tmp = controller.getDBManager().getAllInstructorsFromSession(controller.getCurrentYear(), controller.getCurrentSession());
+
 
     }
 

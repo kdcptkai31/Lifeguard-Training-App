@@ -150,7 +150,7 @@
                         <HBox alignment="CENTER">
                            <children>
                               <TextField fx:id="instructorNameTextField" alignment="CENTER" focusTraversable="false" prefHeight="25.0" prefWidth="124.0" promptText="Instructor Name" />
-                              <Button fx:id="chooseImageButton" focusTraversable="false" mnemonicParsing="false" onMouseClicked="#onChooseImageClicked" text="Choose Image">
+                              <Button fx:id="chooseImageButton" focusTraversable="false" maxWidth="100.0" mnemonicParsing="false" onMouseClicked="#onChooseImageClicked" text="Choose Image">
                                  <HBox.margin>
                                     <Insets left="30.0" />
                                  </HBox.margin>

@@ -1,9 +1,13 @@
 package org.openjfx.model;
 
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.Serializable;
 
 /**
@@ -118,15 +122,6 @@ public class Trainee implements Serializable {
         isLodging = isLodge;
         emergencyContact = ec;
         hoursAttended = hAttended;
-        if(imag == null){
-
-            try {
-                FileInputStream inputstream = new FileInputStream("src\\main\\resources\\org\\openjfx\\images\\blankpfp.png");
-                imag = new Image(inputstream);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
         image = imag;
         isQuestionnaire1Complete = isQ1Com;
         isQuestionnaire2Complete = isQ2Com;
@@ -162,6 +157,21 @@ public class Trainee implements Serializable {
 
         this(0, fName, mName, lName, bDay, city, state, pNumber, email, dChoice, isLodge, ec, hAttended, null,
                 isQ1Com, isQ2Com, isA, year, session);
+
+    }
+
+    @Override
+    public String toString(){
+
+        String tmpStr = "";
+        if(isQuestionnaire2Complete)
+            if(isDisabled)
+                tmpStr.concat("* ");
+
+        if(middleName != null)
+            return tmpStr.concat(firstName + " " + middleName + " " + lastName);
+        else
+            return tmpStr.concat(firstName + " " + lastName);
 
     }
 
@@ -374,6 +384,26 @@ public class Trainee implements Serializable {
 
     public boolean isDisabled() {
         return isDisabled;
+    }
+
+    public Image getActualImage(){
+
+        if(image == null){
+
+        try {
+
+            BufferedImage bufferedImage = ImageIO.read(getClass().getClassLoader().getResource("org/openjfx/images/blankpfp.png"));
+            return SwingFXUtils.toFXImage(bufferedImage, null);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        }else
+            return image;
+
+        return null;
+
     }
 
     //Setters

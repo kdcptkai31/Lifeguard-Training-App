@@ -4,7 +4,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.stage.FileChooser;
@@ -198,8 +197,8 @@ public class SetUpView {
     public void onChooseImageClicked(){
 
         FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG Images", "*.png"));
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JPEG Images", "*.jpg"));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG Images", "*.png"));
         File selectedFile = fileChooser.showOpenDialog(LifeguardTrainingApplication.getCoordinator().getStage());
         if(selectedFile == null){
 
@@ -215,6 +214,7 @@ public class SetUpView {
             chooseImageButton.setText(selectedFile.getName());
         } catch (IOException e) {
             e.printStackTrace();
+            instructorPFP = null;
         }
 
     }
@@ -254,20 +254,6 @@ public class SetUpView {
 
         }
 
-        //Determines if the default image will be needed
-        if(instructorPFP == null){
-
-            try {
-//                BufferedImage bufferedImage = ImageIO.read(new File(
-//                                                "src\\main\\resources\\org\\openjfx\\images\\blankpfp.png"));
-                BufferedImage bufferedImage = ImageIO.read(getClass().getClassLoader().getResource("org/openjfx/images/blankpfp.png"));
-                instructorPFP = SwingFXUtils.toFXImage(bufferedImage, null);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        }
-
         pendingInstructorData.add(new Pair<>(instructorNameTextField.getText(), instructorPFP));
         instructorViewList.add(instructorNameTextField.getText());
         instructorListView.setItems(instructorViewList);
@@ -275,6 +261,7 @@ public class SetUpView {
         instructorNameTextField.clear();
         chooseImageButton.setText("Choose Image");
         addInstructorButton.requestFocus();
+        instructorPFP = null;
 
     }
 
@@ -472,6 +459,14 @@ public class SetUpView {
             controller.getDBManager().addEvent(new Event(pendingEventData.elementAt(i).getKey(), pendingEventData.elementAt(i).getValue(),
                                                           "", tmpYear, tmpSession));
 
+        try {
+            controller.setCurrentYear(tmpYear);
+            controller.setCurrentSession(tmpSession);
+            LifeguardTrainingApplication.getCoordinator().showOverviewScene();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
 
     }
 

@@ -39,6 +39,13 @@ public class EmergencyContact implements Serializable {
 
     }
 
+    public EmergencyContact(String fName, String relation, String pNumber, String add, String city, String state,
+                            String zip){
+
+        this(0, fName, relation, pNumber, add, city, state, zip);
+
+    }
+
     //Getters
     public int getTraineeID() {
         return traineeID;
