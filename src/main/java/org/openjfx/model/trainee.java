@@ -78,7 +78,6 @@ public class Trainee implements Serializable {
     private boolean isDisabled;
 
     //Constructors
-
     /**
      * Default Constructor
      */
@@ -157,6 +156,108 @@ public class Trainee implements Serializable {
 
         this(0, fName, mName, lName, bDay, city, state, pNumber, email, dChoice, isLodge, ec, hAttended, null,
                 isQ1Com, isQ2Com, isA, year, session);
+
+    }
+
+    /**
+     * Used to extract Questionnaire 1 data from .csv
+     * @param fName
+     * @param lName
+     * @param email
+     * @param shirtSize
+     * @param shortSize
+     * @param swimSuitSize
+     * @param isReturningTrainee
+     * @param whyReturning
+     * @param whyBeStateLG
+     * @param whatWantLearnTraining
+     * @param isJG
+     * @param jgInfo
+     * @param isOpenWaterLG
+     * @param openWaterLGInfo
+     * @param isPoolLG
+     * @param poolLGInfo
+     * @param isEMT
+     * @param emtInfo
+     * @param isOtherAdvancedMedicalTraining
+     * @param advancedMedicalTrainingInfo
+     * @param isFirstJob
+     * @param jobExperienceInfo
+     * @param anyExtraInfo
+     */
+    public Trainee(String fName, String lName, String email, String shirtSize, String shortSize, String swimSuitSize,
+                   boolean isReturningTrainee, String whyReturning, String whyBeStateLG, String whatWantLearnTraining,
+                   boolean isJG, String jgInfo, boolean isOpenWaterLG, String openWaterLGInfo, boolean isPoolLG,
+                   String poolLGInfo, boolean isEMT, String emtInfo, boolean isOtherAdvancedMedicalTraining,
+                   String advancedMedicalTrainingInfo, boolean isFirstJob, String jobExperienceInfo, String anyExtraInfo){
+
+        id = 0;
+        firstName = fName;
+        lastName = lName;
+        this.email = email;
+        this.shirtSize = shirtSize;
+        this.shortSize = shortSize;
+        this.swimSuitSize = swimSuitSize;
+        this.isReturningTrainee = isReturningTrainee;
+        this.whyReturning = whyReturning;
+        this.whyBeStateLG = whyBeStateLG;
+        this.whatWantLearnTraining = whatWantLearnTraining;
+        this.isJG = isJG;
+        this.jgInfo = jgInfo;
+        this.isOpenWaterLG = isOpenWaterLG;
+        this.openWaterLGInfo = openWaterLGInfo;
+        this.isPoolLG = isPoolLG;
+        this.poolLGInfo = poolLGInfo;
+        this.isEMT = isEMT;
+        this.emtInfo = emtInfo;
+        this.isOtherAdvancedMedicalTraining = isOtherAdvancedMedicalTraining;
+        this.advancedMedicalTrainingInfo = advancedMedicalTrainingInfo;
+        this.isFirstJob = isFirstJob;
+        this.jobExperienceInfo = jobExperienceInfo;
+        this.anyExtraInfo = anyExtraInfo;
+
+    }
+
+    /**
+     * Used to extract Questionnaire 2 data from .csv
+     * @param fName
+     * @param lName
+     * @param expectedBiggestTrainingChallengeInfo
+     * @param preparationInfo
+     * @param medicalConfidence
+     * @param cprConfidence
+     * @param physicalConfidence
+     * @param mentalConfidence
+     * @param preTrainingSeminarsAttended
+     * @param organizedSwimPoloFreq
+     * @param personalSwimFreq
+     * @param gymFreq
+     * @param oceanSwimFreq
+     * @param runningFreq
+     * @param surfingFreq
+     * @param isDisabled
+     */
+    public Trainee(String fName, String lName, String expectedBiggestTrainingChallengeInfo, String preparationInfo,
+                   int medicalConfidence, int cprConfidence, int physicalConfidence, int mentalConfidence,
+                   int preTrainingSeminarsAttended, String organizedSwimPoloFreq, String personalSwimFreq,
+                   String gymFreq, String oceanSwimFreq, String runningFreq, String surfingFreq, boolean isDisabled){
+
+        firstName = fName;
+        lastName = lName;
+        this.expectedBiggestTrainingChallengeInfo = expectedBiggestTrainingChallengeInfo;
+        this.preparationInfo = preparationInfo;
+        this.medicalConfidence = medicalConfidence;
+        this.cprConfidence = cprConfidence;
+        this.physicalConfidence = physicalConfidence;
+        this.mentalConfidence = mentalConfidence;
+        this.preTrainingSeminarsAttended = preTrainingSeminarsAttended;
+        this.organizedSwimPoloFreq = organizedSwimPoloFreq;
+        this.personalSwimFreq = personalSwimFreq;
+        this.gymFreq = gymFreq;
+        this.oceanSwimFreq = oceanSwimFreq;
+        this.runningFreq = runningFreq;
+        this.surfingFreq = surfingFreq;
+        this.isDisabled = isDisabled;
 
     }
 

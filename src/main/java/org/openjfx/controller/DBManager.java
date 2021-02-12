@@ -1158,7 +1158,7 @@ public class DBManager {
                     + "whyReturning = ?, whyBeStateLG = ?, whatWantLearnTraining = ?, isJG = ?, jgInfo = ?, "
                     + "isOpenWaterLG = ?, openWaterLGInfo = ?, isPoolLG = ?, poolLGInfo = ?, isEMT = ?, emtInfo = ?, "
                     + "isOtherAdvancedMedicalTraining = ?, advancedMedicalTrainingInfo = ?, isFirstJob = ?, "
-                    + "jobExperienceInfo = ?, anyExtraInfo = ? WHERE tid = ?");
+                    + "jobExperienceInfo = ?, anyExtraInfo = ?, isQuestionnaire1Complete = ? WHERE tid = ?");
 
         try{
 
@@ -1183,7 +1183,8 @@ public class DBManager {
             stmt.setInt(18, tToAdd.isFirstJob() ? 1 : 0);
             stmt.setString(19, tToAdd.getJobExperienceInfo());
             stmt.setString(20, tToAdd.getAnyExtraInfo());
-            stmt.setInt(21, tToAdd.getId());
+            stmt.setInt(21, 1);
+            stmt.setInt(22, tToAdd.getId());
             stmt.executeUpdate();
 
             return true;
@@ -1207,7 +1208,8 @@ public class DBManager {
         sql.append("UPDATE trainees SET expectedBiggestTrainingChallengeInfo = ?, preparationInfo = ?, "
                     + "medicalConfidence = ?, cprConfidence = ?, physicalConfidence = ?, mentalConfidence = ?, "
                     + "preTrainingSeminarsAttended = ?, organizedSwimPoloFreq = ?, personalSwimFreq = ?, gymFreq = ?, "
-                    + "oceanSwimFreq = ?, runningFreq = ?, surfingFreq = ?, isDisabled = ? WHERE tid = ?");
+                    + "oceanSwimFreq = ?, runningFreq = ?, surfingFreq = ?, isDisabled = ?, isQuestionnaire2Complete = ?"
+                    + " WHERE tid = ?");
 
         try{
 
@@ -1226,7 +1228,8 @@ public class DBManager {
             stmt.setString(12, tToAdd.getRunningFreq());
             stmt.setString(13, tToAdd.getSurfingFreq());
             stmt.setInt(14, tToAdd.isDisabled() ? 1 : 0);
-            stmt.setInt(15, tToAdd.getId());
+            stmt.setInt(15, 1);
+            stmt.setInt(16, tToAdd.getId());
             stmt.executeUpdate();
 
             return true;

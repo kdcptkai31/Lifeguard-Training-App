@@ -3,12 +3,12 @@ package org.openjfx.view;
 import javafx.scene.control.*;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
-
 import org.apache.commons.csv.CSVRecord;
 
 import javafx.fxml.FXML;
 
 import javafx.stage.FileChooser;
+
 import org.openjfx.controller.Controller;
 import org.openjfx.controller.DBManager;
 import org.openjfx.controller.LifeguardTrainingApplication;
@@ -36,10 +36,6 @@ public class EditImportView {
     @FXML
     private Button importQ2Button;
 
-    private File tFile;
-    private File q1File;
-    private File q2File;
-
     //Show Trainees
     @FXML
     private ListView<Trainee> traineeListView;
@@ -53,10 +49,6 @@ public class EditImportView {
 
         controller.updateCurrentTrainees();
         refresh();
-
-        tFile = null;
-        q1File = null;
-        q2File = null;
 
     }
 
@@ -80,12 +72,11 @@ public class EditImportView {
         if(selectedFile == null){
 
             importTraineesButton.setText("Trainee Information");
-            tFile = null;
             return;
 
         }
 
-        tFile = selectedFile;
+        File tFile = selectedFile;
         importTraineesButton.setText(selectedFile.getName());
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to load " +
@@ -95,7 +86,6 @@ public class EditImportView {
         if(alert.getResult() == ButtonType.CANCEL){
 
             importTraineesButton.setText("Trainee Information");
-            tFile = null;
             return;
 
         }
@@ -108,6 +98,9 @@ public class EditImportView {
 
                 CSVFormat format = CSVFormat.RFC4180.withHeader().withDelimiter(',');
                 CSVParser parser = new CSVParser(new FileReader(tFile), format);
+//                if(parser.getRecords().get(0).get(5).length() < 6) //Checks that only the initial trainee .csv is being read
+//                    throw new Exception("Wrong File");
+
                 for(CSVRecord record : parser)
                     tmpTrainees.add(new Trainee(record.get(2), record.get(3), record.get(4), record.get(5), record.get(6),
                             record.get(7), record.get(8), record.get(9), record.get(10),
@@ -151,8 +144,6 @@ public class EditImportView {
 
             }
 
-            tFile = null;
-
         }
 
     }
@@ -168,13 +159,90 @@ public class EditImportView {
         if(selectedFile == null){
 
             importQ1Button.setText("Questionnaire Part 1");
-            q1File = null;
             return;
 
         }
 
-        q1File = selectedFile;
+        File q1File = selectedFile;
         importQ1Button.setText(selectedFile.getName());
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to load " +
+                q1File.getName() + " into the Trainee database?", ButtonType.YES, ButtonType.CANCEL);
+        alert.showAndWait();
+        //If this was a mistake, leave, if not, continue
+        if(alert.getResult() == ButtonType.CANCEL){
+
+            importQ1Button.setText("Questionnaire Part 1");
+            return;
+
+        }
+
+        List<Trainee> tmpTraineeQ1 = new ArrayList<>();
+        //Handle Trainees
+        if (q1File != null){
+
+            try {
+
+                CSVFormat format = CSVFormat.RFC4180.withHeader().withDelimiter(',');
+                CSVParser parser = new CSVParser(new FileReader(q1File), format);
+                //Checks that only the initial trainee .csv is being read
+//                if(!(parser.getRecords().get(0).get(10).equals("Yes") || parser.getRecords().get(0).get(10).equals("No")))
+//                    throw new Exception("Wrong File");
+
+                for(CSVRecord record : parser)
+                    tmpTraineeQ1.add(new Trainee(record.get(3), record.get(2), record.get(1), record.get(4), record.get(5),
+                                                 record.get(6),
+                                                 !(record.get(7).charAt(0) == 'N' && record.get(7).charAt(1) == '/'),
+                                                 (record.get(7).charAt(0) == 'N' && record.get(7).charAt(1) == '/') ? null : record.get(7),
+                                                 record.get(8), record.get(9), record.get(10).charAt(0) == 'Y',
+                                                 record.get(11), record.get(12).charAt(0) == 'Y',
+                                                 record.get(13), record.get(14).charAt(0) == 'Y',
+                                                 record.get(15), record.get(16).charAt(0) == 'Y', record.get(17),
+                                                 record.get(18).charAt(0) == 'Y',
+                                                 record.get(19), record.get(20).charAt(0) == 'Y',
+                                                 record.get(21), record.get(22)));
+
+                parser.close();
+
+                //Adds to db if does not exist
+                for(int i = 0; i < tmpTraineeQ1.size(); i++){
+                    boolean isFound = false;
+                    boolean isFilled = false;
+                    for(int j = 0; j < controller.getCurrentTrainees().size() && !isFound; j++){
+
+                        if(tmpTraineeQ1.get(i).getFirstName().equals(controller.getCurrentTrainees().get(j).getFirstName()) &&
+                                tmpTraineeQ1.get(i).getLastName().equals(controller.getCurrentTrainees().get(j).getLastName())) {
+
+                            tmpTraineeQ1.get(i).setId(controller.getCurrentTrainees().get(j).getId());
+                            isFound = true;
+
+                            if(controller.getCurrentTrainees().get(j).isQuestionnaire1Complete())
+                                isFilled = true;
+
+                        }
+
+                    }
+
+                    if(isFound && !isFilled)
+                        DBManager.addExistingTraineeQuestionnaire1Data(tmpTraineeQ1.get(i));
+
+                }
+
+                controller.updateCurrentTrainees();
+                refresh();
+                importQ1Button.setText("Successfully Added");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Alert error = new Alert(Alert.AlertType.ERROR, "There was a problem loading " +
+                        q1File.getName() + " into the Trainee database.\nDouble check you selected the right file",
+                        ButtonType.CLOSE);
+                error.showAndWait();
+                importQ1Button.setText("Questionnaire Part 1");
+
+            }
+
+        }
 
     }
 
@@ -189,14 +257,96 @@ public class EditImportView {
         if(selectedFile == null){
 
             importQ2Button.setText("Questionnaire Part 2");
-            q2File = null;
             return;
 
         }
 
-        q2File = selectedFile;
+        File q2File = selectedFile;
         importQ2Button.setText(selectedFile.getName());
 
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to load " +
+                q2File.getName() + " into the Trainee database?", ButtonType.YES, ButtonType.CANCEL);
+        alert.showAndWait();
+        //If this was a mistake, leave, if not, continue
+        if(alert.getResult() == ButtonType.CANCEL){
+
+            importQ2Button.setText("Questionnaire Part 2");
+            return;
+
+        }
+
+        List<Trainee> tmpTraineeQ2 = new ArrayList<>();
+        //Handle Trainees
+        if (q2File != null){
+
+            try {
+
+                CSVFormat format = CSVFormat.RFC4180.withHeader().withDelimiter(',');
+                CSVParser parser = new CSVParser(new FileReader(q2File), format);
+
+
+
+                for(CSVRecord record : parser)
+                    tmpTraineeQ2.add(new Trainee(record.get(1), record.get(2), record.get(3), record.get(4),
+                                                 Integer.parseInt(record.get(5)), Integer.parseInt(record.get(6)),
+                                                 Integer.parseInt(record.get(7)), Integer.parseInt(record.get(8)),
+                                                 Integer.parseInt(record.get(9)), record.get(10), record.get(11),
+                                                 record.get(12), record.get(13), record.get(14), record.get(15),
+                                       record.get(16).charAt(0) == 'Y'));
+
+                parser.close();
+
+                //Adds to db if does not exist
+                for(int i = 0; i < tmpTraineeQ2.size(); i++){
+                    boolean isFound = false;
+                    boolean isFilled = false;
+                    for(int j = 0; j < controller.getCurrentTrainees().size() && !isFound; j++){
+
+                        if(tmpTraineeQ2.get(i).getFirstName().equals(controller.getCurrentTrainees().get(j).getFirstName()) &&
+                                tmpTraineeQ2.get(i).getLastName().equals(controller.getCurrentTrainees().get(j).getLastName())) {
+
+                            tmpTraineeQ2.get(i).setId(controller.getCurrentTrainees().get(j).getId());
+                            isFound = true;
+
+                            if(controller.getCurrentTrainees().get(j).isQuestionnaire2Complete())
+                                isFilled = true;
+
+                        }
+
+                    }
+
+                    if(isFound && !isFilled)
+                        DBManager.addExistingTraineeQuestionnaire2Data(tmpTraineeQ2.get(i));
+
+                }
+
+                controller.updateCurrentTrainees();
+                refresh();
+                importQ2Button.setText("Successfully Added");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Alert error = new Alert(Alert.AlertType.ERROR, "There was a problem loading " +
+                        q2File.getName() + " into the Trainee database.\nDouble check you selected the right file",
+                        ButtonType.CLOSE);
+                error.showAndWait();
+                importQ2Button.setText("Questionnaire Part 2");
+
+            }
+
+        }
+
+    }
+
+    private boolean isGoodNumber(String str){
+
+        //Checks if numeric
+        try {
+            double d = Double.parseDouble(str);
+            return true;
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
 
     }
 
@@ -227,152 +377,6 @@ public class EditImportView {
             LifeguardTrainingApplication.getCoordinator().showReportsScene();
         } catch (IOException e) {
             e.printStackTrace();
-        }
-
-    }
-
-    public class TraineeColumns{
-
-        public TraineeColumns(String firstName, String middleName, String lastName, String birthDate, String city, String state, String phoneNumber, String email, String district, String lodging, String ecName, String ecRelation, String ecPhoneNumber, String ecAddress, String ecCity, String ecState, String ecZipcode) {
-            this.firstName = firstName;
-            this.middleName = middleName;
-            this.lastName = lastName;
-            this.birthDate = birthDate;
-            this.city = city;
-            this.state = state;
-            this.phoneNumber = phoneNumber;
-            this.email = email;
-            this.district = district;
-            this.lodging = lodging;
-            this.ecName = ecName;
-            this.ecRelation = ecRelation;
-            this.ecPhoneNumber = ecPhoneNumber;
-            this.ecAddress = ecAddress;
-            this.ecCity = ecCity;
-            this.ecState = ecState;
-            this.ecZipcode = ecZipcode;
-        }
-
-        private String firstName;
-        private String middleName;
-        private String lastName;
-        private String birthDate;
-        private String city;
-        private String state;
-        private String phoneNumber;
-        private String email;
-        private String district;
-        private String lodging;
-        private String ecName;
-        private String ecRelation;
-        private String ecPhoneNumber;
-        private String ecAddress;
-        private String ecCity;
-        private String ecState;
-        private String ecZipcode;
-
-        //Getters
-        public String getfirstName() {
-            return firstName;
-        }
-        public String getmiddleName() {
-            return middleName;
-        }
-        public String getlastName() {
-            return lastName;
-        }
-        public String getbirthDate() {
-            return birthDate;
-        }
-        public String getcity() {
-            return city;
-        }
-        public String getstate() {
-            return state;
-        }
-        public String getphoneNumber() {
-            return phoneNumber;
-        }
-        public String getemail() {
-            return email;
-        }
-        public String getdistrict() {
-            return district;
-        }
-        public String getlodging() {
-            return lodging;
-        }
-        public String getecName() {
-            return ecName;
-        }
-        public String getecRelation() {
-            return ecRelation;
-        }
-        public String getecPhoneNumber() {
-            return ecPhoneNumber;
-        }
-        public String getecAddress() {
-            return ecAddress;
-        }
-        public String getecCity() {
-            return ecCity;
-        }
-        public String getecState() {
-            return ecState;
-        }
-        public String getecZipcode() {
-            return ecZipcode;
-        }
-
-        //Setters
-        public void setFirstName(String firstName) {
-            this.firstName = firstName;
-        }
-        public void setMiddleName(String middleName) {
-            this.middleName = middleName;
-        }
-        public void setLastName(String lastName) {
-            this.lastName = lastName;
-        }
-        public void setBirthDate(String birthDate) {
-            this.birthDate = birthDate;
-        }
-        public void setCity(String city) {
-            this.city = city;
-        }
-        public void setState(String state) {
-            this.state = state;
-        }
-        public void setPhoneNumber(String phoneNumber) {
-            this.phoneNumber = phoneNumber;
-        }
-        public void setEmail(String email) {
-            this.email = email;
-        }
-        public void setDistrict(String district) {
-            this.district = district;
-        }
-        public void setLodging(String lodging) {
-            this.lodging = lodging;
-        }
-        public void setEcName(String ecName) {
-            this.ecName = ecName;
-        }
-        public void setEcRelation(String ecRelation) {
-            this.ecRelation = ecRelation;
-        }
-        public void setEcPhoneNumber(String ecPhoneNumber) {
-            this.ecPhoneNumber = ecPhoneNumber;
-        }
-        public void setEcAddress(String ecAddress) {
-            this.ecAddress = ecAddress;
-        }
-        public void setEcCity(String ecCity) { this.ecCity = ecCity; }
-        public void setEcState(String ecState) {
-            this.ecState = ecState;
-        }
-        public void setEcZipcode(String ecZipcode) {
-            this.ecZipcode = ecZipcode;
         }
 
     }

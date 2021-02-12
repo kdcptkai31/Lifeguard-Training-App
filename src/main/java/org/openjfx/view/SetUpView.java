@@ -141,8 +141,7 @@ public class SetUpView {
         if(!isGoodName(districtNameTextField.getText()))
             districtNameErrorLabel.setVisible(true);
 
-        String regex = "^[\\w-\\+]+(\\.[\\w]+)*@[\\w-]+(\\.[\\w]+)*(\\.[a-z]{2,})$";;
-
+        String regex = "^[\\w-\\+]+(\\.[\\w]+)*@[\\w-]+(\\.[\\w]+)*(\\.[a-z]{2,})$";
 
         if(!supervisorEmailTextField.getText().matches(regex))
             supervisorEmailErrorLabel.setVisible(true);
