@@ -2,9 +2,7 @@ package org.openjfx.model;
 
 import org.openjfx.controller.LifeguardTrainingApplication;
 
-import java.io.Serializable;
-
-public class Comment implements Serializable {
+public class Comment {
 
     private int traineeID; //Associated Trainee's ID
     private int id;

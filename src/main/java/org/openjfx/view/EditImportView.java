@@ -1,6 +1,16 @@
 package org.openjfx.view;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -13,12 +23,11 @@ import org.openjfx.controller.Controller;
 import org.openjfx.controller.DBManager;
 import org.openjfx.controller.LifeguardTrainingApplication;
 import org.openjfx.model.EmergencyContact;
+import org.openjfx.model.Session;
 import org.openjfx.model.Trainee;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 public class EditImportView {
 
@@ -28,6 +37,8 @@ public class EditImportView {
     private Label yearLabel;
     @FXML
     private Label sessionLabel;
+    @FXML
+    private Label datesLabel;
 
     //Import Data
     @FXML
@@ -45,10 +56,6 @@ public class EditImportView {
     protected void initialize() {
 
         controller = LifeguardTrainingApplication.getController();
-        yearLabel.setText(String.valueOf(controller.getCurrentYear()));
-        sessionLabel.setText("Session " + controller.getCurrentSession());
-
-        controller.updateCurrentTrainees();
         refresh();
 
     }
@@ -58,6 +65,9 @@ public class EditImportView {
      */
     private void refresh() {
 
+        yearLabel.setText(String.valueOf(controller.getCurrentSession().getYear()));
+        sessionLabel.setText("Session " + controller.getCurrentSession().getSession());
+        datesLabel.setText(controller.getCurrentSession().getStartDate() + " - " + controller.getCurrentSession().getEndDate());
         traineeListView.setItems(controller.getTraineesAsObservableList());
 
     }
@@ -110,7 +120,7 @@ public class EditImportView {
                                 record.get(15), record.get(16), record.get(17),
                                 record.get(18)),
                         0, false, false, true,
-                        controller.getCurrentYear(), controller.getCurrentSession()));
+                        controller.getCurrentSession().getYear(), controller.getCurrentSession().getSession()));
 
             parser.close();
 
@@ -372,6 +382,104 @@ public class EditImportView {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+    }
+
+    /**
+     * Prompts user to pick a year session pair, then loads it if valid.
+     */
+    public void onChangeSessionClicked(){
+
+        //Initialize Dialog box contents
+        final Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.initOwner(LifeguardTrainingApplication.getCoordinator().getStage());
+        VBox dialogVBox = new VBox();
+        Label label = new Label("Select the year and session:");
+        ListView<String> sessionListView = new ListView<>();
+        ObservableList<String> sessionObList = FXCollections.observableArrayList();
+        Button sessionButton = new Button("Load Session");
+        Button cancelButton = new Button("Cancel");
+        HBox buttonHBox = new HBox(sessionButton, cancelButton);
+
+        //Make and sort session list
+        Vector<Session> sessions = DBManager.getAllSessions();
+        if(sessions == null)
+            return;
+        class SortByNewestSession implements Comparator<Session> {
+            @Override
+            public int compare(Session o1, Session o2) {
+
+                int yearDiff = o1.getYear() - o2.getYear();
+                if(yearDiff == 0)
+                    return -1 * (o1.getSession() - o2.getSession());
+                else
+                    return -1 * yearDiff;
+            }
+        }
+        Collections.sort(sessions, new SortByNewestSession());
+        for(Session session: sessions)
+            sessionObList.add("Year: " + session.getYear() + " Session: " + session.getSession() + " | " +
+                    session.getStartDate() + " - " + session.getEndDate());
+
+        sessionListView.setItems(sessionObList);
+        sessionListView.getSelectionModel().select(0);
+        dialogVBox.getChildren().addAll(label, sessionListView, buttonHBox);
+
+        //Button Events
+        sessionButton.setOnMouseClicked(event -> {
+
+            if(sessionListView.getSelectionModel().isEmpty())
+                dialog.close();
+
+            int index = sessionListView.getSelectionModel().getSelectedIndex();
+            if(sessions.get(index).getYear() == controller.getCurrentSession().getYear() &&
+                    sessions.get(index).getSession() == controller.getCurrentSession().getSession())
+                dialog.close();
+
+            controller.updateCurrentSession(sessions.get(index));
+            dialog.close();
+            refresh();
+
+        });
+        cancelButton.setOnMouseClicked(event -> dialog.close());
+
+        //Set dialog box style
+        buttonHBox.setSpacing(10);
+        buttonHBox.setAlignment(Pos.CENTER);
+        dialogVBox.setAlignment(Pos.CENTER);
+        dialogVBox.setSpacing(10);
+        dialogVBox.setMargin(label, new Insets(10, 0, 0, 0));
+        dialogVBox.setMargin(buttonHBox, new Insets(10));
+        dialogVBox.setMargin(sessionListView, new Insets(0, 5, 0, 5));
+
+        Scene dialogScene = new Scene(dialogVBox, 300, 200);
+        dialog.setScene(dialogScene);
+        dialog.show();
+
+    }
+
+    /**
+     * Zoom in effect on Year and Session HBox
+     */
+    public void onMouseEnteredSession(){
+
+        yearLabel.setScaleX(1.2);
+        yearLabel.setScaleY(1.2);
+        sessionLabel.setScaleX(1.2);
+        sessionLabel.setScaleY(1.2);
+
+    }
+
+    /**
+     * Zoom out effect on Year and Session HBox
+     */
+    public void onMouseExitedSession(){
+
+        yearLabel.setScaleX(1);
+        yearLabel.setScaleY(1);
+        sessionLabel.setScaleX(1);
+        sessionLabel.setScaleY(1);
 
     }
 

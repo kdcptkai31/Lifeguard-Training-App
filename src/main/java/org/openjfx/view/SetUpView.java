@@ -10,17 +10,17 @@ import javafx.stage.FileChooser;
 import javafx.util.Pair;
 
 import org.openjfx.controller.Controller;
+import org.openjfx.controller.DBManager;
 import org.openjfx.controller.LifeguardTrainingApplication;
-import org.openjfx.model.District;
-import org.openjfx.model.Event;
-import org.openjfx.model.Instructor;
-import org.openjfx.model.Test;
+import org.openjfx.model.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
+
+import static java.lang.Character.isDigit;
 
 public class SetUpView {
 
@@ -31,6 +31,10 @@ public class SetUpView {
     private TextField yearTextField;
     @FXML
     private TextField sessionTextField;
+    @FXML
+    private TextField startDateTextField;
+    @FXML
+    private TextField endDateTextField;
     @FXML
     private Label yearSessionErrorLabel;
 
@@ -129,7 +133,8 @@ public class SetUpView {
         supervisorEmailErrorLabel.setVisible(false);
 
         //Checks if the year and session are valid
-        if(!(isGoodYear(yearTextField.getText()) && isGoodSession(sessionTextField.getText()))) {
+        if(!(isGoodYear(yearTextField.getText()) && isGoodSession(sessionTextField.getText()) &&
+                isGoodDate(startDateTextField.getText()) && isGoodDate(endDateTextField.getText()))) {
 
             yearSessionErrorLabel.setVisible(true);
             return;
@@ -224,7 +229,8 @@ public class SetUpView {
     public void onAddInstructorClicked(){
 
         //Checks if year and session are valid
-        if(!isGoodYear(yearTextField.getText()) || !isGoodSession(sessionTextField.getText())){
+        if(!(isGoodYear(yearTextField.getText()) && isGoodSession(sessionTextField.getText()) &&
+                isGoodDate(startDateTextField.getText()) && isGoodDate(endDateTextField.getText()))){
 
             yearSessionErrorLabel.setVisible(true);
             return;
@@ -284,7 +290,8 @@ public class SetUpView {
     public void onAddTestClicked(){
 
         //Checks if year and session are valid
-        if(!isGoodYear(yearTextField.getText()) || !isGoodSession(sessionTextField.getText())){
+        if(!(isGoodYear(yearTextField.getText()) && isGoodSession(sessionTextField.getText()) &&
+                isGoodDate(startDateTextField.getText()) && isGoodDate(endDateTextField.getText()))){
 
             yearSessionErrorLabel.setVisible(true);
             return;
@@ -351,7 +358,8 @@ public class SetUpView {
     public void onAddEventClicked(){
 
         //Checks if year and session are valid
-        if(!isGoodYear(yearTextField.getText()) || !isGoodSession(sessionTextField.getText())){
+        if(!(isGoodYear(yearTextField.getText()) && isGoodSession(sessionTextField.getText()) &&
+                isGoodDate(startDateTextField.getText()) && isGoodDate(endDateTextField.getText()))){
 
             yearSessionErrorLabel.setVisible(true);
             return;
@@ -423,16 +431,17 @@ public class SetUpView {
         alert.showAndWait();
 
         //If this was a mistake, leave, if not, continue
-        if(alert.getResult() == ButtonType.CANCEL || !isGoodYear(yearTextField.getText()) ||
-                !isGoodSession(sessionTextField.getText()))
+        if(alert.getResult() == ButtonType.CANCEL || !(isGoodYear(yearTextField.getText()) && isGoodSession(sessionTextField.getText()) &&
+                isGoodDate(startDateTextField.getText()) && isGoodDate(endDateTextField.getText())))
             return;
 
-        int tmpYear = Integer.parseInt(yearTextField.getText());
-        int tmpSession = Integer.parseInt(sessionTextField.getText());
+        Session tmp = new Session(Integer.parseInt(yearTextField.getText().trim()), Integer.parseInt(sessionTextField.getText().trim()),
+                                  startDateTextField.getText() + "/" + yearTextField.getText().trim(),
+                                  endDateTextField.getText() + "/" + yearTextField.getText().trim() );
 
         //Save the entered data in the database
         //Save Year and Session
-        if(!controller.getDBManager().addNewSession(tmpYear, tmpSession)) {
+        if(!DBManager.addNewSession(tmp.getYear(), tmp.getSession(), tmp.getStartDate(), tmp.getEndDate())) {
             System.out.println("COULD NOT ADD SESSION");
             System.exit(1);
         }
@@ -440,27 +449,26 @@ public class SetUpView {
         //Save districts
 
         for(int i = 0; i < pendingDistrictData.size(); i++)
-            controller.getDBManager().addDistrict(new District(tmpYear, tmpSession, pendingDistrictData.elementAt(i).getKey(),
+            DBManager.addDistrict(new District(tmp.getYear(), tmp.getSession(), pendingDistrictData.elementAt(i).getKey(),
                                                                pendingDistrictData.elementAt(i).getValue()));
 
         //Save instructors
         for(int i = 0; i < pendingInstructorData.size(); i++)
-            controller.getDBManager().addInstructor(new Instructor(tmpYear, tmpSession, pendingInstructorData.elementAt(i).getKey(),
+            DBManager.addInstructor(new Instructor(tmp.getYear(), tmp.getSession(), pendingInstructorData.elementAt(i).getKey(),
                                                                    pendingInstructorData.elementAt(i).getValue()));
 
         //Save Tests
         for(int i = 0; i < pendingTestData.size(); i++)
-            controller.getDBManager().addTest(new Test(pendingTestData.elementAt(i).getKey(), pendingTestData.elementAt(i).getValue(),
-                                                       tmpYear, tmpSession));
+            DBManager.addTest(new Test(pendingTestData.elementAt(i).getKey(), pendingTestData.elementAt(i).getValue(),
+                                                       tmp.getYear(), tmp.getSession()));
 
         //Save Events
         for(int i = 0; i < pendingEventData.size(); i++)
-            controller.getDBManager().addEvent(new Event(pendingEventData.elementAt(i).getKey(), pendingEventData.elementAt(i).getValue(),
-                                                          "", tmpYear, tmpSession));
+            DBManager.addEvent(new Event(pendingEventData.elementAt(i).getKey(), pendingEventData.elementAt(i).getValue(),
+                                                          "", tmp.getYear(), tmp.getSession()));
 
         try {
-            controller.setCurrentYear(tmpYear);
-            controller.setCurrentSession(tmpSession);
+            controller.setCurrentSession(tmp);
             LifeguardTrainingApplication.getCoordinator().showOverviewScene();
         } catch (IOException e) {
             e.printStackTrace();
@@ -494,6 +502,25 @@ public class SetUpView {
 
         //Fits 2XXX format
         return year.charAt(0) == '2' && year.length() == 4;
+
+    }
+
+    /**
+     * Checks if the given date is valid " mm/dd "
+     * @param date
+     * @return
+     */
+    private boolean isGoodDate(String date){
+
+        //Checks if empty
+        if(date == null || date.equals(""))
+            return false;
+
+        date = date.trim();
+
+        //Checks if correct format
+        return date.length() == 5 && isDigit(date.charAt(0)) && isDigit(date.charAt(1)) && date.charAt(2) == '/' &&
+                isDigit(date.charAt(3)) && isDigit(date.charAt(4));
 
     }
 
@@ -561,7 +588,7 @@ public class SetUpView {
         str = str.trim();
         int tmpCounter = 0;
         for(int i = 0; i < str.length(); i++){
-            if(Character.isDigit(str.charAt(i)))
+            if(isDigit(str.charAt(i)))
                 tmpCounter++;
         }
 

@@ -24,7 +24,7 @@ public class LifeguardTrainingApplication extends Application {
         //Initializes the SceneCoordinator which also initializes the DBManager, which will initialize a DB if needed.
         coordinator = new SceneCoordinator(Window);
         try {
-            if (coordinator.getController().getCurrentYear() == 0)
+            if (coordinator.getController().getCurrentSession().getYear() == 0)
                 coordinator.showSetUpScene();
             else
                 coordinator.showOverviewScene();

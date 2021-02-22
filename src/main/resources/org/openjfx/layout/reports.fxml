@@ -31,7 +31,7 @@
                                 <Font name="System Bold" size="18.0" />
                             </font>
                         </Label>
-                        <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="50.0" prefWidth="200.0" spacing="20.0">
+                        <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#onChangeSessionClicked" onMouseEntered="#onMouseEnteredSession" onMouseExited="#onMouseExitedSession" prefHeight="50.0" prefWidth="200.0" spacing="20.0">
                             <children>
                                 <Label fx:id="yearLabel" text="20XX">
                                     <font>
@@ -42,7 +42,18 @@
                                         <Font name="System Bold" size="24.0" />
                                     </font></Label>
                             </children>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
                         </HBox>
+                  <Label fx:id="datesLabel" text="insert dates">
+                     <font>
+                        <Font name="System Bold" size="16.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets top="-20.0" />
+                     </VBox.margin>
+                  </Label>
                     </children>
                 </VBox>
                 <Button fx:id="overviewButton" alignment="CENTER" focusTraversable="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onMouseClicked="#onOverviewButtonClicked" prefHeight="80.0" prefWidth="200.0" style="-fx-background-color: #084079; -fx-text-fill: #efb748;" text="Overview">

@@ -38,6 +38,8 @@ public class DBManager {
         String sqlSessions = "CREATE TABLE IF NOT EXISTS sessions (\n"
                 + "year INTEGER,\n"
                 + "session INTEGER,\n"
+                + "startDate TEXT,\n"
+                + "endDate TEXT,\n"
                 + "PRIMARY KEY (year, session)"
                 + ");";
 
@@ -710,35 +712,62 @@ public class DBManager {
      */
 
     /**
+     * Returns all sessions and years in the database.
+     * @return
+     */
+    public static Vector<Session> getAllSessions(){
+
+        String sql = "SELECT * FROM sessions";
+        try{
+
+            Statement stmt = connection.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            Vector<Session> results = new Vector<>();
+            while(rs.next())
+                results.add(new Session(rs.getInt("year"), rs.getInt("session"),
+                                        rs.getString("startDate"), rs.getString("endDate")));
+
+            return results;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    /**
      * Returns the most current session, used to initialize the application.
      * @return a pair containing the most current session.
      */
-    public static Pair<Integer, Integer> getCurrentSession(){
+    public static Session getCurrentSession(){
 
-        String sql = "SELECT year, session FROM sessions";
+        String sql = "SELECT * FROM sessions";
         try{
             //Extract all years and sessions
             Statement stmt = connection.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
 
             //Extract data from result set
-            Vector<Pair<Integer, Integer>> results = new Vector<>();
-            while(rs.next()) {
-                Pair<Integer, Integer> tmp = new Pair<>(rs.getInt("year"), rs.getInt("session"));
-                results.add(tmp);
-            }
+            Vector<Session> results = new Vector<>();
+            while(rs.next())
+                results.add(new Session(rs.getInt("year"), rs.getInt("session"),
+                                        rs.getString("startDate"), rs.getString("endDate")));
+
             //Find newest session
-            Pair<Integer, Integer> maxPair = new Pair<>(0, 0);
+            Session maxSession = new Session(0, 0, "", "");
             for(int i = 0; i < results.size(); i++){
 
-                if(results.elementAt(i).getKey() >= maxPair.getKey()){
-                    if(results.elementAt(i).getValue() > maxPair.getValue())
-                        maxPair = results.elementAt(i);
+                if(results.elementAt(i).getYear() >= maxSession.getYear()){
+                    if(results.elementAt(i).getSession() > maxSession.getSession())
+                        maxSession = results.elementAt(i);
                 }
 
             }
-            if(maxPair.getKey() != 0 && maxPair.getValue() != 0)
-                return maxPair;
+            if(maxSession.getYear() != 0 && maxSession.getSession() != 0)
+                return maxSession;
 
         }catch (SQLException e){
             e.printStackTrace();
@@ -1602,14 +1631,16 @@ public class DBManager {
      * @param newSession
      * @return true if successful, false if not.
      */
-    public static boolean addNewSession(int newYear, int newSession){
+    public static boolean addNewSession(int newYear, int newSession, String sDate, String eDate){
 
-        String sql = "INSERT INTO sessions(year, session) VALUES(?, ?)";
+        String sql = "INSERT INTO sessions(year, session, startDate, endDate) VALUES(?, ?, ?, ?)";
 
         try{
             PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setInt(1, newYear);
             stmt.setInt(2, newSession);
+            stmt.setString(3, sDate);
+            stmt.setString(4, eDate);
             stmt.executeUpdate();
             return true;
 

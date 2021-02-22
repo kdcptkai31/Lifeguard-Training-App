@@ -5,15 +5,13 @@ import javafx.scene.image.Image;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+
 import java.io.IOException;
-import java.io.Serializable;
 
 /**
  * Represents a Trainee, should include all personal information, as well as any comments on performance,
  */
-public class Trainee implements Serializable {
+public class Trainee{
 
     private int id;
     //Initial Information

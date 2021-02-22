@@ -2,8 +2,8 @@ package org.openjfx.controller;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.util.Pair;
 
+import org.openjfx.model.Session;
 import org.openjfx.model.Trainee;
 
 import java.util.Vector;
@@ -11,9 +11,7 @@ import java.util.Vector;
 public class Controller {
 
     private DBManager dbManager;
-
-    private int currentYear;
-    private int currentSession;
+    private Session currentSession;
 
     private Vector<Trainee> currentTrainees;
 
@@ -24,21 +22,31 @@ public class Controller {
 
         //Initializes Database if it does not exist
         dbManager = new DBManager();
+        currentSession = new Session();
 
-        Pair<Integer, Integer> tmp = DBManager.getCurrentSession();
+        Session tmp = DBManager.getCurrentSession();
         if(tmp == null){
 
-            currentYear = 0;
-            currentSession = 0;
+            currentSession.setYear(0);
+            currentSession.setSession(0);
+            currentSession.setStartDate("x");
+            currentSession.setEndDate("x");
 
-        }else{
-
-            currentYear = tmp.getKey();
-            currentSession = tmp.getValue();
-
-        }
+        }else
+            currentSession = tmp;
 
         currentTrainees = new Vector<>();
+
+    }
+
+    /**
+     * Updates the controller with the new session nformation, which updates all associated stored data.
+     * @param ses
+     */
+    public void updateCurrentSession(Session ses){
+
+        currentSession = ses;
+        updateCurrentTrainees();
 
     }
 
@@ -47,7 +55,7 @@ public class Controller {
      */
     public void updateCurrentTrainees(){
 
-        currentTrainees = DBManager.getAllTraineesFromSession(currentYear, currentSession);
+        currentTrainees = DBManager.getAllTraineesFromSession(currentSession.getYear(), currentSession.getSession());
 
     }
 
@@ -65,13 +73,11 @@ public class Controller {
     }
 
     //Getters
-    public int getCurrentYear() { return currentYear; }
-    public int getCurrentSession(){return currentSession;}
+    public Session getCurrentSession(){return currentSession;}
     public DBManager getDBManager(){return dbManager;}
     public Vector<Trainee> getCurrentTrainees() {return currentTrainees;}
 
     //Setters
-    public void setCurrentYear(int year){currentYear = year;}
-    public void setCurrentSession(int session){currentSession = session;}
+    public void setCurrentSession(Session ses){currentSession = ses;}
 
 }

@@ -1,8 +1,6 @@
 package org.openjfx.model;
 
-import java.io.Serializable;
-
-public class EmergencyContact implements Serializable {
+public class EmergencyContact{
 
     //Information
     private int traineeID;

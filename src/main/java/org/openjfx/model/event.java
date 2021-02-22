@@ -1,8 +1,6 @@
 package org.openjfx.model;
 
-import java.io.Serializable;
-
-public class Event implements Serializable {
+public class Event {
 
     private int eventID;
     private String name;

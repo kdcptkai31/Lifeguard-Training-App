@@ -93,9 +93,11 @@
                <children>
                   <TextField fx:id="yearTextField" alignment="CENTER" focusTraversable="false" prefHeight="25.0" prefWidth="75.0" promptText="Year" />
                   <TextField fx:id="sessionTextField" alignment="CENTER" focusTraversable="false" prefHeight="25.0" prefWidth="75.0" promptText="Session" />
+                  <TextField fx:id="startDateTextField" alignment="CENTER" focusTraversable="false" prefHeight="25.0" prefWidth="120.0" promptText="Start Date mm/dd" />
+                  <TextField fx:id="endDateTextField" alignment="CENTER" focusTraversable="false" prefHeight="25.0" prefWidth="120.0" promptText="End Date mm/dd" />
                </children>
             </HBox>
-            <Label fx:id="yearSessionErrorLabel" text="*ERROR* Year must be 2XXX and Session must be a digit" textFill="RED" visible="false">
+            <Label fx:id="yearSessionErrorLabel" text="*ERROR* Year Must Be 2XXX | Session Must Be a Digit | Dates Must Be -&gt; mm/dd" textFill="RED" visible="false">
                <font>
                   <Font size="14.0" />
                </font></Label>
