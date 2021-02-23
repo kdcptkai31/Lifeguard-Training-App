@@ -37,11 +37,11 @@ public class Comment {
      * @param y
      * @param s
      */
-    public Comment(int tID, int cID, String d, String r, String iN, String tN, String iT, String iDes, String iA,
+    public Comment(int cID, int tID, String d, String r, String iN, String tN, String iT, String iDes, String iA,
                    String nS, int y, int s){
 
-        traineeID = tID;
         id = cID;
+        traineeID = tID;
         date = d;
         rotation = r;
         instructorName = iN;
@@ -71,10 +71,7 @@ public class Comment {
     public Comment(String d, String r, String iN, String tN, String iT, String iDes, String iA,
                    String nS, int y, int s){
 
-        int tmpInt = LifeguardTrainingApplication.getController().getDBManager().getTIDFromNameAndSession(tN, y, s);
-        if(tmpInt == 0)
-            tmpInt = 1; //Default 'no-name' traineeID
-        traineeID = tmpInt;
+        traineeID = LifeguardTrainingApplication.getController().getDBManager().getTIDFromNameAndSession(tN, y, s);
         id = 0;
         date = d;
         rotation = r;

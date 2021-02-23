@@ -22,6 +22,7 @@ import javafx.stage.FileChooser;
 import org.openjfx.controller.Controller;
 import org.openjfx.controller.DBManager;
 import org.openjfx.controller.LifeguardTrainingApplication;
+import org.openjfx.model.Comment;
 import org.openjfx.model.EmergencyContact;
 import org.openjfx.model.Session;
 import org.openjfx.model.Trainee;
@@ -42,11 +43,7 @@ public class EditImportView {
 
     //Import Data
     @FXML
-    private Button importTraineesButton;
-    @FXML
-    private Button importQ1Button;
-    @FXML
-    private Button importQ2Button;
+    private ComboBox<String> importComboBox;
 
     //Show Trainees
     @FXML
@@ -57,6 +54,28 @@ public class EditImportView {
 
         controller = LifeguardTrainingApplication.getController();
         refresh();
+
+        //Sets up listeners
+        importComboBox.getItems().addAll("Choose Import Type", "Comments", "Trainee Information", "Questionnaire 1",
+                "Questionnaire 2");
+        importComboBox.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
+            switch (newValue.intValue()){
+
+                //Comments picked
+                case 1: onAddCommentsClicked();
+                    break;
+                //Trainee Info picked
+                case 2: onAddTraineesClicked();
+                    break;
+                //Questionnaire 1 Picked
+                case 3: onAddQ1Clicked();
+                    break;
+                //Questionnaire 2 Picked
+                case 4: onAddQ2Clicked();
+                    break;
+                default:break;
+            }
+        });
 
     }
 
@@ -73,21 +92,103 @@ public class EditImportView {
     }
 
     /**
+     * Save the comment .csv data to the db if valid.
+     */
+    private void onAddCommentsClicked(){
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+        File selectedFile = fileChooser.showOpenDialog(LifeguardTrainingApplication.getCoordinator().getStage());
+        if(selectedFile == null){
+
+            importComboBox.getSelectionModel().selectFirst();
+            return;
+
+        }
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to load " +
+                selectedFile.getName() + " into the Comments database?", ButtonType.YES, ButtonType.CANCEL);
+        alert.showAndWait();
+        //If this was a mistake, leave, if not, continue
+        if (alert.getResult() == ButtonType.CANCEL) {
+
+            importComboBox.getSelectionModel().selectFirst();
+            return;
+
+        }
+
+        List<Comment> tmpComments = new ArrayList<>();
+        //Handle Comments
+        try{
+
+            CSVFormat format = CSVFormat.RFC4180.withHeader().withDelimiter(',');
+            CSVParser parser = new CSVParser(new FileReader(selectedFile), format);
+            //Checks that only the initial trainee .csv is being read
+            Vector<CSVRecord> records = new Vector<>(parser.getRecords());
+            if(records.get(0).size() != 9)
+                throw new Exception("Wrong File");
+
+            for(CSVRecord record : records)
+                tmpComments.add(new Comment(record.get(1), record.get(2), record.get(3), record.get(4), record.get(5),
+                                            record.get(6), record.get(7), record.get(8),
+                                            controller.getCurrentSession().getYear(),
+                                            controller.getCurrentSession().getSession()));
+
+            //Adds to db if does not exist
+            for(Comment comment : tmpComments){
+
+                boolean isFound = false;
+                for(Comment storedComment : controller.getCurrentComments()){
+
+                    if(comment.getDate().equals(storedComment.getDate()) &&
+                        comment.getTraineeName().equals(storedComment.getTraineeName()) &&
+                        comment.getInstructorName().equals(storedComment.getInstructorName()) &&
+                        comment.getIncidentDescription().equals(storedComment.getIncidentDescription())) {
+
+                        isFound = true;
+                        break;
+
+                    }
+
+                }
+
+                if(!isFound)
+                    DBManager.addComment(comment);
+
+            }
+
+            controller.updateCurrentComments();
+            importComboBox.getSelectionModel().selectFirst();
+            refresh();
+
+
+        }catch (Exception e){
+
+            e.printStackTrace();
+            Alert error = new Alert(Alert.AlertType.ERROR, "There was a problem loading " +
+                    selectedFile.getName() + " into the Comment database.\nDouble check you selected the right file.",
+                    ButtonType.CLOSE);
+            error.showAndWait();
+            importComboBox.getSelectionModel().selectFirst();
+
+        }
+
+    }
+
+    /**
      * Saves the trainee info .csv file to the database, if valid.
      */
-    public void onAddTraineesClicked() {
+    private void onAddTraineesClicked() {
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
         File selectedFile = fileChooser.showOpenDialog(LifeguardTrainingApplication.getCoordinator().getStage());
         if (selectedFile == null) {
 
-            importTraineesButton.setText("Trainee Information");
+            importComboBox.getSelectionModel().selectFirst();
             return;
 
         }
-
-        importTraineesButton.setText(selectedFile.getName());
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to load " +
                 selectedFile.getName() + " into the Trainee database?", ButtonType.YES, ButtonType.CANCEL);
@@ -95,14 +196,13 @@ public class EditImportView {
         //If this was a mistake, leave, if not, continue
         if (alert.getResult() == ButtonType.CANCEL) {
 
-            importTraineesButton.setText("Trainee Information");
+            importComboBox.getSelectionModel().selectFirst();
             return;
 
         }
 
         List<Trainee> tmpTrainees = new ArrayList<>();
         //Handle Trainees
-
         try {
 
             CSVFormat format = CSVFormat.RFC4180.withHeader().withDelimiter(',');
@@ -141,17 +241,17 @@ public class EditImportView {
             }
 
             controller.updateCurrentTrainees();
+            importComboBox.getSelectionModel().selectFirst();
             refresh();
-            importTraineesButton.setText("Successfully Added");
 
         } catch (Exception e) {
+
             e.printStackTrace();
             Alert error = new Alert(Alert.AlertType.ERROR, "There was a problem loading " +
-                    selectedFile.getName() + " into the Trainee database.\nDouble check you selected the right file",
+                    selectedFile.getName() + " into the Trainee database.\nDouble check you selected the right file.",
                     ButtonType.CLOSE);
             error.showAndWait();
-
-            importTraineesButton.setText("Trainee Information");
+            importComboBox.getSelectionModel().selectFirst();
 
         }
 
@@ -160,19 +260,17 @@ public class EditImportView {
     /**
      * Saves the trainee questionnaire p1 info .csv file to memory, if selected.
      */
-    public void onAddQ1Clicked() {
+    private void onAddQ1Clicked() {
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
         File selectedFile = fileChooser.showOpenDialog(LifeguardTrainingApplication.getCoordinator().getStage());
         if (selectedFile == null) {
 
-            importQ1Button.setText("Questionnaire Part 1");
+            importComboBox.getSelectionModel().selectFirst();
             return;
 
         }
-
-        importQ1Button.setText(selectedFile.getName());
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to load " +
                 selectedFile.getName() + " into the Trainee database?", ButtonType.YES, ButtonType.CANCEL);
@@ -180,7 +278,7 @@ public class EditImportView {
         //If this was a mistake, leave, if not, continue
         if (alert.getResult() == ButtonType.CANCEL) {
 
-            importQ1Button.setText("Questionnaire Part 1");
+            importComboBox.getSelectionModel().selectFirst();
             return;
 
         }
@@ -237,16 +335,16 @@ public class EditImportView {
             }
 
             controller.updateCurrentTrainees();
+            importComboBox.getSelectionModel().selectFirst();
             refresh();
-            importQ1Button.setText("Successfully Added");
 
         } catch (Exception e) {
             e.printStackTrace();
             Alert error = new Alert(Alert.AlertType.ERROR, "There was a problem loading " +
-                    selectedFile.getName() + " into the Trainee database.\nDouble check you selected the right file",
+                    selectedFile.getName() + " into the Trainee database.\nDouble check you selected the right file.",
                     ButtonType.CLOSE);
             error.showAndWait();
-            importQ1Button.setText("Questionnaire Part 1");
+            importComboBox.getSelectionModel().selectFirst();
 
         }
 
@@ -255,19 +353,17 @@ public class EditImportView {
     /**
      * Saves the trainee questionnaire p2 info .csv file to memory, if selected.
      */
-    public void onAddQ2Clicked() {
+    private void onAddQ2Clicked() {
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
         File selectedFile = fileChooser.showOpenDialog(LifeguardTrainingApplication.getCoordinator().getStage());
         if (selectedFile == null) {
 
-            importQ2Button.setText("Questionnaire Part 2");
+            importComboBox.getSelectionModel().selectFirst();
             return;
 
         }
-
-        importQ2Button.setText(selectedFile.getName());
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to load " +
                 selectedFile.getName() + " into the Trainee database?", ButtonType.YES, ButtonType.CANCEL);
@@ -275,7 +371,7 @@ public class EditImportView {
         //If this was a mistake, leave, if not, continue
         if (alert.getResult() == ButtonType.CANCEL) {
 
-            importQ2Button.setText("Questionnaire Part 2");
+            importComboBox.getSelectionModel().selectFirst();
             return;
 
         }
@@ -327,16 +423,16 @@ public class EditImportView {
             }
 
             controller.updateCurrentTrainees();
+            importComboBox.getSelectionModel().selectFirst();
             refresh();
-            importQ2Button.setText("Successfully Added");
 
         } catch (Exception e) {
             e.printStackTrace();
             Alert error = new Alert(Alert.AlertType.ERROR, "There was a problem loading " +
-                    selectedFile.getName() + " into the Trainee database.\nDouble check you selected the right file",
+                    selectedFile.getName() + " into the Trainee database.\nDouble check you selected the right file.",
                     ButtonType.CLOSE);
             error.showAndWait();
-            importQ2Button.setText("Questionnaire Part 2");
+            importComboBox.getSelectionModel().selectFirst();
 
         }
 

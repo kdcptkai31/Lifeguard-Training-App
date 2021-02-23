@@ -171,11 +171,12 @@ public class DBManager {
 
         //Creates a new comments table
         String sqlComments = "CREATE TABLE IF NOT EXISTS comments (\n"
-                + "traineeID INTEGER,\n"
                 + "commentID INTEGER,\n"
+                + "traineeID INTEGER,\n"
                 + "date TEXT,\n"
                 + "rotation TEXT,\n"
                 + "instructorName TEXT,\n"
+                + "traineeName TEXT,\n"
                 + "incidentType TEXT,\n"
                 + "incidentDescription TEXT,\n"
                 + "instructorActions TEXT,\n"
@@ -183,7 +184,7 @@ public class DBManager {
                 + "year INTEGER,\n"
                 + "session INTEGER,\n"
                 + "FOREIGN KEY(traineeID) REFERENCES trainees(tid),\n"
-                + "PRIMARY KEY (traineeID, commentID)"
+                + "PRIMARY KEY (commentID)"
                 + ");";
 
         try{
@@ -438,7 +439,7 @@ public class DBManager {
     public static int getTIDFromNameAndSession(String name, int year, int session){
 
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT tid FROM trainees WHERE year = ?, session = ?");
+        sql.append("SELECT tid FROM trainees WHERE year = ? AND session = ?");
         String[] nameAR = name.split(" ");
         Vector<String> names = new Vector<>();
         Collections.addAll(names, nameAR);
@@ -448,9 +449,9 @@ public class DBManager {
             if(names.size() == 0)
                 throw new Exception("Bad name");
             else if(names.size() == 1)
-                sql.append(", lastName = ?");
+                sql.append("AND lastName = ?");
             else if(names.size() >= 2)
-                sql.append(", lastName = ?, firstName = ?");
+                sql.append("AND lastName = ? AND firstName = ?");
 
             PreparedStatement stmt = connection.prepareStatement(sql.toString());
             stmt.setInt(1, year);
@@ -467,7 +468,8 @@ public class DBManager {
             e.printStackTrace();
         }
 
-        return 0;
+        //Default value
+        return 1;
 
     }
 
@@ -484,14 +486,16 @@ public class DBManager {
      * @param date
      * @return
      */
-    public static Vector<Comment> getAllCommentsFromDay(int date){
+    public static Vector<Comment> getAllCommentsFromDay(int date, int year, int session){
 
-        String sql = "SELECT * FROM comments WHERE date = ?";
+        String sql = "SELECT * FROM comments WHERE date = ? AND year = ? AND session = ?";
 
         try{
 
             PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setInt(1, date);
+            stmt.setInt(2, year);
+            stmt.setInt(3, session);
             ResultSet rs = stmt.executeQuery();
 
             return getCommentsHelper(rs);
@@ -978,8 +982,8 @@ public class DBManager {
         while(rs.next()){
 
             Comment tmp = new Comment();
+            tmp.setId(rs.getInt("commentID"));
             tmp.setTraineeID(rs.getInt("traineeID"));
-            tmp.setId(rs.getInt("id"));
             tmp.setDate(rs.getString("date"));
             tmp.setRotation(rs.getString("rotation"));
             tmp.setInstructorName(rs.getString("instructorName"));
@@ -1324,8 +1328,8 @@ public class DBManager {
     public static boolean addComment(Comment cToAdd){
 
         StringBuilder sql = new StringBuilder();
-        sql.append("INSERT INTO comments(traineeID, commentID, date, rotation, instructorName, incidentType, "
-                 + "incidentDescription, instructorActions, nextSteps, year, session) VALUES (?, null, ?, ?, ?, ?, "
+        sql.append("INSERT INTO comments(commentID, traineeID, date, rotation, instructorName, traineeName, incidentType, "
+                 + "incidentDescription, instructorActions, nextSteps, year, session) VALUES (NULL, ?, ?, ?, ?, ?, ?, "
                  + "?, ?, ?, ?, ?)");
 
         try{
@@ -1335,12 +1339,13 @@ public class DBManager {
             stmt.setString(2, cToAdd.getDate());
             stmt.setString(3, cToAdd.getRotation());
             stmt.setString(4, cToAdd.getInstructorName());
-            stmt.setString(5, cToAdd.getIncidentType());
-            stmt.setString(6, cToAdd.getIncidentDescription());
-            stmt.setString(7, cToAdd.getInstructorActions());
-            stmt.setString(8, cToAdd.getNextSteps());
-            stmt.setInt(9, cToAdd.getYear());
-            stmt.setInt(10, cToAdd.getSession());
+            stmt.setString(5, cToAdd.getTraineeName());
+            stmt.setString(6, cToAdd.getIncidentType());
+            stmt.setString(7, cToAdd.getIncidentDescription());
+            stmt.setString(8, cToAdd.getInstructorActions());
+            stmt.setString(9, cToAdd.getNextSteps());
+            stmt.setInt(10, cToAdd.getYear());
+            stmt.setInt(11, cToAdd.getSession());
             stmt.executeUpdate();
 
             return true;
@@ -1361,8 +1366,8 @@ public class DBManager {
     public static boolean updateComment(Comment cToAdd){
 
         StringBuilder sql = new StringBuilder();
-        sql.append("UPDATE comments SET traineeID = ?, date = ?, rotation = ?, instructorName = ?, incidentType = ?, "
-                 + "incidentDescription = ?, instructorActions = ?, nextSteps = ? WHERE commentID = ?");
+        sql.append("UPDATE comments SET traineeID = ?, date = ?, rotation = ?, instructorName = ?, traineeName = ?," +
+                " incidentType = ?, incidentDescription = ?, instructorActions = ?, nextSteps = ? WHERE commentID = ?");
 
         try{
 
@@ -1371,11 +1376,12 @@ public class DBManager {
             stmt.setString(2, cToAdd.getDate());
             stmt.setString(3, cToAdd.getRotation());
             stmt.setString(4, cToAdd.getInstructorName());
-            stmt.setString(5, cToAdd.getIncidentType());
-            stmt.setString(6, cToAdd.getIncidentDescription());
-            stmt.setString(7, cToAdd.getInstructorActions());
-            stmt.setString(8, cToAdd.getNextSteps());
-            stmt.setInt(9, cToAdd.getId());
+            stmt.setString(5, cToAdd.getTraineeName());
+            stmt.setString(6, cToAdd.getIncidentType());
+            stmt.setString(7, cToAdd.getIncidentDescription());
+            stmt.setString(8, cToAdd.getInstructorActions());
+            stmt.setString(9, cToAdd.getNextSteps());
+            stmt.setInt(10, cToAdd.getId());
             stmt.executeUpdate();
 
             return true;
