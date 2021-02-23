@@ -1120,9 +1120,12 @@ public class DBManager {
             stmt.setInt(16, tToAdd.getSession());
             stmt.executeUpdate();
 
+            //Skips the EC addition if it doesn't exist
+            if(tToAdd.getEmergencyContact() == null)
+                throw new Exception("Skip EC addition");
+
             Trainee tmp = getTraineeFromData(tToAdd.getFirstName(), tToAdd.getMiddleName(), tToAdd.getLastName(),
                                              tToAdd.getYear(), tToAdd.getSession());
-
             if(tToAdd.getEmergencyContact() != null){
 
                 tToAdd.getEmergencyContact().setTraineeID(tmp.getId());
@@ -1133,7 +1136,7 @@ public class DBManager {
 
             return true;
 
-        }catch(SQLException e){
+        }catch(Exception e){
             e.printStackTrace();
         }
 

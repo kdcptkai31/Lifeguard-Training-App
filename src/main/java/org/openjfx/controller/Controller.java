@@ -36,6 +36,7 @@ public class Controller {
             currentSession = tmp;
 
         currentTrainees = new Vector<>();
+        updateCurrentTrainees();
 
     }
 
