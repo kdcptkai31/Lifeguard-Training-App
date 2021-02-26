@@ -7,6 +7,7 @@ import org.openjfx.model.Comment;
 import org.openjfx.model.Session;
 import org.openjfx.model.Trainee;
 
+import java.util.Comparator;
 import java.util.Vector;
 
 public class Controller {
@@ -59,8 +60,14 @@ public class Controller {
      * Loads the current trainees from the db into memory.
      */
     public void updateCurrentTrainees(){
-
+        class SortByLastName implements Comparator<Trainee>{
+            @Override
+            public int compare(Trainee o1, Trainee o2) {
+                return o1.getLastName().compareTo(o2.getLastName());
+            }
+        }
         currentTrainees = DBManager.getAllTraineesFromSession(currentSession.getYear(), currentSession.getSession());
+        currentTrainees.sort(new SortByLastName());
 
     }
 
@@ -77,11 +84,25 @@ public class Controller {
      * Returns the trainees as an observable list.
      * @return
      */
-    public ObservableList<Trainee> getTraineesAsObservableList(){
+    public ObservableList<String> getTraineeNamesAsObservableList(){
 
-        ObservableList<Trainee> traineeList = FXCollections.observableArrayList();
-        if (currentTrainees.size() > 0)
-            traineeList.addAll(currentTrainees);
+        ObservableList<String> traineeList = FXCollections.observableArrayList();
+        if (currentTrainees.size() < 1)
+            return null;
+
+        for(Trainee trainee : currentTrainees){
+
+            StringBuilder tmpStr = new StringBuilder();
+            if(trainee.isQuestionnaire2Complete() && trainee.isDisabled())
+                tmpStr.append("* ");
+
+            if(trainee.getMiddleName() != null)
+                traineeList.add(tmpStr.append(trainee.getFirstName() + " " + trainee.getMiddleName() + " " + trainee.getLastName()).toString());
+            else
+                traineeList.add(tmpStr.append(trainee.getFirstName() + " " + trainee.getLastName()).toString());
+
+        }
+
         return traineeList;
 
     }
