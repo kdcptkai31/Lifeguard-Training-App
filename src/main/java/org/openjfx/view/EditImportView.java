@@ -34,6 +34,8 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
 
+import static java.lang.Character.isDigit;
+
 public class EditImportView {
 
     Controller controller;
@@ -165,12 +167,30 @@ public class EditImportView {
      */
     private void refresh() {
 
+        addTraineeButton.setText("Add New Trainee");
         holdsEditQuestionnaireData = new Trainee();
+        BufferedImage bufferedImage = null;
+        try {
+            bufferedImage = ImageIO.read(getClass().getClassLoader().getResource("org/openjfx/images/blankpfp.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        traineePFPImageView.setImage(SwingFXUtils.toFXImage(bufferedImage, null));
         yearLabel.setText(String.valueOf(controller.getCurrentSession().getYear()));
         sessionLabel.setText("Session " + controller.getCurrentSession().getSession());
         datesLabel.setText(controller.getCurrentSession().getStartDate() + " - " + controller.getCurrentSession().getEndDate());
         ObservableList<String> tmpList = controller.getTraineeNamesAsObservableList();
         traineeListView.setItems(tmpList);
+        tFirstNameTextField.setPromptText("");
+        tMiddleNameTextField.setPromptText("");
+        tLastNameTextField.setPromptText("");
+        tBirthdayTextField.setPromptText("mm/dd/yyyy");
+        tCityTextField.setPromptText("");
+        tStateTextField.setPromptText("");
+        tPhoneNumberTextField.setPromptText("xxx-xxx-xxxx");
+        tEmailTextField.setPromptText("");
+        tDistrictTextField.setPromptText("");
+        traineeListView.getSelectionModel().clearSelection();
 
     }
 
@@ -739,7 +759,7 @@ public class EditImportView {
 
         });
         Button cancelButton = new Button("Cancel");
-        cancelButton.setOnAction(e -> dialog.close());
+        cancelButton.setOnAction(e -> {holdsEditQuestionnaireData = new Trainee(); dialog.close();});
         HBox h22 = new HBox(saveButton, cancelButton);
         h22.setAlignment(Pos.CENTER);
         h22.setSpacing(5);
@@ -780,7 +800,134 @@ public class EditImportView {
      */
     public void onAddTraineeClicked(){
 
+        boolean isUpdate = false;
+        Trainee tmp = null;
+        if(addTraineeButton.getText().equals("Update Trainee")){
 
+            isUpdate = true;
+            tmp = controller.getCurrentTrainees().get(traineeListView.getSelectionModel().getSelectedIndex());
+
+        }
+
+        //Handle saving update
+        if(isUpdate){
+
+            if(!tFirstNameTextField.getText().isEmpty())
+                tmp.setFirstName(tFirstNameTextField.getText());
+            if(!tMiddleNameTextField.getText().isEmpty())
+                tmp.setMiddleName(tMiddleNameTextField.getText());
+            if(!tLastNameTextField.getText().isEmpty())
+                tmp.setLastName(tLastNameTextField.getText());
+            if(!tBirthdayTextField.getText().isEmpty() && isGoodDate(tBirthdayTextField.getText()))
+                tmp.setBirthDate(tBirthdayTextField.getText());
+            if(!tCityTextField.getText().isEmpty())
+                tmp.setCity(tCityTextField.getText());
+            if(!tStateTextField.getText().isEmpty())
+                tmp.setState(tStateTextField.getText());
+            if(!tPhoneNumberTextField.getText().isEmpty() && isGoodPhoneNumber(tPhoneNumberTextField.getText()))
+                tmp.setPhoneNumber(tPhoneNumberTextField.getText());
+            String regex = "^[\\w-\\+]+(\\.[\\w]+)*@[\\w-]+(\\.[\\w]+)*(\\.[a-z]{2,})$";
+            if(!tEmailTextField.getText().isEmpty() && tEmailTextField.getText().matches(regex))
+                tmp.setEmail(tEmailTextField.getText());
+            if(!tDistrictTextField.getText().isEmpty())
+                tmp.setDistrictChoice(tDistrictTextField.getText());
+            tmp.setLodging(tIsLodgingComboBox.isSelected());
+            holdsEditQuestionnaireData.setId(tmp.getId());
+
+            //Updates General Information
+            DBManager.updateTrainee(tmp);
+
+            //Updates PFP if needed
+            if(!traineePFPImageView.getImage().equals(tmp.getActualImage())) {
+                tmp.setImage(traineePFPImageView.getImage());
+                DBManager.addTraineeProfileImage(tmp);
+            }
+
+            //Updates Q1 Data if needed
+            if(holdsEditQuestionnaireData.isQuestionnaire1Complete())
+                DBManager.addExistingTraineeQuestionnaire1Data(holdsEditQuestionnaireData);
+
+            //Updates Q2 Data if needed
+            if(holdsEditQuestionnaireData.isQuestionnaire2Complete())
+                DBManager.addExistingTraineeQuestionnaire2Data(holdsEditQuestionnaireData);
+
+            controller.updateCurrentTrainees();
+            refresh();
+
+
+        //Handle saving new trainee
+        }else{
+
+            int validator = 0;
+            if(!tFirstNameTextField.getText().isEmpty())
+                validator++;
+            if(!tLastNameTextField.getText().isEmpty())
+                validator++;
+            if(!tBirthdayTextField.getText().isEmpty() && isGoodDate(tBirthdayTextField.getText()))
+                validator++;
+            if(!tCityTextField.getText().isEmpty())
+                validator++;
+            if(!tStateTextField.getText().isEmpty())
+                validator++;
+            if(!tPhoneNumberTextField.getText().isEmpty() && isGoodPhoneNumber(tPhoneNumberTextField.getText()))
+                validator++;
+            String regex = "^[\\w-\\+]+(\\.[\\w]+)*@[\\w-]+(\\.[\\w]+)*(\\.[a-z]{2,})$";
+            if(!tEmailTextField.getText().isEmpty() && tEmailTextField.getText().matches(regex))
+                validator++;
+            if(!tDistrictTextField.getText().isEmpty())
+                validator++;
+
+            if((validator == 0))
+                return;
+
+            if(validator != 8){
+
+                tInfoErrorLabel.setVisible(true);
+                return;
+
+            }
+
+            holdsEditQuestionnaireData.setFirstName(tFirstNameTextField.getText());
+            holdsEditQuestionnaireData.setMiddleName(tMiddleNameTextField.getText());
+            holdsEditQuestionnaireData.setLastName(tLastNameTextField.getText());
+            holdsEditQuestionnaireData.setBirthDate(tBirthdayTextField.getText());
+            holdsEditQuestionnaireData.setCity(tCityTextField.getText());
+            holdsEditQuestionnaireData.setState(tStateTextField.getText());
+            holdsEditQuestionnaireData.setPhoneNumber(tPhoneNumberTextField.getText());
+            holdsEditQuestionnaireData.setEmail(tEmailTextField.getText());
+            holdsEditQuestionnaireData.setDistrictChoice(tDistrictTextField.getText());
+            holdsEditQuestionnaireData.setLodging(tIsLodgingComboBox.isSelected());
+            BufferedImage bufferedImage = null;
+            try {
+                bufferedImage = ImageIO.read(getClass().getClassLoader().getResource("org/openjfx/images/blankpfp.png"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if(tmpTraineeImage.equals(SwingFXUtils.toFXImage(bufferedImage, null))){
+                System.out.println("DEFAULT");
+                holdsEditQuestionnaireData.setImage(null);
+            }else {
+                holdsEditQuestionnaireData.setImage(tmpTraineeImage);
+                System.out.println("SET");
+            }
+
+            holdsEditQuestionnaireData.setEmergencyContact(null);
+            holdsEditQuestionnaireData.setYear(controller.getCurrentSession().getYear());
+            holdsEditQuestionnaireData.setSession(controller.getCurrentSession().getSession());
+            holdsEditQuestionnaireData.setActive(true);
+            DBManager.addInitialTrainee(holdsEditQuestionnaireData);
+            String tmpName = holdsEditQuestionnaireData.getFirstName() + " " + holdsEditQuestionnaireData.getLastName();
+            holdsEditQuestionnaireData.setId(DBManager.getTIDFromNameAndSession(tmpName,
+                    controller.getCurrentSession().getYear(), controller.getCurrentSession().getSession()));
+            DBManager.addTraineeProfileImage(holdsEditQuestionnaireData);
+            if(holdsEditQuestionnaireData.isQuestionnaire1Complete())
+                DBManager.addExistingTraineeQuestionnaire1Data(holdsEditQuestionnaireData);
+            if(holdsEditQuestionnaireData.isQuestionnaire2Complete())
+                DBManager.addExistingTraineeQuestionnaire2Data(holdsEditQuestionnaireData);
+            controller.updateCurrentTrainees();
+            refresh();
+
+        }
 
     }
 
@@ -1320,5 +1467,36 @@ public class EditImportView {
 
     }
 
+    /**
+     * Checks if the given date is valid " mm/dd/yyyy"
+     * @param date
+     * @return
+     */
+    private boolean isGoodDate(String date){
+
+        //Checks if empty
+        if(date == null || date.equals(""))
+            return false;
+
+        date = date.trim();
+
+        //Checks if correct format
+        return date.length() == 10 && isDigit(date.charAt(0)) && isDigit(date.charAt(1)) && date.charAt(2) == '/' &&
+                isDigit(date.charAt(3)) && isDigit(date.charAt(4)) && date.charAt(5) == '/' && isDigit(date.charAt(6))
+                && isDigit(date.charAt(7)) && isDigit(date.charAt(8)) && isDigit(date.charAt(9));
+
+    }
+
+    /**
+     * Checks if the given phone number is in the correct format "xxx-xxx-xxxx"
+     * @param num
+     * @return
+     */
+    private boolean isGoodPhoneNumber(String num){
+
+        String[] stringSplit = num.split("-");
+        return stringSplit[0].length() == 3 && stringSplit[1].length() == 3 && stringSplit[2].length() == 4;
+
+    }
 
 }
