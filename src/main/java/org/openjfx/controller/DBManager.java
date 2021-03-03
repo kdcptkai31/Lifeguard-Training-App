@@ -568,6 +568,37 @@ public class DBManager {
 
     }
 
+    /**
+     * Returns all tests from a list of test ids. ids cannot be empty.
+     * @param ids
+     * @return
+     */
+    public static Vector<Test> getAllTestFromTestIDs(Vector<Integer> ids){
+
+        StringBuilder sql = new StringBuilder("SELECT * FROM tests WHERE ");
+
+        try{
+
+            for(Integer id : ids)
+                sql.append("testID = ? OR ");
+
+            sql.delete(sql.length() - 4, sql.length() - 1);
+            PreparedStatement stmt = connection.prepareStatement(sql.toString());
+            for(int i = 0; i < ids.size(); i++)
+                stmt.setInt(i + 1, ids.get(i));
+
+            ResultSet rs = stmt.executeQuery();
+            return getTestsHelper(rs);
+
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
     /*
      ****************************** TEST SCORES ***************************************
      */
@@ -648,6 +679,37 @@ public class DBManager {
             return getEventsHelper(rs);
 
         }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    /**
+     * Returns all events from a list of event ids. ids cannot be empty.
+     * @param ids
+     * @return
+     */
+    public static Vector<Event> getAllEventsFromEventIDs(Vector<Integer> ids){
+
+        StringBuilder sql = new StringBuilder("SELECT * FROM events WHERE ");
+
+        try{
+
+            for(Integer id : ids)
+                sql.append("eventID = ? OR ");
+
+            sql.delete(sql.length() - 4, sql.length() - 1);
+            PreparedStatement stmt = connection.prepareStatement(sql.toString());
+            for(int i = 0; i < ids.size(); i++)
+                stmt.setInt(i + 1, ids.get(i));
+
+            ResultSet rs = stmt.executeQuery();
+            return getEventsHelper(rs);
+
+
+        }catch (SQLException e){
             e.printStackTrace();
         }
 
@@ -1528,7 +1590,7 @@ public class DBManager {
      */
     public static boolean updateTestScore(TestScore tsToAdd){
 
-        String sql = "UPDATE testScores SET score = ? WHERE testID = ?, traineeID = ?";
+        String sql = "UPDATE testScores SET score = ? WHERE testID = ? AND traineeID = ?";
 
         try{
 
@@ -1647,7 +1709,7 @@ public class DBManager {
      */
     public static boolean updateEventScore(EventScore esToAdd){
 
-        String sql = "UPDATE eventScores SET score = ? WHERE eventID = ?, traineeID = ?";
+        String sql = "UPDATE eventScores SET score = ? WHERE eventID = ? AND traineeID = ?";
 
         try{
 

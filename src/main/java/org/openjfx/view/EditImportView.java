@@ -24,10 +24,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.openjfx.controller.Controller;
 import org.openjfx.controller.DBManager;
 import org.openjfx.controller.LifeguardTrainingApplication;
-import org.openjfx.model.Comment;
-import org.openjfx.model.EmergencyContact;
-import org.openjfx.model.Session;
-import org.openjfx.model.Trainee;
+import org.openjfx.model.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -87,10 +84,33 @@ public class EditImportView {
     private Trainee holdsEditQuestionnaireData;
 
     @FXML
+    private ListView<String> traineeEventScoresListView;
+    private Vector<EventScore> traineeEventScores;
+    private Vector<Event> associatedTraineeEvents;
+    @FXML
+    private Label eventScoreNameLabel;
+    @FXML
+    private TextField eventScoreTextField;
+    @FXML
+    private Label eventScoreErrorLabel;
+    @FXML
+    private ListView<String> traineeTestScoresListView;
+    private Vector<TestScore> traineeTestScores;
+    private Vector<Test> associatedTraineeTests;
+    @FXML
+    private Label testScoreNameLabel;
+    @FXML
+    private TextField testScoreTextField;
+    @FXML
+    private Label testScoreErrorLabel;
+
+    @FXML
     protected void initialize() {
 
         controller = LifeguardTrainingApplication.getController();
         tmpTraineeImage = null;
+        traineeEventScores = new Vector<>();
+        traineeTestScores = new Vector<>();
         refresh();
         importComboBox.getItems().addAll("Choose Import Type", "Comments", "Trainee Information", "Questionnaire 1",
                 "Questionnaire 2");
@@ -145,6 +165,19 @@ public class EditImportView {
                 editQuestionnaireButton.setVisible(true);
                 addTraineeButton.setText("Add New Trainee");
 
+                traineeEventScores.clear();
+                traineeTestScores.clear();
+                eventScoreNameLabel.setText("Event Score: ");
+                testScoreNameLabel.setText("Test Score: ");
+                eventScoreTextField.setPromptText("");
+                eventScoreTextField.clear();
+                testScoreTextField.setPromptText("");
+                testScoreTextField.clear();
+                eventScoreErrorLabel.setVisible(false);
+                testScoreErrorLabel.setVisible(false);
+                traineeEventScoresListView.getItems().clear();
+                traineeTestScoresListView.getItems().clear();
+
             }else{
 
                 tFirstNameTextField.clear();
@@ -182,15 +215,37 @@ public class EditImportView {
         ObservableList<String> tmpList = controller.getTraineeNamesAsObservableList();
         traineeListView.setItems(tmpList);
         tFirstNameTextField.setPromptText("");
+        tFirstNameTextField.clear();
         tMiddleNameTextField.setPromptText("");
+        tMiddleNameTextField.clear();
         tLastNameTextField.setPromptText("");
+        tLastNameTextField.clear();
         tBirthdayTextField.setPromptText("mm/dd/yyyy");
+        tBirthdayTextField.clear();
         tCityTextField.setPromptText("");
+        tCityTextField.clear();
         tStateTextField.setPromptText("");
+        tStateTextField.clear();
         tPhoneNumberTextField.setPromptText("xxx-xxx-xxxx");
+        tPhoneNumberTextField.clear();
         tEmailTextField.setPromptText("");
+        tEmailTextField.clear();
         tDistrictTextField.setPromptText("");
+        tDistrictTextField.clear();
         traineeListView.getSelectionModel().clearSelection();
+
+        traineeEventScores.clear();
+        traineeTestScores.clear();
+        traineeEventScoresListView.getItems().clear();
+        traineeTestScoresListView.getItems().clear();
+        eventScoreNameLabel.setText("Event Score: ");
+        testScoreNameLabel.setText("Test Score: ");
+        eventScoreTextField.setPromptText("");
+        eventScoreTextField.clear();
+        testScoreTextField.setPromptText("");
+        testScoreTextField.clear();
+        eventScoreErrorLabel.setVisible(false);
+        testScoreErrorLabel.setVisible(false);
 
     }
 
@@ -198,6 +253,9 @@ public class EditImportView {
      * Populates the text fields with the selected trainee's info.
      */
     public void onTraineeListViewClicked(){
+
+        traineeEventScoresListView.getItems().clear();
+        traineeTestScoresListView.getItems().clear();
 
         int selectedIndex = traineeListView.getSelectionModel().getSelectedIndex();
         if(selectedIndex == -1)
@@ -217,6 +275,176 @@ public class EditImportView {
         tIsLodgingComboBox.setSelected(tmp.isLodging());
         newTraineeCheckBox.setSelected(false);
         addTraineeButton.setText("Update Trainee");
+
+        //Populates trainee event scores info.
+        traineeEventScores = DBManager.getAllEventScoresFromTraineeID(tmp.getId());
+        if(traineeEventScores.size() != 0){
+
+            Vector<Integer> eventIDs = new Vector<>();
+            for(EventScore score : traineeEventScores)
+                eventIDs.add(score.getEventID());
+            associatedTraineeEvents = DBManager.getAllEventsFromEventIDs(eventIDs);
+
+            ObservableList<String> traineeEventScoresList = FXCollections.observableArrayList();
+            for(EventScore score : traineeEventScores){
+
+                for(Event event : associatedTraineeEvents){
+
+                    if(event.getEventID() == score.getEventID()) {
+
+                        traineeEventScoresList.add(event.getName() + " | " + score.getScore() + "/" + event.getPoints());
+                        break;
+
+                    }
+                }
+            }
+
+            traineeEventScoresListView.setItems(traineeEventScoresList);
+
+        }
+
+        //Populates trainee test scores info.
+        traineeTestScores = DBManager.getAllTestScoresFromTraineeID(tmp.getId());
+        if(traineeTestScores.size() != 0){
+
+            Vector<Integer> testIDs = new Vector<>();
+            for(TestScore score :  traineeTestScores)
+                testIDs.add(score.getTestID());
+            associatedTraineeTests = DBManager.getAllTestFromTestIDs(testIDs);
+
+            ObservableList<String> traineeTestScoresList = FXCollections.observableArrayList();
+            for(TestScore score : traineeTestScores){
+
+                for(Test test : associatedTraineeTests){
+
+                    if(test.getTestID() == score.getTestID()){
+
+                        traineeTestScoresList.add(test.getName() + " | " + score.getScore() + "/" + test.getPoints());
+                        break;
+
+                    }
+                }
+            }
+
+            traineeTestScoresListView.setItems(traineeTestScoresList);
+
+        }
+
+    }
+
+    /**
+     * Populates the event scores edit fields with the selected event.
+     */
+    public void onTraineeEventScoresListViewClicked(){
+
+        int selectedIndex = traineeEventScoresListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1)
+            return;
+
+        String str = traineeEventScoresListView.getSelectionModel().getSelectedItem();
+        String[] strParts = str.split(" ");
+        String[] eventRatio = strParts[strParts.length - 1].split("/");
+        eventScoreTextField.setPromptText(eventRatio[0]);
+
+    }
+
+    /**
+     * Populates the test scores edit fields with the selected test.
+     */
+    public void onTraineeTestScoresListViewClicked(){
+
+        int selectedIndex = traineeTestScoresListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1)
+            return;
+
+        String str = traineeTestScoresListView.getSelectionModel().getSelectedItem();
+        String[] strParts = str.split(" ");
+        String[] testRatio = strParts[strParts.length - 1].split("/");
+        testScoreTextField.setPromptText(testRatio[0]);
+
+    }
+
+    /**
+     * Saves the given event score if valid.
+     */
+    public void onSaveEventScoreClicked(){
+
+        int selectedIndex = traineeEventScoresListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1 || eventScoreTextField.getText().isEmpty())
+            return;
+
+        String[] strParts = traineeEventScoresListView.getSelectionModel().getSelectedItem().split(" ");
+        int maxNum = Integer.parseInt(strParts[strParts.length - 1].split("/")[1]);
+        if(!isGoodNumber(eventScoreTextField.getText()) || Integer.parseInt(eventScoreTextField.getText()) < 0 ||
+                Integer.parseInt(eventScoreTextField.getText()) > maxNum){
+            eventScoreErrorLabel.setVisible(true);
+            return;
+        }
+
+        StringBuilder name = new StringBuilder();
+        for(String str : strParts){
+            if(!str.equals("|"))
+                name.append(str).append(" ");
+            else
+                break;
+        }
+        name.delete(name.length() - 1, name.length());
+        Event tmp = null;
+        for(Event event : associatedTraineeEvents){
+            if(event.getName().contentEquals(name)){
+                tmp = event;
+                break;
+            }
+        }
+
+        DBManager.updateEventScore(new EventScore(tmp.getEventID(), traineeEventScores.elementAt(0).getTraineeID(),
+                Integer.parseInt(eventScoreTextField.getText())));
+        int index = traineeListView.getSelectionModel().getSelectedIndex();
+        refresh();
+        traineeListView.getSelectionModel().select(index);
+        onTraineeListViewClicked();
+
+    }
+
+    /**
+     * Saves the given test score if valid.
+     */
+    public void onSaveTestScoreClicked(){
+
+        int selectedIndex = traineeTestScoresListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1 || testScoreTextField.getText().isEmpty())
+            return;
+
+        String[] strParts = traineeTestScoresListView.getSelectionModel().getSelectedItem().split(" ");
+        int maxNum = Integer.parseInt(strParts[strParts.length - 1].split("/")[1]);
+        if(!isGoodNumber(testScoreTextField.getText()) || Integer.parseInt(testScoreTextField.getText()) < 0 ||
+            Integer.parseInt(testScoreTextField.getText()) > maxNum){
+            testScoreErrorLabel.setVisible(true);
+            return;
+        }
+
+        StringBuilder name = new StringBuilder();
+        for(String str : strParts){
+            if(!str.equals("|"))
+                name.append(str).append(" ");
+            else
+                break;
+        }
+        name.delete(name.length() - 1, name.length());
+        Test tmp = null;
+        for(Test test : associatedTraineeTests){
+            if(test.getName().contentEquals(name)){
+                tmp = test;
+                break;
+            }
+        }
+
+        DBManager.updateTestScore(new TestScore(tmp.getTestID(), traineeTestScores.elementAt(0).getTraineeID(),
+                Integer.parseInt(testScoreTextField.getText())));
+        int index = traineeListView.getSelectionModel().getSelectedIndex();
+        refresh();
+        traineeListView.getSelectionModel().select(index);
+        onTraineeListViewClicked();
 
     }
 

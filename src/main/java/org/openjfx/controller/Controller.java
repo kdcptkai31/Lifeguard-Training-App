@@ -3,9 +3,7 @@ package org.openjfx.controller;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-import org.openjfx.model.Comment;
-import org.openjfx.model.Session;
-import org.openjfx.model.Trainee;
+import org.openjfx.model.*;
 
 import java.util.Comparator;
 import java.util.Vector;
@@ -17,6 +15,8 @@ public class Controller {
 
     private Vector<Trainee> currentTrainees;
     private Vector<Comment> currentComments;
+    private Vector<Test> currentTests;
+    private Vector<Event> currentEvents;
 
     /**
      * Constructor
@@ -40,7 +40,12 @@ public class Controller {
 
         currentTrainees = new Vector<>();
         currentComments = new Vector<>();
+        currentTests = new Vector<>();
+        currentEvents = new Vector<>();
         updateCurrentTrainees();
+        updateCurrentComments();
+        updateCurrentTests();
+        updateCurrentEvents();
 
     }
 
@@ -53,6 +58,8 @@ public class Controller {
         currentSession = ses;
         updateCurrentTrainees();
         updateCurrentComments();
+        updateCurrentTests();
+        updateCurrentEvents();
 
     }
 
@@ -77,6 +84,24 @@ public class Controller {
     public void updateCurrentComments(){
 
         currentComments = DBManager.getAllCommentsFromSession(currentSession.getYear(), currentSession.getSession());
+
+    }
+
+    /**
+     * Loads the current tests from the db into memory.
+     */
+    public void updateCurrentTests() {
+
+        currentTests = DBManager.getAllTestsFromSession(currentSession.getYear(), currentSession.getSession());
+
+    }
+
+    /**
+     * Loads the current events from the db into memory.
+     */
+    public void updateCurrentEvents() {
+
+        currentEvents = DBManager.getAllEventsFromSession(currentSession.getYear(), currentSession.getSession());
 
     }
 
@@ -112,6 +137,8 @@ public class Controller {
     public DBManager getDBManager(){return dbManager;}
     public Vector<Trainee> getCurrentTrainees() {return currentTrainees;}
     public Vector<Comment> getCurrentComments() {return currentComments;}
+    public Vector<Test> getCurrentTests() {return currentTests;}
+    public Vector<Event> getCurrentEvents() {return currentEvents;}
 
     //Setters
     public void setCurrentSession(Session ses){currentSession = ses;}
