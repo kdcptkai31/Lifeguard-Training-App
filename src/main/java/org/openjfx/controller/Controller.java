@@ -121,7 +121,7 @@ public class Controller {
             if(trainee.isQuestionnaire2Complete() && trainee.isDisabled())
                 tmpStr.append("* ");
 
-            if(trainee.getMiddleName() != null)
+            if(!trainee.getMiddleName().equals(""))
                 traineeList.add(tmpStr.append(trainee.getFirstName() + " " + trainee.getMiddleName() + " " + trainee.getLastName()).toString());
             else
                 traineeList.add(tmpStr.append(trainee.getFirstName() + " " + trainee.getLastName()).toString());

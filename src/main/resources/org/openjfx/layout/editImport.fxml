@@ -178,7 +178,7 @@
                                           <Insets top="20.0" />
                                        </VBox.margin>
                                     </ImageView>
-                                    <CheckBox fx:id="newTraineeCheckBox" mnemonicParsing="false" selected="true" text="This is a New Trainee" textFill="#efb748">
+                                    <CheckBox fx:id="newTraineeCheckBox" mnemonicParsing="false" selected="true" text="Make a New Trainee" textFill="#efb748">
                                        <font>
                                           <Font name="System Bold" size="14.0" />
                                        </font>

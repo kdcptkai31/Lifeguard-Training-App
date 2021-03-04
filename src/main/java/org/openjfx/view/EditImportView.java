@@ -36,6 +36,7 @@ import static java.lang.Character.isDigit;
 public class EditImportView {
 
     Controller controller;
+    Image defaultImage;
 
     //Dashboard
     @FXML
@@ -125,6 +126,7 @@ public class EditImportView {
     protected void initialize() {
 
         controller = LifeguardTrainingApplication.getController();
+        defaultImage = traineePFPImageView.getImage();
         tmpTraineeImage = null;
         traineeEventScores = new Vector<>();
         traineeTestScores = new Vector<>();
@@ -157,6 +159,7 @@ public class EditImportView {
             holdsEditQuestionnaireData = new Trainee();
             if(newValue){
 
+                VBox.setMargin(traineePFPImageView, new Insets(20, 0, 0, 0));
                 traineePFPImageView.setImage(new Image(Objects.requireNonNull(getClass().getClassLoader()
                         .getResourceAsStream("org/openjfx/images/blankpfp.png"))));
                 traineeListView.getSelectionModel().clearSelection();
@@ -224,6 +227,13 @@ public class EditImportView {
 
             }
         });
+
+        if(controller.getCurrentTrainees().size() != 0){
+
+            traineeListView.getSelectionModel().select(0);
+            onTraineeListViewClicked();
+
+        }
 
     }
 
@@ -1335,13 +1345,13 @@ public class EditImportView {
             DBManager.addExistingTraineeQuestionnaire2Data(holdsEditQuestionnaireData);
 
         //Updates PFP if needed
-        if(!traineePFPImageView.getImage().equals(tmp.getActualImage())) {
-            tmp.setImage(traineePFPImageView.getImage());
-            DBManager.addTraineeProfileImage(tmp);
+        if(!traineePFPImageView.getImage().equals(defaultImage)) {
+            holdsEditQuestionnaireData.setImage(traineePFPImageView.getImage());
+            DBManager.addTraineeProfileImage(holdsEditQuestionnaireData);
         }
 
         controller.updateCurrentTrainees();
-        int index = traineeListView.getSelectionModel().getSelectedIndex();
+        int index = traineeListView.getItems().size();
         System.out.println(index);
         refresh();
         traineeListView.getSelectionModel().select(index);
