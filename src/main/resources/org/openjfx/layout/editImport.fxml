@@ -129,13 +129,16 @@
                                        <font>
                                           <Font name="System Bold" size="14.0" />
                                        </font>
+                                       <VBox.margin>
+                                          <Insets left="10.0" />
+                                       </VBox.margin>
                                     </Label>
                                     <Label maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="165.0" text="view/edit their data." textFill="#efb748">
                                        <font>
                                           <Font name="System Bold" size="14.0" />
                                        </font>
                                        <VBox.margin>
-                                          <Insets bottom="15.0" top="-18.0" />
+                                          <Insets bottom="15.0" left="15.0" top="-18.0" />
                                        </VBox.margin>
                                     </Label>
                                     <Label text="Trainees" textFill="#efb748">
@@ -148,7 +151,7 @@
                                        <font>
                                           <Font name="System Bold" size="12.0" />
                                        </font></Label>
-                                    <Label style="-fx-text-fill: #efb748;" text="Import from .csv" textFill="#efb748">
+                                    <Label style="-fx-text-fill: #efb748;" text="Import Data From .csv" textFill="#efb748">
                                        <font>
                                           <Font name="System Bold" size="18.0" />
                                        </font>
@@ -162,9 +165,9 @@
                                     <Insets left="10.0" />
                                  </HBox.margin>
                               </VBox>
-                              <VBox alignment="TOP_CENTER" prefHeight="671.0" prefWidth="278.0" spacing="3.0">
+                              <VBox alignment="TOP_CENTER" prefHeight="671.0" prefWidth="235.0" spacing="3.0">
                                  <children>
-                                    <ImageView fx:id="traineePFPImageView" fitHeight="129.0" fitWidth="131.0" onMouseClicked="#onTPFPClicked" pickOnBounds="true" preserveRatio="true">
+                                    <ImageView fx:id="traineePFPImageView" fitHeight="187.0" fitWidth="187.0" onMouseClicked="#onTPFPClicked" pickOnBounds="true" preserveRatio="true">
                                        <image>
                                           <Image url="@../images/blankpfp.png" />
                                        </image>
@@ -180,7 +183,7 @@
                                           <Font name="System Bold" size="14.0" />
                                        </font>
                                        <VBox.margin>
-                                          <Insets left="100.0" top="15.0" />
+                                          <Insets top="15.0" />
                                        </VBox.margin>
                                     </CheckBox>
                                     <Label fx:id="tInfoErrorLabel" text="*ERROR* Enter correct info format" textFill="#57ff8c" visible="false">
@@ -195,7 +198,7 @@
                                                 <Font name="System Bold" size="14.0" />
                                              </font>
                                           </Label>
-                                          <TextField fx:id="tFirstNameTextField" />
+                                          <TextField fx:id="tFirstNameTextField" prefHeight="25.0" prefWidth="155.0" />
                                        </children>
                                     </HBox>
                                     <HBox alignment="TOP_RIGHT" layoutX="10.0" layoutY="333.0">
@@ -205,7 +208,7 @@
                                                 <Font name="System Bold" size="14.0" />
                                              </font>
                                           </Label>
-                                          <TextField fx:id="tMiddleNameTextField" />
+                                          <TextField fx:id="tMiddleNameTextField" prefHeight="25.0" prefWidth="139.0" />
                                        </children>
                                     </HBox>
                                     <HBox alignment="TOP_RIGHT" layoutX="10.0" layoutY="346.0">
@@ -215,7 +218,7 @@
                                                 <Font name="System Bold" size="14.0" />
                                              </font>
                                           </Label>
-                                          <TextField fx:id="tLastNameTextField" />
+                                          <TextField fx:id="tLastNameTextField" prefHeight="25.0" prefWidth="158.0" />
                                        </children>
                                     </HBox>
                                     <HBox alignment="TOP_RIGHT" layoutX="10.0" layoutY="358.0">
@@ -225,7 +228,7 @@
                                                 <Font name="System Bold" size="14.0" />
                                              </font>
                                           </Label>
-                                          <TextField fx:id="tBirthdayTextField" />
+                                          <TextField fx:id="tBirthdayTextField" prefHeight="25.0" prefWidth="168.0" />
                                        </children>
                                     </HBox>
                                     <HBox alignment="TOP_RIGHT" layoutX="10.0" layoutY="371.0">
@@ -235,7 +238,7 @@
                                                 <Font name="System Bold" size="14.0" />
                                              </font>
                                           </Label>
-                                          <TextField fx:id="tCityTextField" prefHeight="25.0" prefWidth="125.0">
+                                          <TextField fx:id="tCityTextField" prefHeight="25.0" prefWidth="94.0">
                                              <HBox.margin>
                                                 <Insets />
                                              </HBox.margin></TextField>
@@ -252,12 +255,12 @@
                                     </HBox>
                                     <HBox alignment="TOP_RIGHT" layoutX="10.0" layoutY="361.0">
                                        <children>
-                                          <Label text="Phone Number: " textFill="#efb748">
+                                          <Label text="Phone # : " textFill="#efb748">
                                              <font>
                                                 <Font name="System Bold" size="14.0" />
                                              </font>
                                           </Label>
-                                          <TextField fx:id="tPhoneNumberTextField" />
+                                          <TextField fx:id="tPhoneNumberTextField" prefHeight="25.0" prefWidth="168.0" />
                                        </children>
                                     </HBox>
                                     <HBox alignment="TOP_RIGHT" layoutX="10.0" layoutY="403.0">
@@ -267,7 +270,7 @@
                                                 <Font name="System Bold" size="14.0" />
                                              </font>
                                           </Label>
-                                          <TextField fx:id="tEmailTextField" />
+                                          <TextField fx:id="tEmailTextField" prefHeight="25.0" prefWidth="190.0" />
                                        </children>
                                     </HBox>
                                     <HBox alignment="TOP_RIGHT" layoutX="10.0" layoutY="417.0">
@@ -277,7 +280,7 @@
                                                 <Font name="System Bold" size="14.0" />
                                              </font>
                                           </Label>
-                                          <TextField fx:id="tDistrictTextField" />
+                                          <TextField fx:id="tDistrictTextField" prefHeight="25.0" prefWidth="179.0" />
                                        </children>
                                     </HBox>
                                     <HBox alignment="CENTER_RIGHT" prefHeight="25.0" prefWidth="271.0">
@@ -286,12 +289,15 @@
                                              <font>
                                                 <Font name="System Bold" size="14.0" />
                                              </font>
+                                             <HBox.margin>
+                                                <Insets right="45.0" />
+                                             </HBox.margin>
                                           </CheckBox>
                                        </children>
                                     </HBox>
                                     <Button fx:id="editQuestionnaireButton" mnemonicParsing="false" onMouseClicked="#onEditQuestionnaireClicked" text="Edit Questionnaire Data">
                                        <VBox.margin>
-                                          <Insets right="-125.0" />
+                                          <Insets />
                                        </VBox.margin>
                                     </Button>
                                     <Button fx:id="addTraineeButton" mnemonicParsing="false" onMouseClicked="#onAddTraineeClicked" text="Add New Trainee">
@@ -299,10 +305,108 @@
                                           <Font name="System Bold" size="12.0" />
                                        </font>
                                        <VBox.margin>
-                                          <Insets right="-120.0" top="5.0" />
+                                          <Insets top="5.0" />
                                        </VBox.margin>
                                     </Button>
                                  </children>
+                              </VBox>
+                              <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="342.0" prefWidth="188.0">
+                                 <children>
+                                    <Label text="Emergency Contact" textFill="#efb748">
+                                       <font>
+                                          <Font name="System Bold" size="16.0" />
+                                       </font>
+                                       <VBox.margin>
+                                          <Insets bottom="10.0" />
+                                       </VBox.margin>
+                                    </Label>
+                                    <HBox alignment="CENTER" prefHeight="32.0" prefWidth="188.0">
+                                       <children>
+                                          <Label text="Full Name: " textFill="#efb748">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="tECNameTextField" prefHeight="25.0" prefWidth="105.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" layoutX="10.0" layoutY="345.0" prefHeight="32.0" prefWidth="188.0">
+                                       <children>
+                                          <Label text="Relationship: " textFill="#efb748">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="tECRelationshipTextField" prefHeight="25.0" prefWidth="89.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" layoutX="10.0" layoutY="358.0" prefHeight="32.0" prefWidth="188.0">
+                                       <children>
+                                          <Label text="Phone # : " textFill="#efb748">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="tECPhoneNumberTextField" prefHeight="25.0" prefWidth="113.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" layoutX="10.0" layoutY="374.0" prefHeight="32.0" prefWidth="188.0">
+                                       <children>
+                                          <Label text="Address: " textFill="#efb748">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="tECAddressTextField" prefHeight="25.0" prefWidth="121.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" layoutX="10.0" layoutY="390.0" prefHeight="32.0" prefWidth="188.0">
+                                       <children>
+                                          <Label text="City: " textFill="#efb748">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="tECCityTextField" prefHeight="25.0" prefWidth="147.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" layoutX="10.0" layoutY="406.0" prefHeight="32.0" prefWidth="188.0">
+                                       <children>
+                                          <Label text="State: " textFill="#efb748">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="tECStateTextField" prefHeight="25.0" prefWidth="140.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" layoutX="10.0" layoutY="422.0" prefHeight="32.0" prefWidth="188.0">
+                                       <children>
+                                          <Label text="Zipcode: " textFill="#efb748">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="tECZipcodeTextField" prefHeight="25.0" prefWidth="121.0" />
+                                       </children>
+                                    </HBox>
+                                    <Button mnemonicParsing="false" onMouseClicked="#onAddECClicked" prefHeight="21.0" prefWidth="94.0" text="Add/Update">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font>
+                                       <VBox.margin>
+                                          <Insets top="5.0" />
+                                       </VBox.margin>
+                                    </Button>
+                                    <Label fx:id="tECErrorLabel" text="*Error* Enter Valid Data" textFill="RED" visible="false">
+                                       <VBox.margin>
+                                          <Insets top="3.0" />
+                                       </VBox.margin>
+                                    </Label>
+                                 </children>
+                                 <HBox.margin>
+                                    <Insets top="160.0" />
+                                 </HBox.margin>
                               </VBox>
                               <VBox alignment="CENTER" prefHeight="671.0" prefWidth="179.0" spacing="5.0">
                                  <children>
@@ -310,6 +414,9 @@
                                        <font>
                                           <Font name="System Bold" size="16.0" />
                                        </font>
+                                       <VBox.margin>
+                                          <Insets top="-10.0" />
+                                       </VBox.margin>
                                     </Label>
                                     <ListView fx:id="traineeEventScoresListView" onMouseClicked="#onTraineeEventScoresListViewClicked" prefHeight="175.0" prefWidth="179.0" />
                                     <HBox alignment="CENTER" spacing="5.0">

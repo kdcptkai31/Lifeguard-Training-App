@@ -84,6 +84,23 @@ public class EditImportView {
     private Trainee holdsEditQuestionnaireData;
 
     @FXML
+    private TextField tECNameTextField;
+    @FXML
+    private TextField tECRelationshipTextField;
+    @FXML
+    private TextField tECPhoneNumberTextField;
+    @FXML
+    private TextField tECAddressTextField;
+    @FXML
+    private TextField tECCityTextField;
+    @FXML
+    private TextField tECStateTextField;
+    @FXML
+    private TextField tECZipcodeTextField;
+    @FXML
+    private Label tECErrorLabel;
+
+    @FXML
     private ListView<String> traineeEventScoresListView;
     private Vector<EventScore> traineeEventScores;
     private Vector<Event> associatedTraineeEvents;
@@ -165,6 +182,21 @@ public class EditImportView {
                 editQuestionnaireButton.setVisible(true);
                 addTraineeButton.setText("Add New Trainee");
 
+                tECNameTextField.setPromptText("");
+                tECNameTextField.clear();
+                tECRelationshipTextField.setPromptText("");
+                tECRelationshipTextField.clear();
+                tECPhoneNumberTextField.setPromptText("xxx-xxx-xxxx");
+                tECPhoneNumberTextField.clear();
+                tECAddressTextField.setPromptText("");
+                tECAddressTextField.clear();
+                tECCityTextField.setPromptText("");
+                tECCityTextField.clear();
+                tECStateTextField.setPromptText("");
+                tECStateTextField.clear();
+                tECZipcodeTextField.setPromptText("xxxxx");
+                tECZipcodeTextField.clear();
+
                 traineeEventScores.clear();
                 traineeTestScores.clear();
                 eventScoreNameLabel.setText("Event Score: ");
@@ -234,6 +266,21 @@ public class EditImportView {
         tDistrictTextField.clear();
         traineeListView.getSelectionModel().clearSelection();
 
+        tECNameTextField.clear();
+        tECNameTextField.setPromptText("");
+        tECRelationshipTextField.clear();
+        tECRelationshipTextField.setPromptText("");
+        tECPhoneNumberTextField.clear();
+        tECPhoneNumberTextField.setPromptText("xxx-xxx-xxxx");
+        tECAddressTextField.clear();
+        tECAddressTextField.setPromptText("");
+        tECCityTextField.clear();
+        tECCityTextField.setPromptText("");
+        tECStateTextField.clear();
+        tECStateTextField.setPromptText("");
+        tECZipcodeTextField.clear();
+        tECZipcodeTextField.setPromptText("");
+
         traineeEventScores.clear();
         traineeTestScores.clear();
         traineeEventScoresListView.getItems().clear();
@@ -256,13 +303,24 @@ public class EditImportView {
 
         traineeEventScoresListView.getItems().clear();
         traineeTestScoresListView.getItems().clear();
+        tInfoErrorLabel.setVisible(false);
+        tECErrorLabel.setVisible(false);
+        testScoreErrorLabel.setVisible(false);
+        eventScoreErrorLabel.setVisible(false);
 
         int selectedIndex = traineeListView.getSelectionModel().getSelectedIndex();
         if(selectedIndex == -1)
             return;
 
+        //Populate trainee data fields.
         Trainee tmp = controller.getCurrentTrainees().get(selectedIndex);
+        //Makes sure the image resizing does not affect the other UI objects
+        traineePFPImageView.setPreserveRatio(true);
+        traineePFPImageView.setSmooth(true);
+        traineePFPImageView.setCache(true);
         traineePFPImageView.setImage(tmp.getActualImage());
+        VBox.setMargin(traineePFPImageView, new Insets(20, 0,
+                                187 - Math.ceil(traineePFPImageView.getBoundsInLocal().getHeight()), 0));
         tFirstNameTextField.setPromptText(tmp.getFirstName());
         tMiddleNameTextField.setPromptText(tmp.getMiddleName());
         tLastNameTextField.setPromptText(tmp.getLastName());
@@ -275,6 +333,43 @@ public class EditImportView {
         tIsLodgingComboBox.setSelected(tmp.isLodging());
         newTraineeCheckBox.setSelected(false);
         addTraineeButton.setText("Update Trainee");
+
+        //Populates Emergency Contact data fields.
+        if(tmp.getEmergencyContact() != null){
+
+            tECNameTextField.clear();
+            tECRelationshipTextField.clear();
+            tECPhoneNumberTextField.clear();
+            tECAddressTextField.clear();
+            tECCityTextField.clear();
+            tECStateTextField.clear();
+            tECZipcodeTextField.clear();
+            tECNameTextField.setPromptText(tmp.getEmergencyContact().getFullName());
+            tECRelationshipTextField.setPromptText(tmp.getEmergencyContact().getRelationship());
+            tECPhoneNumberTextField.setPromptText(tmp.getEmergencyContact().getPhoneNumber());
+            tECAddressTextField.setPromptText(tmp.getEmergencyContact().getAddress());
+            tECCityTextField.setPromptText(tmp.getEmergencyContact().getCity());
+            tECStateTextField.setPromptText(tmp.getEmergencyContact().getState());
+            tECZipcodeTextField.setPromptText(tmp.getEmergencyContact().getZipcode());
+
+        }else{
+
+            tECNameTextField.clear();
+            tECNameTextField.setPromptText("");
+            tECRelationshipTextField.clear();
+            tECRelationshipTextField.setPromptText("");
+            tECPhoneNumberTextField.clear();
+            tECAddressTextField.clear();
+            tECAddressTextField.setPromptText("");
+            tECCityTextField.clear();
+            tECCityTextField.setPromptText("");
+            tECStateTextField.clear();
+            tECStateTextField.setPromptText("");
+            tECZipcodeTextField.clear();
+            tECPhoneNumberTextField.setPromptText("xxx-xxx-xxxx");
+            tECZipcodeTextField.setPromptText("xxxxx");
+
+        }
 
         //Populates trainee event scores info.
         traineeEventScores = DBManager.getAllEventScoresFromTraineeID(tmp.getId());
@@ -329,6 +424,112 @@ public class EditImportView {
             traineeTestScoresListView.setItems(traineeTestScoresList);
 
         }
+
+    }
+
+    /**
+     * Validates and saves the added or updated emergency contact for the selected trainee.
+     */
+    public void onAddECClicked(){
+
+        int selectedIndex = traineeListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1)
+            return;
+
+        EmergencyContact tmpEC = new EmergencyContact();
+        tmpEC.setTraineeID(controller.getCurrentTrainees().get(selectedIndex).getId());
+
+        //New Emergency Contact
+        if(tECNameTextField.getPromptText().equals("")){
+
+            //Run Data Field Validation
+            int validator = 0;
+            if(!tECNameTextField.getText().isEmpty())
+                validator++;
+            if(!tECRelationshipTextField.getText().isEmpty())
+                validator++;
+            if(!tECPhoneNumberTextField.getText().isEmpty() && isGoodPhoneNumber(tECPhoneNumberTextField.getText()))
+                validator++;
+            if(!tECAddressTextField.getText().isEmpty())
+                validator++;
+            if(!tECCityTextField.getText().isEmpty())
+                validator++;
+            if(!tECStateTextField.getText().isEmpty())
+                validator++;
+            if(!tECZipcodeTextField.getText().isEmpty() && isGoodNumber(tECZipcodeTextField.getText()) &&
+                    tECZipcodeTextField.getText().length() == 5)
+                validator++;
+
+            if(validator == 0)
+                return;
+            if(validator != 7){
+
+                tECErrorLabel.setVisible(true);
+                return;
+
+            }
+
+            tmpEC.setFullName(tECNameTextField.getText());
+            tmpEC.setRelationship(tECRelationshipTextField.getText());
+            tmpEC.setPhoneNumber(tECPhoneNumberTextField.getText());
+            tmpEC.setAddress(tECAddressTextField.getText());
+            tmpEC.setCity(tECCityTextField.getText());
+            tmpEC.setState(tECStateTextField.getText());
+            tmpEC.setZipcode(tECZipcodeTextField.getText());
+
+            //Save Emergency Contact
+            DBManager.addEmergencyContact(tmpEC);
+
+            //Update Emergency Contact and validate
+        }else{
+
+            if(tECNameTextField.getText().isEmpty())
+                tmpEC.setFullName(tECNameTextField.getPromptText());
+            else
+                tmpEC.setFullName(tECNameTextField.getText());
+            if(tECRelationshipTextField.getText().isEmpty())
+                tmpEC.setRelationship(tECRelationshipTextField.getPromptText());
+            else
+                tmpEC.setRelationship(tECRelationshipTextField.getText());
+            if(tECPhoneNumberTextField.getText().isEmpty())
+                tmpEC.setPhoneNumber(tECPhoneNumberTextField.getPromptText());
+            else if(tECPhoneNumberTextField.getText().length() == 12 && isGoodPhoneNumber(tECPhoneNumberTextField.getText()))
+                tmpEC.setPhoneNumber(tECPhoneNumberTextField.getText());
+            else{
+                tECErrorLabel.setVisible(true);
+                return;
+            }
+            if(tECAddressTextField.getText().isEmpty())
+                tmpEC.setAddress(tECAddressTextField.getPromptText());
+            else
+                tmpEC.setAddress(tECAddressTextField.getText());
+            if(tECCityTextField.getText().isEmpty())
+                tmpEC.setCity(tECCityTextField.getPromptText());
+            else
+                tmpEC.setCity(tECCityTextField.getText());
+            if(tECStateTextField.getText().isEmpty())
+                tmpEC.setState(tECStateTextField.getPromptText());
+            else
+                tmpEC.setState(tECStateTextField.getText());
+            if(tECZipcodeTextField.getText().isEmpty())
+                tmpEC.setZipcode(tECZipcodeTextField.getPromptText());
+            else if(isGoodNumber(tECZipcodeTextField.getText()) && tECZipcodeTextField.getText().length() == 5)
+                tmpEC.setZipcode(tECZipcodeTextField.getText());
+            else{
+                tECErrorLabel.setVisible(true);
+                return;
+            }
+
+            //Save Emergency Contact
+            DBManager.updateEmergencyContact(tmpEC);
+
+        }
+
+        int index = traineeListView.getSelectionModel().getSelectedIndex();
+        controller.updateCurrentTrainees();
+        refresh();
+        traineeListView.getSelectionModel().select(index);
+        onTraineeListViewClicked();
 
     }
 
@@ -1071,18 +1272,6 @@ public class EditImportView {
                 DBManager.addTraineeProfileImage(tmp);
             }
 
-            //Updates Q1 Data if needed
-            if(holdsEditQuestionnaireData.isQuestionnaire1Complete())
-                DBManager.addExistingTraineeQuestionnaire1Data(holdsEditQuestionnaireData);
-
-            //Updates Q2 Data if needed
-            if(holdsEditQuestionnaireData.isQuestionnaire2Complete())
-                DBManager.addExistingTraineeQuestionnaire2Data(holdsEditQuestionnaireData);
-
-            controller.updateCurrentTrainees();
-            refresh();
-
-
         //Handle saving new trainee
         }else{
 
@@ -1125,20 +1314,6 @@ public class EditImportView {
             holdsEditQuestionnaireData.setEmail(tEmailTextField.getText());
             holdsEditQuestionnaireData.setDistrictChoice(tDistrictTextField.getText());
             holdsEditQuestionnaireData.setLodging(tIsLodgingComboBox.isSelected());
-            BufferedImage bufferedImage = null;
-            try {
-                bufferedImage = ImageIO.read(getClass().getClassLoader().getResource("org/openjfx/images/blankpfp.png"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if(tmpTraineeImage.equals(SwingFXUtils.toFXImage(bufferedImage, null))){
-                System.out.println("DEFAULT");
-                holdsEditQuestionnaireData.setImage(null);
-            }else {
-                holdsEditQuestionnaireData.setImage(tmpTraineeImage);
-                System.out.println("SET");
-            }
-
             holdsEditQuestionnaireData.setEmergencyContact(null);
             holdsEditQuestionnaireData.setYear(controller.getCurrentSession().getYear());
             holdsEditQuestionnaireData.setSession(controller.getCurrentSession().getSession());
@@ -1148,14 +1323,29 @@ public class EditImportView {
             holdsEditQuestionnaireData.setId(DBManager.getTIDFromNameAndSession(tmpName,
                     controller.getCurrentSession().getYear(), controller.getCurrentSession().getSession()));
             DBManager.addTraineeProfileImage(holdsEditQuestionnaireData);
-            if(holdsEditQuestionnaireData.isQuestionnaire1Complete())
-                DBManager.addExistingTraineeQuestionnaire1Data(holdsEditQuestionnaireData);
-            if(holdsEditQuestionnaireData.isQuestionnaire2Complete())
-                DBManager.addExistingTraineeQuestionnaire2Data(holdsEditQuestionnaireData);
-            controller.updateCurrentTrainees();
-            refresh();
 
         }
+
+        //Updates Q1 Data if needed
+        if(holdsEditQuestionnaireData.isQuestionnaire1Complete())
+            DBManager.addExistingTraineeQuestionnaire1Data(holdsEditQuestionnaireData);
+
+        //Updates Q2 Data if needed
+        if(holdsEditQuestionnaireData.isQuestionnaire2Complete())
+            DBManager.addExistingTraineeQuestionnaire2Data(holdsEditQuestionnaireData);
+
+        //Updates PFP if needed
+        if(!traineePFPImageView.getImage().equals(tmp.getActualImage())) {
+            tmp.setImage(traineePFPImageView.getImage());
+            DBManager.addTraineeProfileImage(tmp);
+        }
+
+        controller.updateCurrentTrainees();
+        int index = traineeListView.getSelectionModel().getSelectedIndex();
+        System.out.println(index);
+        refresh();
+        traineeListView.getSelectionModel().select(index);
+        onTraineeListViewClicked();
 
     }
 
@@ -1506,22 +1696,6 @@ public class EditImportView {
 
     }
 
-    private boolean isGoodNumber(String str) {
-
-        if(str.equals(""))
-            return true;
-
-        str = str.trim();
-        //Checks if numeric
-        try {
-            double d = Double.parseDouble(str);
-            return true;
-        } catch (NumberFormatException nfe) {
-            return false;
-        }
-
-    }
-
     /**
      * Navigates to the Overview page.
      */
@@ -1617,9 +1791,9 @@ public class EditImportView {
         buttonHBox.setAlignment(Pos.CENTER);
         dialogVBox.setAlignment(Pos.CENTER);
         dialogVBox.setSpacing(10);
-        dialogVBox.setMargin(label, new Insets(10, 0, 0, 0));
-        dialogVBox.setMargin(buttonHBox, new Insets(10));
-        dialogVBox.setMargin(sessionListView, new Insets(0, 5, 0, 5));
+        VBox.setMargin(label, new Insets(10, 0, 0, 0));
+        VBox.setMargin(buttonHBox, new Insets(10));
+        VBox.setMargin(sessionListView, new Insets(0, 5, 0, 5));
 
         Scene dialogScene = new Scene(dialogVBox, 300, 200);
         dialog.setScene(dialogScene);
@@ -1680,7 +1854,7 @@ public class EditImportView {
      */
     private String getRealString(String str){
 
-        String responses[] = {"Almost every day", "A few times (2-4) per week",
+        String[] responses = {"Almost every day", "A few times (2-4) per week",
                 "About once every week", "Once every few weeks", "NA / Never"};
 
         switch (str){
@@ -1724,6 +1898,22 @@ public class EditImportView {
 
         String[] stringSplit = num.split("-");
         return stringSplit[0].length() == 3 && stringSplit[1].length() == 3 && stringSplit[2].length() == 4;
+
+    }
+
+    private boolean isGoodNumber(String str) {
+
+        if(str.equals(""))
+            return true;
+
+        str = str.trim();
+        //Checks if numeric
+        try {
+            double d = Double.parseDouble(str);
+            return true;
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
 
     }
 

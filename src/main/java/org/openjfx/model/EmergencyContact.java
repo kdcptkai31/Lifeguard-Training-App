@@ -13,6 +13,11 @@ public class EmergencyContact{
     private String zipcode;
 
     /**
+     * Default Constructor
+     */
+    public EmergencyContact(){}
+
+    /**
      * Constructor
      * @param tid
      * @param fName

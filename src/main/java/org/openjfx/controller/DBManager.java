@@ -1203,7 +1203,7 @@ public class DBManager {
             return true;
 
         }catch(Exception e){
-            e.printStackTrace();
+            System.out.println("Skip EC addition");
         }
 
         return false;
@@ -1409,6 +1409,40 @@ public class DBManager {
 
         }catch(SQLException e){
             System.out.println(ecToAdd.getFullName() + " not added!(Duplicate)");
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Updates the given emergency contact which contains the trainee's ID already
+     * @param ecToAdd
+     * @return
+     */
+    public static boolean updateEmergencyContact(EmergencyContact ecToAdd){
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("UPDATE emergencyContacts SET fullName = ?, relationship = ?, phoneNumber = ?, address = ?, "
+                + "city = ?, state = ?, zipcode = ? WHERE traineeID = ?");
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql.toString());
+            stmt.setString(1, ecToAdd.getFullName());
+            stmt.setString(2, ecToAdd.getRelationship());
+            stmt.setString(3, ecToAdd.getPhoneNumber());
+            stmt.setString(4, ecToAdd.getAddress());
+            stmt.setString(5, ecToAdd.getCity());
+            stmt.setString(6, ecToAdd.getState());
+            stmt.setString(7, ecToAdd.getZipcode());
+            stmt.setInt(8, ecToAdd.getTraineeID());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch(SQLException e){
+            e.printStackTrace();
         }
 
         return false;
