@@ -223,12 +223,12 @@
                                     </HBox>
                                     <HBox alignment="TOP_RIGHT" layoutX="10.0" layoutY="358.0">
                                        <children>
-                                          <Label text="Birthday: " textFill="#efb748">
+                                          <Label prefHeight="20.0" prefWidth="71.0" text="Birthday: " textFill="#efb748">
                                              <font>
                                                 <Font name="System Bold" size="14.0" />
                                              </font>
                                           </Label>
-                                          <TextField fx:id="tBirthdayTextField" prefHeight="25.0" prefWidth="168.0" />
+                                          <TextField fx:id="tBirthdayTextField" prefHeight="25.0" prefWidth="167.0" />
                                        </children>
                                     </HBox>
                                     <HBox alignment="TOP_RIGHT" layoutX="10.0" layoutY="371.0">
@@ -464,6 +464,95 @@
                                  <HBox.margin>
                                     <Insets left="10.0" />
                                  </HBox.margin>
+                              </VBox>
+                              <VBox alignment="CENTER" prefHeight="671.0" prefWidth="310.0" spacing="5.0">
+                                 <children>
+                                    <Label text="Comments" textFill="#efb748">
+                                       <font>
+                                          <Font name="System Bold" size="16.0" />
+                                       </font>
+                                    </Label>
+                                    <ListView fx:id="traineeCommentsListView" onMouseClicked="#onTCListViewClicked" prefHeight="175.0" prefWidth="240.0" />
+                                    <CheckBox fx:id="tCNewCheckBox" mnemonicParsing="false" selected="true" text="Make a New Comment" textFill="#efb748">
+                                       <font>
+                                          <Font name="System Bold" size="14.0" />
+                                       </font>
+                                    </CheckBox>
+                                    <HBox alignment="CENTER" layoutX="10.0" layoutY="438.0" prefHeight="25.0" prefWidth="240.0">
+                                       <children>
+                                          <Label text="Incident: " textFill="#efb748">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <ComboBox fx:id="tCIncidentComboBox" prefHeight="25.0" prefWidth="160.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" layoutX="10.0" layoutY="423.0" prefHeight="25.0" prefWidth="240.0">
+                                       <children>
+                                          <Label text="Description: " textFill="#efb748">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="tCIncidentDescriptionTextField" prefHeight="25.0" prefWidth="223.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" layoutX="10.0" layoutY="498.0" prefHeight="25.0" prefWidth="240.0">
+                                       <children>
+                                          <Label text="Actions: " textFill="#efb748">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="tCActionsTextField" prefHeight="25.0" prefWidth="251.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" layoutX="10.0" layoutY="418.0" prefHeight="25.0" prefWidth="240.0">
+                                       <children>
+                                          <Label text="Reporting Instructor: " textFill="#efb748">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="tCInstructorTextField" prefHeight="25.0" prefWidth="165.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" layoutX="10.0" layoutY="436.0" prefHeight="25.0" prefWidth="240.0">
+                                       <children>
+                                          <Label text="Rotation: " textFill="#efb748">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <ComboBox fx:id="tCRotationComboBox" prefHeight="25.0" prefWidth="114.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" prefHeight="25.0" prefWidth="240.0">
+                                       <children>
+                                          <Label text="Next Steps: " textFill="#efb748">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <ComboBox fx:id="tCNextStepsComboBox" prefHeight="25.0" prefWidth="100.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" prefHeight="25.0" prefWidth="240.0">
+                                       <children>
+                                          <Label text="Date: " textFill="#efb748">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font></Label>
+                                          <TextField fx:id="tCDateTextField" prefHeight="25.0" prefWidth="142.0" />
+                                       </children>
+                                    </HBox>
+                                    <Button mnemonicParsing="false" onMouseClicked="#onSaveCommentClicked" text="Save Comment">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font></Button>
+                                    <Label fx:id="tCErrorLabel" text="*Error* Enter Valid Info" textFill="RED" visible="false" />
+                                 </children>
                               </VBox>
                            </children>
                         </HBox>

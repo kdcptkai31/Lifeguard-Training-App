@@ -537,6 +537,31 @@ public class DBManager {
 
     }
 
+    /**
+     * Returns all comments from a given Trainee ID.
+     * @param tid
+     * @return
+     */
+    public static Vector<Comment> getAllCommentsFromTID(int tid){
+
+        String sql = "SELECT * FROM comments WHERE traineeID = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, tid);
+            ResultSet rs = stmt.executeQuery();
+
+            return getCommentsHelper(rs);
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
     /*
      ****************************** TEST ***************************************
      */

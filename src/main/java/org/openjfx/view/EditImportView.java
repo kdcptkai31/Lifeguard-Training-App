@@ -122,6 +122,28 @@ public class EditImportView {
     @FXML
     private Label testScoreErrorLabel;
 
+    private Vector<Comment> traineeComments;
+    @FXML
+    private ListView<Comment> traineeCommentsListView;
+    @FXML
+    private CheckBox tCNewCheckBox;
+    @FXML
+    private ComboBox<String> tCIncidentComboBox;
+    @FXML
+    private TextField tCIncidentDescriptionTextField;
+    @FXML
+    private TextField tCActionsTextField;
+    @FXML
+    private ComboBox<String> tCRotationComboBox;
+    @FXML
+    private TextField tCInstructorTextField;
+    @FXML
+    private ComboBox<String> tCNextStepsComboBox;
+    @FXML
+    private TextField tCDateTextField;
+    @FXML
+    private Label tCErrorLabel;
+
     @FXML
     protected void initialize() {
 
@@ -130,9 +152,15 @@ public class EditImportView {
         tmpTraineeImage = null;
         traineeEventScores = new Vector<>();
         traineeTestScores = new Vector<>();
+        traineeComments = new Vector<>();
         refresh();
         importComboBox.getItems().addAll("Choose Import Type", "Comments", "Trainee Information", "Questionnaire 1",
                 "Questionnaire 2");
+        tCIncidentComboBox.getItems().addAll("Academics", "Physical Performance", "Safety Violation", "Behavioral",
+                "EMS Skills", "Aquatic Skills");
+        tCRotationComboBox.getItems().addAll("PSFA", "AQUATICS");
+        tCNextStepsComboBox.getItems().addAll("Meet with Supervisor (Formal)", "Instructor Check-in (Informal)",
+                "No Action Needed");
 
         //Sets up listeners
         importComboBox.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
@@ -213,6 +241,19 @@ public class EditImportView {
                 traineeEventScoresListView.getItems().clear();
                 traineeTestScoresListView.getItems().clear();
 
+                traineeCommentsListView.getItems().clear();
+                tCIncidentComboBox.getSelectionModel().clearSelection();
+                tCIncidentDescriptionTextField.clear();
+                tCIncidentDescriptionTextField.setPromptText("");
+                tCActionsTextField.clear();
+                tCActionsTextField.setPromptText("");
+                tCInstructorTextField.clear();
+                tCInstructorTextField.setPromptText("");
+                tCRotationComboBox.getSelectionModel().clearSelection();
+                tCNextStepsComboBox.getSelectionModel().clearSelection();
+                tCDateTextField.clear();
+                tCDateTextField.setPromptText("mm/dd/yyyy");
+
             }else{
 
                 tFirstNameTextField.clear();
@@ -226,6 +267,26 @@ public class EditImportView {
                 tDistrictTextField.clear();
 
             }
+
+        });
+
+        tCNewCheckBox.selectedProperty().addListener((observable, oldValue, newValue) ->{
+
+            if(newValue)
+                traineeCommentsListView.getSelectionModel().clearSelection();
+
+            tCIncidentComboBox.getSelectionModel().clearSelection();
+            tCIncidentDescriptionTextField.clear();
+            tCIncidentDescriptionTextField.setPromptText("");
+            tCActionsTextField.clear();
+            tCActionsTextField.setPromptText("");
+            tCInstructorTextField.clear();
+            tCInstructorTextField.setPromptText("");
+            tCRotationComboBox.getSelectionModel().clearSelection();
+            tCNextStepsComboBox.getSelectionModel().clearSelection();
+            tCDateTextField.clear();
+            tCDateTextField.setPromptText("mm/dd/yyyy");
+
         });
 
         if(controller.getCurrentTrainees().size() != 0){
@@ -304,6 +365,19 @@ public class EditImportView {
         eventScoreErrorLabel.setVisible(false);
         testScoreErrorLabel.setVisible(false);
 
+        traineeCommentsListView.getItems().clear();
+        tCIncidentComboBox.getSelectionModel().clearSelection();
+        tCIncidentDescriptionTextField.clear();
+        tCIncidentDescriptionTextField.setPromptText("");
+        tCActionsTextField.clear();
+        tCActionsTextField.setPromptText("");
+        tCInstructorTextField.clear();
+        tCInstructorTextField.setPromptText("");
+        tCRotationComboBox.getSelectionModel().clearSelection();
+        tCNextStepsComboBox.getSelectionModel().clearSelection();
+        tCDateTextField.clear();
+        tCDateTextField.setPromptText("mm/dd/yyyy");
+
     }
 
     /**
@@ -317,6 +391,8 @@ public class EditImportView {
         tECErrorLabel.setVisible(false);
         testScoreErrorLabel.setVisible(false);
         eventScoreErrorLabel.setVisible(false);
+        traineeCommentsListView.getItems().clear();
+        tCErrorLabel.setVisible(false);
 
         int selectedIndex = traineeListView.getSelectionModel().getSelectedIndex();
         if(selectedIndex == -1)
@@ -344,16 +420,18 @@ public class EditImportView {
         newTraineeCheckBox.setSelected(false);
         addTraineeButton.setText("Update Trainee");
 
+        tECNameTextField.clear();
+        tECRelationshipTextField.clear();
+        tECPhoneNumberTextField.clear();
+        tECAddressTextField.clear();
+        tECCityTextField.clear();
+        tECStateTextField.clear();
+        tECZipcodeTextField.clear();
+
         //Populates Emergency Contact data fields.
         if(tmp.getEmergencyContact() != null){
 
-            tECNameTextField.clear();
-            tECRelationshipTextField.clear();
-            tECPhoneNumberTextField.clear();
-            tECAddressTextField.clear();
-            tECCityTextField.clear();
-            tECStateTextField.clear();
-            tECZipcodeTextField.clear();
+
             tECNameTextField.setPromptText(tmp.getEmergencyContact().getFullName());
             tECRelationshipTextField.setPromptText(tmp.getEmergencyContact().getRelationship());
             tECPhoneNumberTextField.setPromptText(tmp.getEmergencyContact().getPhoneNumber());
@@ -364,18 +442,11 @@ public class EditImportView {
 
         }else{
 
-            tECNameTextField.clear();
             tECNameTextField.setPromptText("");
-            tECRelationshipTextField.clear();
             tECRelationshipTextField.setPromptText("");
-            tECPhoneNumberTextField.clear();
-            tECAddressTextField.clear();
             tECAddressTextField.setPromptText("");
-            tECCityTextField.clear();
             tECCityTextField.setPromptText("");
-            tECStateTextField.clear();
             tECStateTextField.setPromptText("");
-            tECZipcodeTextField.clear();
             tECPhoneNumberTextField.setPromptText("xxx-xxx-xxxx");
             tECZipcodeTextField.setPromptText("xxxxx");
 
@@ -383,7 +454,7 @@ public class EditImportView {
 
         //Populates trainee event scores info.
         traineeEventScores = DBManager.getAllEventScoresFromTraineeID(tmp.getId());
-        if(traineeEventScores.size() != 0){
+        if(traineeEventScores != null){
 
             Vector<Integer> eventIDs = new Vector<>();
             for(EventScore score : traineeEventScores)
@@ -410,7 +481,7 @@ public class EditImportView {
 
         //Populates trainee test scores info.
         traineeTestScores = DBManager.getAllTestScoresFromTraineeID(tmp.getId());
-        if(traineeTestScores.size() != 0){
+        if(traineeTestScores != null){
 
             Vector<Integer> testIDs = new Vector<>();
             for(TestScore score :  traineeTestScores)
@@ -434,6 +505,135 @@ public class EditImportView {
             traineeTestScoresListView.setItems(traineeTestScoresList);
 
         }
+
+        tCIncidentComboBox.getSelectionModel().clearSelection();
+        tCNewCheckBox.setSelected(true);
+        tCIncidentDescriptionTextField.clear();
+        tCIncidentDescriptionTextField.setPromptText("");
+        tCActionsTextField.clear();
+        tCActionsTextField.setPromptText("");
+        tCInstructorTextField.clear();
+        tCInstructorTextField.setPromptText("");
+        tCRotationComboBox.getSelectionModel().clearSelection();
+        tCNextStepsComboBox.getSelectionModel().clearSelection();
+        tCDateTextField.clear();
+        tCDateTextField.setPromptText("mm/dd/yyyy");
+
+        //Populates the comment info.
+        traineeComments = DBManager.getAllCommentsFromTID(tmp.getId());
+        if(traineeComments != null){
+
+            ObservableList<Comment> tCItems = FXCollections.observableArrayList();
+            tCItems.addAll(traineeComments);
+            traineeCommentsListView.setItems(tCItems);
+
+        }
+
+    }
+
+    /**
+     * Populates the comment data fields with the selected comment's data.
+     */
+    public void onTCListViewClicked(){
+
+        int selectedIndex = traineeCommentsListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1)
+            return;
+
+        tCNewCheckBox.setSelected(false);
+        Comment tmpComment = traineeComments.get(selectedIndex);
+        tCIncidentComboBox.getSelectionModel().select(tmpComment.getIncidentType());
+        tCIncidentDescriptionTextField.setPromptText(tmpComment.getIncidentDescription());
+        tCActionsTextField.setPromptText(tmpComment.getInstructorActions());
+        tCInstructorTextField.setPromptText(tmpComment.getInstructorName());
+        tCRotationComboBox.getSelectionModel().select(tmpComment.getRotation());
+        tCNextStepsComboBox.getSelectionModel().select(tmpComment.getNextSteps());
+        tCDateTextField.setPromptText(tmpComment.getDate());
+
+
+    }
+
+    /**
+     * Validates and saves the added or updated comment for the selected trainee.
+     */
+    public void onSaveCommentClicked(){
+
+        int traineeIndex = traineeListView.getSelectionModel().getSelectedIndex();
+        int tCommentIndex = traineeCommentsListView.getSelectionModel().getSelectedIndex();
+        if(traineeIndex == -1 || tCommentIndex == -1)
+            return;
+
+        Trainee tmpTrainee = controller.getCurrentTrainees().get(traineeIndex);
+        Comment tmpComment = new Comment();
+        tmpComment.setYear(tmpTrainee.getYear());
+        tmpComment.setSession(tmpTrainee.getSession());
+        tmpComment.setTraineeID(tmpTrainee.getId());
+        tmpComment.setTraineeName(tmpTrainee.getFullName());
+
+        //Validate and add new comment if valid
+        if(tCNewCheckBox.isSelected()){
+
+            int validator = 0;
+            if(tCIncidentComboBox.getSelectionModel().getSelectedIndex() != -1)
+                validator++;
+            if(!tCIncidentDescriptionTextField.getText().isEmpty())
+                validator++;
+            if(!tCActionsTextField.getText().isEmpty())
+                validator++;
+            if(!tCInstructorTextField.getText().isEmpty())
+                validator++;
+            if(tCRotationComboBox.getSelectionModel().getSelectedIndex() != -1)
+                validator++;
+            if(tCNextStepsComboBox.getSelectionModel().getSelectedIndex() != -1)
+                validator++;
+            if(!tCDateTextField.getText().isEmpty() && isGoodDate(tCDateTextField.getText()))
+                validator++;
+
+            if(validator == 0)
+                return;
+
+            if(validator != 7){
+
+                tCErrorLabel.setVisible(true);
+                return;
+
+            }
+
+            tmpComment.setIncidentType(tCIncidentComboBox.getSelectionModel().getSelectedItem());
+            tmpComment.setIncidentDescription(tCIncidentDescriptionTextField.getText());
+            tmpComment.setInstructorActions(tCActionsTextField.getText());
+            tmpComment.setInstructorName(tCInstructorTextField.getText());
+            tmpComment.setRotation(tCRotationComboBox.getSelectionModel().getSelectedItem());
+            tmpComment.setNextSteps(tCNextStepsComboBox.getSelectionModel().getSelectedItem());
+            tmpComment.setDate(tCDateTextField.getText());
+
+            DBManager.addComment(tmpComment);
+
+
+            //Perform Update
+        }else{
+
+            tmpComment = traineeCommentsListView.getSelectionModel().getSelectedItem();
+
+            tmpComment.setIncidentType(tCIncidentComboBox.getSelectionModel().getSelectedItem());
+            if(!tCIncidentDescriptionTextField.getText().isEmpty())
+                tmpComment.setIncidentDescription(tCIncidentDescriptionTextField.getText());
+            if(!tCActionsTextField.getText().isEmpty())
+                tmpComment.setInstructorActions(tCActionsTextField.getText());
+            if(!tCInstructorTextField.getText().isEmpty())
+                tmpComment.setInstructorName(tCInstructorTextField.getText());
+            tmpComment.setRotation(tCRotationComboBox.getSelectionModel().getSelectedItem());
+            tmpComment.setNextSteps(tCNextStepsComboBox.getSelectionModel().getSelectedItem());
+            if(!tCDateTextField.getText().isEmpty())
+                tmpComment.setDate(tCDateTextField.getText());
+
+            DBManager.updateComment(tmpComment);
+
+        }
+
+        refresh();
+        traineeListView.getSelectionModel().select(traineeIndex);
+        onTraineeListViewClicked();
 
     }
 
@@ -1351,8 +1551,7 @@ public class EditImportView {
         }
 
         controller.updateCurrentTrainees();
-        int index = traineeListView.getItems().size();
-        System.out.println(index);
+        int index = traineeListView.getSelectionModel().getSelectedIndex();
         refresh();
         traineeListView.getSelectionModel().select(index);
         onTraineeListViewClicked();

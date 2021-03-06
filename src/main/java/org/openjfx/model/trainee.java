@@ -291,6 +291,18 @@ public class Trainee{
         return lastName;
     }
 
+    public String getFullName() {
+
+        StringBuilder tmpStr = new StringBuilder();
+        tmpStr.append(firstName).append(" ");
+        if(!middleName.equals(""))
+            tmpStr.append(middleName).append(" ");
+        tmpStr.append(lastName);
+
+        return tmpStr.toString();
+
+    }
+
     public String getBirthDate() {
         return birthDate;
     }

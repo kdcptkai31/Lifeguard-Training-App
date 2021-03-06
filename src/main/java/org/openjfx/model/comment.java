@@ -86,6 +86,13 @@ public class Comment {
 
     }
 
+    @Override
+    public String toString(){
+
+        return incidentType + " | " + nextSteps + " | " + date;
+
+    }
+
     //Getters
     public int getTraineeID() { return traineeID; }
 
