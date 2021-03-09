@@ -1,17 +1,15 @@
 package org.openjfx.controller;
 
-import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
-import javafx.util.Pair;
+
 import org.openjfx.model.*;
 import org.openjfx.model.Event;
 
 import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-
 import java.sql.*;
 import java.util.Collections;
 import java.util.Vector;
@@ -232,7 +230,6 @@ public class DBManager {
         String sqlEvents = "CREATE TABLE IF NOT EXISTS events (\n"
                 + "eventID INTEGER,\n"
                 + "name TEXT,\n"
-                + "points INTEGER,\n"
                 + "notes TEXT,\n"
                 + "year INTEGER,\n"
                 + "session INTEGER,\n"
@@ -250,7 +247,7 @@ public class DBManager {
         String sqlEventScores = "CREATE TABLE IF NOT EXISTS eventScores (\n"
                 + "eventID INTEGER,\n"
                 + "traineeID INTEGER,\n"
-                + "score INTEGER,\n"
+                + "place INTEGER,\n"
                 + "FOREIGN KEY(eventID) REFERENCES events(eventID),\n"
                 + "FOREIGN KEY(traineeID) REFERENCES trainees(tid),\n"
                 + "PRIMARY KEY (eventID, traineeID)"
@@ -789,7 +786,6 @@ public class DBManager {
 
             return getEventScoreHelper(rs);
 
-
         }catch(SQLException e){
             e.printStackTrace();
         }
@@ -1136,8 +1132,7 @@ public class DBManager {
         Vector<Event> results = new Vector<>();
         while(rs.next())
             results.add(new Event(rs.getInt("eventID"), rs.getString("name"),
-                    rs.getInt("points"), rs.getString("notes"),
-                    rs.getInt("year"), rs.getInt("session")));
+                    rs.getString("notes"), rs.getInt("year"), rs.getInt("session")));
 
         return results;
 
@@ -1154,7 +1149,7 @@ public class DBManager {
         Vector<EventScore> results = new Vector<>();
         while(rs.next())
             results.add(new EventScore(rs.getInt("eventID"), rs.getInt("traineeID"),
-                                       rs.getInt("score")));
+                                       rs.getInt("place")));
 
         return results;
 
@@ -1680,16 +1675,15 @@ public class DBManager {
      */
     public static boolean addEvent(Event eToAdd){
 
-        String sql = "INSERT INTO events (eventID, name, points, notes, year, session) VALUES (null, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO events (eventID, name, notes, year, session) VALUES (null, ?, ?, ?, ?)";
 
         try{
 
             PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setString(1, eToAdd.getName());
-            stmt.setInt(2, eToAdd.getPoints());
-            stmt.setString(3, eToAdd.getNotes());
-            stmt.setInt(4, eToAdd.getYear());
-            stmt.setInt(5, eToAdd.getSession());
+            stmt.setString(2, eToAdd.getNotes());
+            stmt.setInt(3, eToAdd.getYear());
+            stmt.setInt(4, eToAdd.getSession());
             stmt.executeUpdate();
 
             return true;
@@ -1709,15 +1703,14 @@ public class DBManager {
      */
     public static boolean updateEvent(Event eToAdd){
 
-        String sql = "UPDATE events SET name = ?, points = ?, notes = ? WHERE eventID = ?";
+        String sql = "UPDATE events SET name = ?, notes = ? WHERE eventID = ?";
 
         try{
 
             PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setString(1, eToAdd.getName());
-            stmt.setInt(2, eToAdd.getPoints());
-            stmt.setString(3, eToAdd.getNotes());
-            stmt.setInt(4, eToAdd.getEventID());
+            stmt.setString(2, eToAdd.getNotes());
+            stmt.setInt(3, eToAdd.getEventID());
             stmt.executeUpdate();
 
             return true;
@@ -1741,14 +1734,14 @@ public class DBManager {
      */
     public static boolean addEventScore(EventScore esToAdd){
 
-        String sql = "INSERT INTO eventScores (eventID, traineeID, score) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO eventScores (eventID, traineeID, place) VALUES (?, ?, ?)";
 
         try{
 
             PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setInt(1, esToAdd.getEventID());
             stmt.setInt(2, esToAdd.getTraineeID());
-            stmt.setInt(3, esToAdd.getScore());
+            stmt.setInt(3, esToAdd.getPlace());
             stmt.executeUpdate();
 
             return true;
@@ -1768,12 +1761,12 @@ public class DBManager {
      */
     public static boolean updateEventScore(EventScore esToAdd){
 
-        String sql = "UPDATE eventScores SET score = ? WHERE eventID = ? AND traineeID = ?";
+        String sql = "UPDATE eventScores SET place = ? WHERE eventID = ? AND traineeID = ?";
 
         try{
 
             PreparedStatement stmt = connection.prepareStatement(sql);
-            stmt.setInt(1, esToAdd.getScore());
+            stmt.setInt(1, esToAdd.getPlace());
             stmt.setInt(2, esToAdd.getEventID());
             stmt.setInt(3, esToAdd.getTraineeID());
             stmt.executeUpdate();

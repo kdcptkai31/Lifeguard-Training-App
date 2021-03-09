@@ -4,7 +4,6 @@ public class Event {
 
     private int eventID;
     private String name;
-    private int points;
     private String notes;
     private int year;
     private int session;
@@ -20,16 +19,14 @@ public class Event {
      * Constructor
      * @param eID
      * @param name
-     * @param p
      * @param n
      * @param y
      * @param s
      */
-    public Event(int eID, String name, int p, String n, int y, int s){
+    public Event(int eID, String name, String n, int y, int s){
 
         eventID = eID;
         this.name = name;
-        points = p;
         notes = n;
         year = y;
         session = s;
@@ -39,14 +36,13 @@ public class Event {
     /**
      * Initial Event Constructor: No id parameter, as it has yet to be produced by the db.
      * @param name
-     * @param p
      * @param n
      * @param y
      * @param s
      */
-    public Event(String name, int p, String n, int y, int s){
+    public Event(String name, String n, int y, int s){
 
-        this(0, name, p, n, y, s);
+        this(0, name, n, y, s);
 
     }
 
@@ -57,10 +53,6 @@ public class Event {
 
     public String getName() {
         return name;
-    }
-
-    public int getPoints() {
-        return points;
     }
 
     public String getNotes() {
@@ -82,10 +74,6 @@ public class Event {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public void setPoints(int points) {
-        this.points = points;
     }
 
     public void setNotes(String notes) {

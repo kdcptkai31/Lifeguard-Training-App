@@ -108,7 +108,7 @@ public class EditImportView {
     @FXML
     private Label eventScoreNameLabel;
     @FXML
-    private TextField eventScoreTextField;
+    private TextField eventPlaceTextField;
     @FXML
     private Label eventScoreErrorLabel;
     @FXML
@@ -230,10 +230,10 @@ public class EditImportView {
 
                 traineeEventScores.clear();
                 traineeTestScores.clear();
-                eventScoreNameLabel.setText("Event Score: ");
+                eventScoreNameLabel.setText("Event Place: ");
                 testScoreNameLabel.setText("Test Score: ");
-                eventScoreTextField.setPromptText("");
-                eventScoreTextField.clear();
+                eventPlaceTextField.setPromptText("");
+                eventPlaceTextField.clear();
                 testScoreTextField.setPromptText("");
                 testScoreTextField.clear();
                 eventScoreErrorLabel.setVisible(false);
@@ -356,10 +356,10 @@ public class EditImportView {
         traineeTestScores.clear();
         traineeEventScoresListView.getItems().clear();
         traineeTestScoresListView.getItems().clear();
-        eventScoreNameLabel.setText("Event Score: ");
+        eventScoreNameLabel.setText("Event Place: ");
         testScoreNameLabel.setText("Test Score: ");
-        eventScoreTextField.setPromptText("");
-        eventScoreTextField.clear();
+        eventPlaceTextField.setPromptText("");
+        eventPlaceTextField.clear();
         testScoreTextField.setPromptText("");
         testScoreTextField.clear();
         eventScoreErrorLabel.setVisible(false);
@@ -468,7 +468,7 @@ public class EditImportView {
 
                     if(event.getEventID() == score.getEventID()) {
 
-                        traineeEventScoresList.add(event.getName() + " | " + score.getScore() + "/" + event.getPoints());
+                        traineeEventScoresList.add(event.getName() + " | " + getPlaceSuffix(score.getPlace()));
                         break;
 
                     }
@@ -754,8 +754,7 @@ public class EditImportView {
 
         String str = traineeEventScoresListView.getSelectionModel().getSelectedItem();
         String[] strParts = str.split(" ");
-        String[] eventRatio = strParts[strParts.length - 1].split("/");
-        eventScoreTextField.setPromptText(eventRatio[0]);
+        eventPlaceTextField.setPromptText(strParts[strParts.length - 1].substring(0, strParts[strParts.length - 1].length() - 2));
 
     }
 
@@ -781,13 +780,11 @@ public class EditImportView {
     public void onSaveEventScoreClicked(){
 
         int selectedIndex = traineeEventScoresListView.getSelectionModel().getSelectedIndex();
-        if(selectedIndex == -1 || eventScoreTextField.getText().isEmpty())
+        if(selectedIndex == -1 || eventPlaceTextField.getText().isEmpty())
             return;
 
         String[] strParts = traineeEventScoresListView.getSelectionModel().getSelectedItem().split(" ");
-        int maxNum = Integer.parseInt(strParts[strParts.length - 1].split("/")[1]);
-        if(!isGoodNumber(eventScoreTextField.getText()) || Integer.parseInt(eventScoreTextField.getText()) < 0 ||
-                Integer.parseInt(eventScoreTextField.getText()) > maxNum){
+        if(!isGoodNumber(eventPlaceTextField.getText()) || Integer.parseInt(eventPlaceTextField.getText()) < 0) {
             eventScoreErrorLabel.setVisible(true);
             return;
         }
@@ -809,7 +806,7 @@ public class EditImportView {
         }
 
         DBManager.updateEventScore(new EventScore(tmp.getEventID(), traineeEventScores.elementAt(0).getTraineeID(),
-                Integer.parseInt(eventScoreTextField.getText())));
+                Integer.parseInt(eventPlaceTextField.getText())));
         int index = traineeListView.getSelectionModel().getSelectedIndex();
         refresh();
         traineeListView.getSelectionModel().select(index);
@@ -2123,6 +2120,28 @@ public class EditImportView {
         } catch (NumberFormatException nfe) {
             return false;
         }
+
+    }
+
+    /**
+     * Returns the given placement as a string with the correct suffix behind it.
+     * @param place
+     * @return
+     */
+    private String getPlaceSuffix(int place){
+
+        int j = place % 10;
+        int k = place % 100;
+        if (j == 1 && k != 11) {
+            return place + "st";
+        }
+        if (j == 2 && k != 12) {
+            return place + "nd";
+        }
+        if (j == 3 && k != 13) {
+            return place + "rd";
+        }
+        return place + "th";
 
     }
 

@@ -233,27 +233,13 @@
                               <Font name="System Bold" size="14.0" />
                            </font>
                         </Label>
-                        <HBox alignment="CENTER" spacing="10.0">
-                           <children>
-                              <TextField fx:id="eventNameTextField" alignment="CENTER" focusTraversable="false" prefHeight="25.0" prefWidth="124.0" promptText="Event Name" />
-                              <TextField fx:id="eventPointsTextField" focusTraversable="false" prefHeight="25.0" prefWidth="80.0" promptText="Total Points">
-                                 <HBox.margin>
-                                    <Insets left="20.0" />
-                                 </HBox.margin>
-                              </TextField>
-                           </children>
-                        </HBox>
+                        <TextField fx:id="eventNameTextField" alignment="CENTER" focusTraversable="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="200.0" promptText="Event Name" />
                         <HBox alignment="CENTER" spacing="25.0">
                            <VBox.margin>
                               <Insets top="-10.0" />
                            </VBox.margin>
                            <children>
-                              <Label fx:id="eventNameErrorLabel" text="Enter Valid Name" textFill="#ff4040" visible="false">
-                                 <font>
-                                    <Font size="14.0" />
-                                 </font>
-                              </Label>
-                              <Label fx:id="eventPointsErrorLabel" text="Enter an Integer" textFill="RED" visible="false">
+                              <Label fx:id="eventNameErrorLabel" text="Enter Unique Name" textFill="#ff4040" visible="false">
                                  <font>
                                     <Font size="14.0" />
                                  </font>

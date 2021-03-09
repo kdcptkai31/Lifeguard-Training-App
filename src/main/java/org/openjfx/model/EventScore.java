@@ -4,19 +4,19 @@ public class EventScore {
 
     private int eventID;
     private int traineeID;
-    private int score;
+    private int place;
 
     /**
      * Constructor
      * @param eID
      * @param tID
-     * @param s
+     * @param p
      */
-    public EventScore(int eID, int tID, int s){
+    public EventScore(int eID, int tID, int p){
 
         eventID = eID;
         traineeID = tID;
-        score = s;
+        place = p;
 
     }
 
@@ -25,12 +25,12 @@ public class EventScore {
 
     public int getTraineeID() { return traineeID; }
 
-    public int getScore() { return score; }
+    public int getPlace() { return place; }
 
     //Setters
     public void setEventID(int eventID) { this.eventID = eventID; }
 
     public void setTraineeID(int traineeID) { this.traineeID = traineeID; }
 
-    public void setScore(int score) { this.score = score; }
+    public void setPlace(int place) { this.place = place; }
 }

@@ -92,18 +92,14 @@ public class SetUpView {
     @FXML
     private TextField eventNameTextField;
     @FXML
-    private TextField eventPointsTextField;
-    @FXML
     private Label eventNameErrorLabel;
-    @FXML
-    private Label eventPointsErrorLabel;
     @FXML
     private Button addEventButton;
     @FXML
     private ListView<String> eventListView;
 
     private ObservableList<String> eventViewList;
-    private Vector<Pair<String, Integer>> pendingEventData;
+    private Vector<String> pendingEventData;
 
 
 
@@ -374,20 +370,11 @@ public class SetUpView {
             return;
 
         }
-        eventNameErrorLabel.setVisible(false);
 
-        if(!isGoodPoints(eventPointsTextField.getText())){
-
-            eventPointsErrorLabel.setVisible(true);
-            return;
-
-        }
-        eventPointsErrorLabel.setVisible(false);
-
-        //Search if test already exists
+        //Search if event already exists
         for(int i = 0; i < pendingEventData.size(); i++){
 
-            if(eventNameTextField.getText().equals(pendingEventData.elementAt(i).getKey())){
+            if(eventNameTextField.getText().equals(pendingEventData.elementAt(i))){
 
                 eventNameErrorLabel.setVisible(true);
                 return;
@@ -396,12 +383,11 @@ public class SetUpView {
 
         }
 
-        pendingEventData.add(new Pair<>(eventNameTextField.getText(), Integer.parseInt(eventPointsTextField.getText())));
-        eventViewList.add(eventNameTextField.getText() + " | " + eventPointsTextField.getText());
+        pendingEventData.add(eventNameTextField.getText());
+        eventViewList.add(eventNameTextField.getText());
         eventListView.setItems(eventViewList);
 
         eventNameTextField.clear();
-        eventPointsTextField.clear();
         addEventButton.requestFocus();
 
     }
@@ -464,8 +450,7 @@ public class SetUpView {
 
         //Save Events
         for(int i = 0; i < pendingEventData.size(); i++)
-            DBManager.addEvent(new Event(pendingEventData.elementAt(i).getKey(), pendingEventData.elementAt(i).getValue(),
-                                                          "", tmp.getYear(), tmp.getSession()));
+            DBManager.addEvent(new Event(pendingEventData.elementAt(i), "", tmp.getYear(), tmp.getSession()));
 
         try {
             controller.setCurrentSession(tmp);
