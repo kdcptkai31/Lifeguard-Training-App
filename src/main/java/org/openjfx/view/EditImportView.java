@@ -38,6 +38,9 @@ public class EditImportView {
     Controller controller;
     Image defaultImage;
 
+    @FXML
+    private TabPane tabPane;
+
     //Dashboard
     @FXML
     private Label yearLabel;
@@ -46,7 +49,7 @@ public class EditImportView {
     @FXML
     private Label datesLabel;
 
-    //Trainee Tab
+    ///////////////////////////////////////////////////////////////////////Trainee Tab
     @FXML
     private ComboBox<String> importComboBox;
     @FXML
@@ -144,6 +147,38 @@ public class EditImportView {
     @FXML
     private Label tCErrorLabel;
 
+    ////////////////////////////////////////////////////////////////////Events/Tests Tab
+    //Events
+    @FXML
+    private ListView<String> editEventsListView;
+    @FXML
+    private CheckBox newEventCheckBox;
+    @FXML
+    private TextField editEventNameTextField;
+    @FXML
+    private TextField editEventNotesTextField;
+    private Vector<Event> editEventVector;
+    @FXML
+    private Button addEventButton;
+    @FXML
+    private Label editEventErrorLabel;
+
+    //Tests
+    @FXML
+    private ListView<String> editTestsListView;
+    @FXML
+    private CheckBox newTestCheckBox;
+    @FXML
+    private TextField editTestNameTextField;
+    @FXML
+    private TextField editTestPointsTextField;
+    private Vector<Test> editTestVector;
+    @FXML
+    private Button addTestButton;
+    @FXML
+    private Label editTestErrorLabel;
+
+
     @FXML
     protected void initialize() {
 
@@ -153,7 +188,11 @@ public class EditImportView {
         traineeEventScores = new Vector<>();
         traineeTestScores = new Vector<>();
         traineeComments = new Vector<>();
-        refresh();
+        editEventVector = new Vector<>();
+        editTestVector = new Vector<>();
+        editEventsListView.setCellFactory(stringListView -> new CenteredListViewCell());
+        editTestsListView.setCellFactory(stringListView -> new CenteredListViewCell());
+        traineeTabRefresh();
         importComboBox.getItems().addAll("Choose Import Type", "Comments", "Trainee Information", "Questionnaire 1",
                 "Questionnaire 2");
         tCIncidentComboBox.getItems().addAll("Academics", "Physical Performance", "Safety Violation", "Behavioral",
@@ -289,6 +328,62 @@ public class EditImportView {
 
         });
 
+        //Refreshes the tab objects if selected.
+        tabPane.getSelectionModel().selectedIndexProperty().addListener((obs, oldValue, newValue)->{
+
+            controller.updateCurrentSession(new Session(controller.getCurrentSession()));
+            switch (newValue.intValue()){
+
+                case 0: traineeTabRefresh();
+                    break;
+                case 1: eventTestTabRefresh();
+                    break;
+                case 2: //Other tab refresh
+                    break;
+
+            }
+
+        });
+
+        newEventCheckBox.selectedProperty().addListener((observable, oldValue, newValue) ->{
+
+            if(newValue){
+
+                editEventsListView.getSelectionModel().clearSelection();
+                addEventButton.setText("Add Event");
+
+            }else
+                addEventButton.setText("Update Event");
+
+
+            editEventNameTextField.clear();
+            editEventNameTextField.setPromptText("");
+            editEventNotesTextField.clear();
+            editEventNotesTextField.setPromptText("");
+            editEventErrorLabel.setVisible(false);
+
+
+        });
+
+        newTestCheckBox.selectedProperty().addListener((observable, oldValue, newValue)->{
+
+            if(newValue){
+
+                editTestsListView.getSelectionModel().clearSelection();
+                addTestButton.setText("Add Test");
+
+            }else
+                addTestButton.setText("Update Test");
+
+            editTestNameTextField.clear();
+            editTestNameTextField.setPromptText("");
+            editTestPointsTextField.clear();
+            editTestPointsTextField.setPromptText("");
+            editTestErrorLabel.setVisible(false);
+
+
+        });
+
         if(controller.getCurrentTrainees().size() != 0){
 
             traineeListView.getSelectionModel().select(0);
@@ -298,10 +393,324 @@ public class EditImportView {
 
     }
 
+    /*******************************************************************************************************************
+     *                                        Event/Test Tab Methods
+     ******************************************************************************************************************/
+
+    /**
+     * Refreshes the page's data with the most current data from Controller
+     */
+    public void eventTestTabRefresh(){
+
+        editEventVector = controller.getCurrentEvents();
+        editTestVector = controller.getCurrentTests();
+
+        ObservableList<String> eventOL = FXCollections.observableArrayList();
+        ObservableList<String> testOL = FXCollections.observableArrayList();
+
+        for(Event event : editEventVector)
+            eventOL.add(event.getName());
+        for(Test test : editTestVector)
+            testOL.add(test.getName() + " | " + test.getPoints());
+
+        editEventsListView.setItems(eventOL);
+        editTestsListView.setItems(testOL);
+        editEventErrorLabel.setVisible(false);
+        editTestErrorLabel.setVisible(false);
+        editEventsListView.getSelectionModel().clearSelection();
+        editTestsListView.getSelectionModel().clearSelection();
+        editEventNameTextField.clear();
+        editEventNameTextField.setPromptText("");
+        editEventNotesTextField.clear();
+        editEventNotesTextField.setPromptText("");
+        editTestNameTextField.clear();
+        editTestNameTextField.setPromptText("");
+        editTestPointsTextField.clear();
+        editTestPointsTextField.setPromptText("");
+
+    }
+
+    /**
+     * Populates the text fields with the selected event's data.
+     */
+    public void onEditEventListViewClicked(){
+
+        int selectedIndex = editEventsListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1)
+            return;
+
+        newEventCheckBox.setSelected(false);
+
+        Event tmp = editEventVector.get(selectedIndex);
+        editEventNameTextField.setPromptText(tmp.getName());
+        editEventNotesTextField.setPromptText(tmp.getNotes());
+
+    }
+
+    /**
+     * Adds or updates the event
+     */
+    public void onAddEventClicked(){
+
+        int selectedIndex = editEventsListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1 && !newEventCheckBox.isSelected())
+            return;
+
+        Event tmp = new Event();
+        tmp.setYear(controller.getCurrentSession().getYear());
+        tmp.setSession(controller.getCurrentSession().getSession());
+        tmp.setEventID(0);
+
+        //New Event
+        if(newEventCheckBox.isSelected()){
+
+            if(editEventNameTextField.getText().isEmpty()){
+                editEventErrorLabel.setVisible(true);
+                return;
+            }
+
+            boolean isFound = false;
+            for(Event event : editEventVector){
+                if(event.getName().equals(editEventNameTextField.getText())){
+                    isFound = true;
+                    break;
+                }
+            }
+            if(isFound){
+                editEventErrorLabel.setVisible(true);
+                return;
+            }
+
+            if(editEventNotesTextField.getText().isEmpty())
+                editEventNotesTextField.setText("");
+
+            tmp.setName(editEventNameTextField.getText());
+            tmp.setNotes(editEventNotesTextField.getText());
+
+
+            DBManager.addEvent(tmp);
+            controller.updateCurrentEvents();
+            eventTestTabRefresh();
+
+            //Update Event
+        }else{
+
+            tmp = editEventVector.get(selectedIndex);
+
+            if(!editEventNameTextField.getText().isEmpty()){
+
+                boolean isFound = false;
+                for(Event event : editEventVector){
+                    if(event.getName().equals(editEventNameTextField.getText())){
+                        isFound = true;
+                        break;
+                    }
+                }
+                if(isFound){
+                    editEventErrorLabel.setVisible(true);
+                    return;
+                }
+
+                tmp.setName(editEventNameTextField.getText());
+
+            }
+
+            if(!editEventNotesTextField.getText().isEmpty())
+                tmp.setNotes(editEventNotesTextField.getText());
+
+            DBManager.updateEvent(tmp);
+            eventTestTabRefresh();
+            editEventsListView.getSelectionModel().select(selectedIndex);
+            onEditEventListViewClicked();
+
+        }
+
+    }
+
+    /**
+     * Deletes the selected event
+     */
+    public void onDeleteEventClicked(){
+
+        Event tmp = editEventVector.get(editEventsListView.getSelectionModel().getSelectedIndex());
+
+        String str = "Deleting " + tmp.getName()
+                    + " will remove ALL event scores associated with this event.\nDo you want to continue?";
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, str, ButtonType.YES, ButtonType.CANCEL);
+        alert.showAndWait();
+
+        if(alert.getResult() == ButtonType.CANCEL)
+            return;
+
+        DBManager.deleteAllEventScoresOfAnEvent(tmp.getEventID());
+        DBManager.deleteEvent(tmp);
+        controller.updateCurrentEvents();
+        eventTestTabRefresh();
+
+    }
+
+    /**
+     * Populates the textfields with the selected test's data
+     */
+    public void onEditTestListViewClicked(){
+
+        int selectedIndex = editTestsListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1)
+            return;
+
+        newTestCheckBox.setSelected(false);
+
+        Test tmp = editTestVector.get(selectedIndex);
+        editTestNameTextField.setPromptText(tmp.getName());
+        editTestPointsTextField.setPromptText(String.valueOf(tmp.getPoints()));
+
+    }
+
+    /**
+     * Adds or updates the test
+     */
+    public void onAddTestClicked(){
+
+        int selectedIndex = editTestsListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1 && !newTestCheckBox.isSelected())
+            return;
+
+        Test tmp = new Test();
+        tmp.setYear(controller.getCurrentSession().getYear());
+        tmp.setSession(controller.getCurrentSession().getSession());
+        tmp.setTestID(0);
+
+        //New Test
+        if(newTestCheckBox.isSelected()){
+
+            if(editTestNameTextField.getText().isEmpty() || editTestPointsTextField.getText().isEmpty()){
+
+                editTestErrorLabel.setVisible(true);
+                return;
+
+            }
+            boolean isFound = false;
+            for(Test test : editTestVector){
+                if(test.getName().equals(editTestNameTextField.getText())){
+                    isFound = true;
+                    break;
+                }
+            }
+            if(isFound){
+                editTestErrorLabel.setVisible(true);
+                return;
+            }
+            tmp.setName(editTestNameTextField.getText());
+
+            if(isGoodNumber(editTestPointsTextField.getText()) && Integer.parseInt(editTestPointsTextField.getText()) > 0)
+                tmp.setPoints(Integer.parseInt(editTestPointsTextField.getText()));
+            else{
+
+                editTestErrorLabel.setVisible(true);
+                return;
+
+            }
+
+            DBManager.addTest(tmp);
+            controller.updateCurrentTests();
+            eventTestTabRefresh();
+
+            //Update Test
+        }else{
+
+            tmp.setTestID(editTestVector.get(selectedIndex).getTestID());
+            tmp.setName(editTestVector.get(selectedIndex).getName());
+            tmp.setPoints(editTestVector.get(selectedIndex).getPoints());
+
+            if(!editTestNameTextField.getText().isEmpty()){
+
+                boolean isFound = false;
+                for(Test test : editTestVector){
+                    if(test.getName().equals(editTestNameTextField.getText())){
+                        isFound = true;
+                        break;
+                    }
+                }
+                if(isFound){
+                    editTestErrorLabel.setVisible(true);
+                    return;
+                }
+
+                tmp.setName(editTestNameTextField.getText());
+
+            }
+
+            if(!editTestPointsTextField.getText().isEmpty() && isGoodNumber(editTestPointsTextField.getText()) &&
+                Integer.parseInt(editTestPointsTextField.getText()) > 0)
+                tmp.setPoints(Integer.parseInt(editTestPointsTextField.getText()));
+
+            if(!isGoodNumber(editTestPointsTextField.getText()) || Integer.parseInt(editTestPointsTextField.getText()) < 1){
+                editTestErrorLabel.setVisible(true);
+                return;
+            }
+
+            String str = "Are you sure you want to change the point value of " + tmp.getName() + "?\n"
+                        + "It will change all trainee test scores to a value of the same ratio as before.";
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, str, ButtonType.YES, ButtonType.CANCEL);
+            alert.showAndWait();
+
+            if(alert.getResult() == ButtonType.CANCEL)
+                return;
+
+            //Updates all Trainee Test Scores with the new ratio given.
+            if(editTestVector.get(selectedIndex).getPoints() != tmp.getPoints()){
+
+                Vector<TestScore> testScoresToChange = DBManager.getAllTestScoresFromTestID(tmp.getTestID());
+                double ratio = editTestVector.get(selectedIndex).getPoints() * 1.0 / tmp.getPoints();
+                for(TestScore score : testScoresToChange){
+
+                    score.setScore((int)Math.ceil(score.getScore() / ratio));
+                    DBManager.updateTestScore(score);
+
+                }
+
+            }
+
+            DBManager.updateTest(tmp);
+            controller.updateCurrentTests();
+            eventTestTabRefresh();
+
+        }
+
+    }
+
+    /**
+     * Deletes the selected test
+     */
+    public void onDeleteTestClicked(){
+
+        Test tmp = editTestVector.get(editTestsListView.getSelectionModel().getSelectedIndex());
+
+        String str = "Deleting " + tmp.getName()
+                + " will remove ALL test scores associated with this test.\nDo you want to continue?";
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, str, ButtonType.YES, ButtonType.CANCEL);
+        alert.showAndWait();
+
+        if(alert.getResult() == ButtonType.CANCEL)
+            return;
+
+        DBManager.deleteAllTestScoresOfATest(tmp.getTestID());
+        DBManager.deleteTest(tmp);
+        controller.updateCurrentTests();
+        eventTestTabRefresh();
+
+    }
+
+    /*******************************************************************************************************************
+     *                                        Trainee Tab Methods
+     ******************************************************************************************************************/
+
     /**
      * Refreshes the page's data with the most current data from Controller.
      */
-    private void refresh() {
+    private void traineeTabRefresh() {
 
         addTraineeButton.setText("Add New Trainee");
         holdsEditQuestionnaireData = new Trainee();
@@ -631,7 +1040,7 @@ public class EditImportView {
 
         }
 
-        refresh();
+        traineeTabRefresh();
         traineeListView.getSelectionModel().select(traineeIndex);
         onTraineeListViewClicked();
 
@@ -737,7 +1146,7 @@ public class EditImportView {
 
         int index = traineeListView.getSelectionModel().getSelectedIndex();
         controller.updateCurrentTrainees();
-        refresh();
+        traineeTabRefresh();
         traineeListView.getSelectionModel().select(index);
         onTraineeListViewClicked();
 
@@ -808,7 +1217,7 @@ public class EditImportView {
         DBManager.updateEventScore(new EventScore(tmp.getEventID(), traineeEventScores.elementAt(0).getTraineeID(),
                 Integer.parseInt(eventPlaceTextField.getText())));
         int index = traineeListView.getSelectionModel().getSelectedIndex();
-        refresh();
+        traineeTabRefresh();
         traineeListView.getSelectionModel().select(index);
         onTraineeListViewClicked();
 
@@ -850,7 +1259,7 @@ public class EditImportView {
         DBManager.updateTestScore(new TestScore(tmp.getTestID(), traineeTestScores.elementAt(0).getTraineeID(),
                 Integer.parseInt(testScoreTextField.getText())));
         int index = traineeListView.getSelectionModel().getSelectedIndex();
-        refresh();
+        traineeTabRefresh();
         traineeListView.getSelectionModel().select(index);
         onTraineeListViewClicked();
 
@@ -873,6 +1282,8 @@ public class EditImportView {
             BufferedImage bufferedImage = ImageIO.read(selectedFile);
             tmpTraineeImage = SwingFXUtils.toFXImage(bufferedImage, null);
             traineePFPImageView.setImage(tmpTraineeImage);
+            VBox.setMargin(traineePFPImageView, new Insets(20, 0,
+                    187 - Math.ceil(traineePFPImageView.getBoundsInLocal().getHeight()), 0));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -1549,7 +1960,7 @@ public class EditImportView {
 
         controller.updateCurrentTrainees();
         int index = traineeListView.getSelectionModel().getSelectedIndex();
-        refresh();
+        traineeTabRefresh();
         traineeListView.getSelectionModel().select(index);
         onTraineeListViewClicked();
 
@@ -1623,7 +2034,7 @@ public class EditImportView {
 
             controller.updateCurrentComments();
             importComboBox.getSelectionModel().selectFirst();
-            refresh();
+            traineeTabRefresh();
 
 
         }catch (Exception e){
@@ -1706,7 +2117,7 @@ public class EditImportView {
 
             controller.updateCurrentTrainees();
             importComboBox.getSelectionModel().selectFirst();
-            refresh();
+            traineeTabRefresh();
 
         } catch (Exception e) {
 
@@ -1800,7 +2211,7 @@ public class EditImportView {
 
             controller.updateCurrentTrainees();
             importComboBox.getSelectionModel().selectFirst();
-            refresh();
+            traineeTabRefresh();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -1888,7 +2299,7 @@ public class EditImportView {
 
             controller.updateCurrentTrainees();
             importComboBox.getSelectionModel().selectFirst();
-            refresh();
+            traineeTabRefresh();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -1987,7 +2398,8 @@ public class EditImportView {
 
             controller.updateCurrentSession(sessions.get(index));
             dialog.close();
-            refresh();
+            traineeTabRefresh();
+            eventTestTabRefresh();
 
         });
         cancelButton.setOnMouseClicked(event -> dialog.close());
@@ -2143,6 +2555,14 @@ public class EditImportView {
         }
         return place + "th";
 
+    }
+
+    static final class CenteredListViewCell extends ListCell<String> { { setAlignment(Pos.BASELINE_CENTER); }
+
+        @Override protected void updateItem(String item, boolean empty) {
+        super.updateItem(item, empty);
+        setText(item);
+        }
     }
 
 }

@@ -9,7 +9,7 @@ public class Test {
     private int session;
 
     //Constructors
-
+    public Test(){}
     /**
      * Constructor
      * @param tID
@@ -38,6 +38,20 @@ public class Test {
     public Test(String name, int p, int y, int s){
 
         this(0, name, p, y, s);
+
+    }
+
+    /**
+     * Copy Constructor
+     * @param tmp
+     */
+    public Test(Test tmp){
+
+        this.testID = tmp.testID;
+        this.name = tmp.name;
+        this.points = tmp.points;
+        this.year = tmp.year;
+        this.session = tmp.session;
 
     }
 

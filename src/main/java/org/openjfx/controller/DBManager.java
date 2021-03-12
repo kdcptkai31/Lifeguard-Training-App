@@ -673,7 +673,7 @@ public class DBManager {
             e.printStackTrace();
         }
 
-        return null;
+        return new Vector<>();
 
     }
 
@@ -765,7 +765,7 @@ public class DBManager {
             e.printStackTrace();
         }
 
-        return null;
+        return new Vector<>();
 
     }
 
@@ -851,6 +851,8 @@ public class DBManager {
                     if(results.elementAt(i).getSession() > maxSession.getSession())
                         maxSession = results.elementAt(i);
                 }
+                if(results.elementAt(i).getYear() > maxSession.getYear())
+                    maxSession = results.elementAt(i);
 
             }
             if(maxSession.getYear() != 0 && maxSession.getSession() != 0)

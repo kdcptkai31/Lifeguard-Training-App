@@ -13,7 +13,6 @@
 <?import javafx.scene.effect.InnerShadow?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
@@ -117,7 +116,7 @@
     <center>
       <VBox BorderPane.alignment="CENTER">
          <children>
-            <TabPane prefHeight="700.0" prefWidth="1200.0" tabClosingPolicy="UNAVAILABLE">
+            <TabPane fx:id="tabPane" prefHeight="700.0" prefWidth="1200.0" tabClosingPolicy="UNAVAILABLE">
               <tabs>
                 <Tab text="Trainees">
                      <content>
@@ -462,7 +461,7 @@
                                     <Label fx:id="testScoreErrorLabel" layoutX="41.0" layoutY="485.0" text="*ERROR* Invalid Score" textFill="RED" visible="false" />
                                  </children>
                                  <HBox.margin>
-                                    <Insets left="10.0" />
+                                    <Insets />
                                  </HBox.margin>
                               </VBox>
                               <VBox alignment="CENTER" prefHeight="671.0" prefWidth="310.0" spacing="5.0">
@@ -472,7 +471,10 @@
                                           <Font name="System Bold" size="16.0" />
                                        </font>
                                     </Label>
-                                    <ListView fx:id="traineeCommentsListView" onMouseClicked="#onTCListViewClicked" prefHeight="175.0" prefWidth="240.0" />
+                                    <ListView fx:id="traineeCommentsListView" onMouseClicked="#onTCListViewClicked" prefHeight="175.0" prefWidth="240.0">
+                                       <VBox.margin>
+                                          <Insets />
+                                       </VBox.margin></ListView>
                                     <CheckBox fx:id="tCNewCheckBox" mnemonicParsing="false" selected="true" text="Make a New Comment" textFill="#efb748">
                                        <font>
                                           <Font name="System Bold" size="14.0" />
@@ -553,6 +555,9 @@
                                        </font></Button>
                                     <Label fx:id="tCErrorLabel" text="*Error* Enter Valid Info" textFill="RED" visible="false" />
                                  </children>
+                                 <HBox.margin>
+                                    <Insets left="5.0" />
+                                 </HBox.margin>
                               </VBox>
                            </children>
                         </HBox>
@@ -560,14 +565,125 @@
                 </Tab>
                   <Tab text="Events/Tests">
                      <content>
-                        <HBox prefHeight="100.0" prefWidth="200.0" />
+                        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="15.0">
+                           <children>
+                              <VBox alignment="TOP_CENTER" prefHeight="671.0" prefWidth="250.0" spacing="5.0">
+                                 <children>
+                                    <Label text="Events" textFill="#efb748">
+                                       <font>
+                                          <Font name="System Bold" size="18.0" />
+                                       </font>
+                                    </Label>
+                                    <ListView fx:id="editEventsListView" onMouseClicked="#onEditEventListViewClicked" prefHeight="200.0" prefWidth="200.0" />
+                                    <CheckBox fx:id="newEventCheckBox" mnemonicParsing="false" selected="true" text="Make a New Event" textFill="#efb748">
+                                       <font>
+                                          <Font name="System Bold" size="14.0" />
+                                       </font>
+                                    </CheckBox>
+                                    <HBox alignment="CENTER" prefHeight="25.0" prefWidth="250.0">
+                                       <children>
+                                          <Label text="Name: " textFill="#efb748">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="editEventNameTextField" alignment="CENTER" prefHeight="25.0" prefWidth="180.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" layoutX="10.0" layoutY="452.0" prefHeight="25.0" prefWidth="250.0">
+                                       <children>
+                                          <Label text="Notes: " textFill="#efb748">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="editEventNotesTextField" alignment="CENTER" prefHeight="25.0" prefWidth="180.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" spacing="5.0">
+                                       <children>
+                                          <Button fx:id="addEventButton" mnemonicParsing="false" onMouseClicked="#onAddEventClicked" text="Add Event">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Button>
+                                          <Button mnemonicParsing="false" onMouseClicked="#onDeleteEventClicked" text="Delete Event">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Button>
+                                       </children>
+                                    </HBox>
+                                    <Label fx:id="editEventErrorLabel" text="*Error* Enter Valid Name" textFill="RED" visible="false">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                                 <HBox.margin>
+                                    <Insets top="50.0" />
+                                 </HBox.margin>
+                              </VBox>
+                              <VBox alignment="TOP_CENTER" layoutX="485.0" layoutY="10.0" prefHeight="671.0" prefWidth="250.0" spacing="5.0">
+                                 <children>
+                                    <Label text="Tests" textFill="#efb748">
+                                       <font>
+                                          <Font name="System Bold" size="18.0" />
+                                       </font>
+                                    </Label>
+                                    <ListView fx:id="editTestsListView" onMouseClicked="#onEditTestListViewClicked" prefHeight="200.0" prefWidth="200.0" />
+                                    <CheckBox fx:id="newTestCheckBox" mnemonicParsing="false" selected="true" text="Make a New Test" textFill="#efb748">
+                                       <font>
+                                          <Font name="System Bold" size="14.0" />
+                                       </font>
+                                    </CheckBox>
+                                    <HBox alignment="CENTER" prefHeight="25.0" prefWidth="250.0">
+                                       <children>
+                                          <Label text="Name: " textFill="#efb748">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="editTestNameTextField" alignment="CENTER" prefHeight="25.0" prefWidth="180.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" layoutX="10.0" layoutY="452.0" prefHeight="25.0" prefWidth="250.0">
+                                       <children>
+                                          <Label text="Points: " textFill="#efb748">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="editTestPointsTextField" alignment="CENTER" prefHeight="25.0" prefWidth="50.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" spacing="5.0">
+                                       <children>
+                                          <Button fx:id="addTestButton" mnemonicParsing="false" onMouseClicked="#onAddTestClicked" text="Add Test">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Button>
+                                          <Button mnemonicParsing="false" onMouseClicked="#onDeleteTestClicked" text="Delete Test">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Button>
+                                       </children>
+                                    </HBox>
+                                    <Label fx:id="editTestErrorLabel" text="*Error* Enter Valid Name and Points" textFill="RED" visible="false">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                                 <HBox.margin>
+                                    <Insets top="50.0" />
+                                 </HBox.margin>
+                              </VBox>
+                           </children></HBox>
                      </content>
                   </Tab>
-                <Tab text="Other">
-                  <content>
-                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-                  </content>
-                </Tab>
               </tabs>
             </TabPane>
          </children>

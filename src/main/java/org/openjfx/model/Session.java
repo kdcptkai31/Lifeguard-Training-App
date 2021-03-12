@@ -26,6 +26,19 @@ public class Session {
 
     }
 
+    /**
+     * Copy Constructor
+     * @param tmp
+     */
+    public Session(Session tmp){
+
+        this.year = tmp.year;
+        this.session = tmp.session;
+        this.startDate = tmp.startDate;
+        this.endDate = tmp.endDate;
+
+    }
+
     //Getters
     public int getYear() {
         return year;

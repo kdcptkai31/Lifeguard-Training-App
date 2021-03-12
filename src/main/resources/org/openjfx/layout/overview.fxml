@@ -4,6 +4,7 @@
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.effect.InnerShadow?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -108,9 +109,21 @@
       </HBox>
    </top>
    <center>
-      <VBox prefHeight="200.0" prefWidth="100.0" style="-fx-background-color: #3476f7;" BorderPane.alignment="CENTER">
-         <effect>
-            <InnerShadow blurType="GAUSSIAN" />
-         </effect></VBox>
+      <HBox alignment="CENTER" prefHeight="294.0" prefWidth="1200.0" style="-fx-background-color: #3476f7;">
+         <children>
+            <VBox alignment="TOP_CENTER" prefHeight="750.0" prefWidth="250.0">
+               <children>
+                  <Label text="Current Placing" textFill="#efb748">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets top="50.0" />
+                     </VBox.margin>
+                  </Label>
+                  <ListView fx:id="traineePlacementListView" focusTraversable="false" prefHeight="475.0" prefWidth="204.0" />
+               </children>
+            </VBox>
+         </children></HBox>
    </center>
 </BorderPane>
