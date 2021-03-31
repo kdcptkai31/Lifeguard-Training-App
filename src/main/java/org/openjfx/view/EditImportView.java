@@ -335,6 +335,8 @@ public class EditImportView {
             switch (newValue.intValue()){
 
                 case 0: traineeTabRefresh();
+                    traineeListView.getSelectionModel().select(0);
+                    onTraineeListViewClicked();
                     break;
                 case 1: eventTestTabRefresh();
                     break;
@@ -603,7 +605,7 @@ public class EditImportView {
             }
             tmp.setName(editTestNameTextField.getText());
 
-            if(isGoodNumber(editTestPointsTextField.getText()) && Integer.parseInt(editTestPointsTextField.getText()) > 0)
+            if(isInteger(editTestPointsTextField.getText()) && Integer.parseInt(editTestPointsTextField.getText()) > 0)
                 tmp.setPoints(Integer.parseInt(editTestPointsTextField.getText()));
             else{
 
@@ -641,11 +643,11 @@ public class EditImportView {
 
             }
 
-            if(!editTestPointsTextField.getText().isEmpty() && isGoodNumber(editTestPointsTextField.getText()) &&
+            if(!editTestPointsTextField.getText().isEmpty() && isInteger(editTestPointsTextField.getText()) &&
                 Integer.parseInt(editTestPointsTextField.getText()) > 0)
                 tmp.setPoints(Integer.parseInt(editTestPointsTextField.getText()));
 
-            if(!isGoodNumber(editTestPointsTextField.getText()) || Integer.parseInt(editTestPointsTextField.getText()) < 1){
+            if(!isInteger(editTestPointsTextField.getText()) || Integer.parseInt(editTestPointsTextField.getText()) < 1){
                 editTestErrorLabel.setVisible(true);
                 return;
             }
@@ -1075,7 +1077,7 @@ public class EditImportView {
                 validator++;
             if(!tECStateTextField.getText().isEmpty())
                 validator++;
-            if(!tECZipcodeTextField.getText().isEmpty() && isGoodNumber(tECZipcodeTextField.getText()) &&
+            if(!tECZipcodeTextField.getText().isEmpty() && isInteger(tECZipcodeTextField.getText()) &&
                     tECZipcodeTextField.getText().length() == 5)
                 validator++;
 
@@ -1132,7 +1134,7 @@ public class EditImportView {
                 tmpEC.setState(tECStateTextField.getText());
             if(tECZipcodeTextField.getText().isEmpty())
                 tmpEC.setZipcode(tECZipcodeTextField.getPromptText());
-            else if(isGoodNumber(tECZipcodeTextField.getText()) && tECZipcodeTextField.getText().length() == 5)
+            else if(isInteger(tECZipcodeTextField.getText()) && tECZipcodeTextField.getText().length() == 5)
                 tmpEC.setZipcode(tECZipcodeTextField.getText());
             else{
                 tECErrorLabel.setVisible(true);
@@ -1193,7 +1195,7 @@ public class EditImportView {
             return;
 
         String[] strParts = traineeEventScoresListView.getSelectionModel().getSelectedItem().split(" ");
-        if(!isGoodNumber(eventPlaceTextField.getText()) || Integer.parseInt(eventPlaceTextField.getText()) < 0) {
+        if(!isInteger(eventPlaceTextField.getText()) || Integer.parseInt(eventPlaceTextField.getText()) < 0) {
             eventScoreErrorLabel.setVisible(true);
             return;
         }
@@ -1234,7 +1236,7 @@ public class EditImportView {
 
         String[] strParts = traineeTestScoresListView.getSelectionModel().getSelectedItem().split(" ");
         int maxNum = Integer.parseInt(strParts[strParts.length - 1].split("/")[1]);
-        if(!isGoodNumber(testScoreTextField.getText()) || Integer.parseInt(testScoreTextField.getText()) < 0 ||
+        if(!isInteger(testScoreTextField.getText()) || Integer.parseInt(testScoreTextField.getText()) < 0 ||
             Integer.parseInt(testScoreTextField.getText()) > maxNum){
             testScoreErrorLabel.setVisible(true);
             return;
@@ -1636,7 +1638,7 @@ public class EditImportView {
 
             //Test Validation
             if(!((q1Validator == 0 || q1Validator == 3) && (q2Validator == 0 || q2Validator == 10)) ||
-                    !isGoodNumber(trainingCountTextField.getText())){
+                    !isInteger(trainingCountTextField.getText())){
                 errorLabel.setVisible(true);
                 return;
             }
@@ -2519,20 +2521,25 @@ public class EditImportView {
 
     }
 
-    private boolean isGoodNumber(String str) {
+    /**
+     * Checks if the given string is an integer
+     * @param s
+     * @return
+     */
+    public static boolean isInteger(String s) {
 
-        if(str.equals(""))
-            return true;
+        if(s.equals(""))
+            return false;
 
-        str = str.trim();
-        //Checks if numeric
+        s = s.trim();
+
         try {
-            double d = Double.parseDouble(str);
-            return true;
-        } catch (NumberFormatException nfe) {
+            Integer.parseInt(s);
+        } catch(NumberFormatException e) {
             return false;
         }
 
+        return true;
     }
 
     /**

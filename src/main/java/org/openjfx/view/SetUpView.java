@@ -446,11 +446,12 @@ public class SetUpView {
         //Save Tests
         for(int i = 0; i < pendingTestData.size(); i++)
             DBManager.addTest(new Test(pendingTestData.elementAt(i).getKey(), pendingTestData.elementAt(i).getValue(),
-                                                       tmp.getYear(), tmp.getSession()));
+                                       false, tmp.getYear(), tmp.getSession()));
 
         //Save Events
         for(int i = 0; i < pendingEventData.size(); i++)
-            DBManager.addEvent(new Event(pendingEventData.elementAt(i), "", tmp.getYear(), tmp.getSession()));
+            DBManager.addEvent(new Event(pendingEventData.elementAt(i), "", false, tmp.getYear(),
+                                         tmp.getSession()));
 
         try {
             controller.setCurrentSession(tmp);

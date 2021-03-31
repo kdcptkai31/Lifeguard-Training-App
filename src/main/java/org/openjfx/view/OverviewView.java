@@ -1,20 +1,22 @@
 package org.openjfx.view;
 
+import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Pair;
+
 import org.openjfx.controller.Controller;
 import org.openjfx.controller.DBManager;
 import org.openjfx.controller.LifeguardTrainingApplication;
@@ -41,15 +43,55 @@ public class OverviewView {
     private Vector<Double> traineeTotalScores;
 
     @FXML
+    private ListView<Test> testListView;
+    @FXML
+    private ListView<Event> eventListView;
+
+    @FXML
+    private TableView<TableData> enterInfoTableView;
+    @FXML
+    private TableColumn<TableData, String> traineeColumn;
+    @FXML
+    private TableColumn<TableData, String> scoreColumn;
+    @FXML
+    private Label addScoresErrorLabel;
+    @FXML
+    private Button saveScoresButton;
+
+    @FXML
     protected void initialize(){
 
         traineeVector = new Vector<>();
         traineeTotalScores = new Vector<>();
         controller = LifeguardTrainingApplication.getController();
         controller.updateCurrentSession(controller.getCurrentSession());
-        refresh();
 
-        Vector<Instructor> tmp = DBManager.getAllInstructorsFromSession(controller.getCurrentSession().getYear(), controller.getCurrentSession().getSession());
+        enterInfoTableView.setPlaceholder(new Label("Select a Test or Event"));
+        enterInfoTableView.requestFocus();
+        enterInfoTableView.layout();
+
+        traineeColumn.setCellValueFactory(new PropertyValueFactory<>("traineeName"));
+        scoreColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        scoreColumn.setCellValueFactory(new PropertyValueFactory<>("score"));
+
+        //Action event where the user presses enter to enter that row's score/place, and it increments the edit focus
+        //until the end of the list.
+        scoreColumn.setOnEditCommit((TableColumn.CellEditEvent<TableData, String> t) -> {
+
+            t.getTableView().getItems().get(t.getTablePosition().getRow()).setScore(t.getNewValue());
+            int index = enterInfoTableView.getSelectionModel().getSelectedIndex();
+            if(index + 1 < controller.getCurrentTrainees().size()) {
+                Platform.runLater(() -> {
+
+                    enterInfoTableView.getSelectionModel().select(index + 1);
+                    enterInfoTableView.edit(index + 1, scoreColumn);
+
+                });
+            }
+
+        });
+
+        refresh();
 
     }
 
@@ -61,6 +103,10 @@ public class OverviewView {
         yearLabel.setText(String.valueOf(controller.getCurrentSession().getYear()));
         sessionLabel.setText("Session " + controller.getCurrentSession().getSession());
         datesLabel.setText(controller.getCurrentSession().getStartDate() + " - " + controller.getCurrentSession().getEndDate());
+
+        enterInfoTableView.getItems().clear();
+        saveScoresButton.setVisible(false);
+        addScoresErrorLabel.setVisible(false);
 
         //Fill Placement List//////////////////////////////////////////////////////////////////////////////////////////
         traineeVector = DBManager.getAllTraineesFromSession(controller.getCurrentSession().getYear(),
@@ -87,11 +133,11 @@ public class OverviewView {
                     totalPlace += score.getPlace();
 
             }
-            if(numberOfEvents != 0){
-                averagePlacement.add(new Pair<>(counter, totalPlace * 1.0 / numberOfEvents));
+            if(traineeEventScores.size() != 0){
+                averagePlacement.add(new Pair<>(counter, totalPlace * 1.0 / traineeEventScores.size()));
             }
             counter++;
-            System.out.println();
+
         }
 
         averagePlacement.sort(new SortByAveragePlacement());
@@ -104,10 +150,6 @@ public class OverviewView {
             num--;
 
         }
-
-        //Add events' points to their total points
-        for(Pair<Integer, Double> placement : averagePlacement)
-            traineeTotalScores.setElementAt(traineeTotalScores.get(placement.getKey()) + placement.getValue(), placement.getKey());
 
         Vector<Pair<Trainee, Double>> sortTraineeVector = new Vector<>();
         for(int i = 0; i < traineeVector.size(); i++)
@@ -125,6 +167,138 @@ public class OverviewView {
 
         traineePlacementListView.setItems(placingStringList);
         //END Fill Placement List//////////////////////////////////////////////////////////////////////////////////////
+
+        Vector<Test> displayTests = controller.getCurrentTests();
+        displayTests.removeIf(Test::isScored);
+        testListView.setItems(FXCollections.observableArrayList(displayTests));
+
+        Vector<Event> displayEvents = controller.getCurrentEvents();
+        displayEvents.removeIf(Event::isScored);
+        eventListView.setItems(FXCollections.observableArrayList(displayEvents));
+    }
+
+    /**
+     * Fills the table view will all eligible trainees and sets score column to "Score"
+     */
+    public void onTestListViewClicked(){
+
+        int selectedIndex = testListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1)
+            return;
+
+        eventListView.getSelectionModel().clearSelection();
+        scoreColumn.setText("Score");
+        saveScoresButton.setText("Save Scores");
+        ObservableList<TableData> data = FXCollections.observableArrayList();
+        ObservableList<String> newData = FXCollections.observableArrayList();
+        for(Trainee trainee: controller.getCurrentTrainees()){
+            newData.add("0");
+            data.add(new TableData(trainee.getFullName(), "0"));
+        }
+
+        enterInfoTableView.setItems(data);
+        saveScoresButton.setVisible(true);
+
+
+    }
+
+    /**
+     * Fills the tableview with all eligible trainees and sets score column to "Place"
+     */
+    public void onEventListViewClicked(){
+
+        int selectedIndex = eventListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1)
+            return;
+
+        testListView.getSelectionModel().clearSelection();
+        scoreColumn.setText("Place");
+        saveScoresButton.setText("Save Placements");
+        ObservableList<TableData> data = FXCollections.observableArrayList();
+        for(Trainee trainee: controller.getCurrentTrainees()){
+            data.add(new TableData(trainee.getFullName(), "0"));
+        }
+
+        enterInfoTableView.setItems(data);
+        saveScoresButton.setVisible(true);
+
+    }
+
+    /**
+     * Checks if scores/placements are valid, saves and refreshes page if so
+     */
+    public void onSaveScoresClicked(){
+
+        //Save Test Scores
+        if(eventListView.getSelectionModel().getSelectedIndex() == -1){
+
+            int maxTestScore = testListView.getSelectionModel().getSelectedItem().getPoints();
+
+            //Verify Input Scores
+            for(int i = 0; i < controller.getCurrentTrainees().size(); i++){
+
+                String tmpCheck = scoreColumn.getCellObservableValue(i).getValue();
+                if(!isInteger(tmpCheck) || Integer.parseInt(tmpCheck) < 0 || Integer.parseInt(tmpCheck) > maxTestScore){
+
+                    addScoresErrorLabel.setText("*ERROR* Enter valid scores less than or equal to " + maxTestScore);
+                    addScoresErrorLabel.setVisible(true);
+                    return;
+
+                }
+
+            }
+
+            Test selectedTest = testListView.getSelectionModel().getSelectedItem();
+
+            for(int i = 0; i < controller.getCurrentTrainees().size(); i++)
+                DBManager.addTestScore(new TestScore(selectedTest.getTestID(),
+                                                     controller.getCurrentTrainees().elementAt(i).getId(),
+                                                   Integer.parseInt(scoreColumn.getCellObservableValue(i).getValue())));
+
+            DBManager.testScoredUpdate(selectedTest);
+            controller.updateCurrentTests();
+            controller.updateCurrentTrainees();
+            enterInfoTableView.setPlaceholder(new Label("SUCCESS - Scores Added"));
+            refresh();
+            return;
+
+        }
+
+        //OR
+
+        //Save Event Placements
+        if(testListView.getSelectionModel().getSelectedIndex() == -1){
+
+            int maxPlacement = controller.getCurrentTrainees().size();
+
+            //Verify Input Placements
+            for(int i = 0; i < controller.getCurrentTrainees().size(); i++){
+
+                String tmpCheck = scoreColumn.getCellObservableValue(i).getValue();
+                if(!isInteger(tmpCheck) || Integer.parseInt(tmpCheck) < 1 || Integer.parseInt(tmpCheck) > maxPlacement){
+
+                    addScoresErrorLabel.setText("*ERROR* Enter valid places less than or equal to " + maxPlacement);
+                    addScoresErrorLabel.setVisible(true);
+                    return;
+
+                }
+
+            }
+
+            Event selectedEvent = eventListView.getSelectionModel().getSelectedItem();
+
+            for(int i = 0; i < controller.getCurrentTrainees().size(); i++)
+                DBManager.addEventScore(new EventScore(selectedEvent.getEventID(),
+                                                       controller.getCurrentTrainees().elementAt(i).getId(),
+                                                   Integer.parseInt(scoreColumn.getCellObservableValue(i).getValue())));
+
+            DBManager.eventScoredUpdate(selectedEvent);
+            controller.updateCurrentEvents();
+            controller.updateCurrentTrainees();
+            enterInfoTableView.setPlaceholder(new Label("SUCCESS - Places Added"));
+            refresh();
+
+        }
 
     }
 
@@ -276,6 +450,51 @@ public class OverviewView {
             return ((int)Math.round(o1.getValue() - o2.getValue()) * -1);
 
         }
+    }
+
+    /**
+     * Used to hold the table view data
+     */
+    public class TableData{
+
+        SimpleStringProperty traineeName;
+        SimpleStringProperty score;
+
+        TableData(String traineeName, String score){
+
+            this.traineeName = new SimpleStringProperty(traineeName);
+            this.score = new SimpleStringProperty(score);
+
+        }
+
+        //Getters
+        public String getTraineeName(){return traineeName.get();}
+        public String getScore(){return score.get();}
+        //Setters
+        public void setTraineeName(String name){traineeName.set(name);}
+        public void setScore(String sco){score.set(sco);}
+
+    }
+
+    /**
+     * Checks if the given string is an integer
+     * @param s
+     * @return
+     */
+    public static boolean isInteger(String s) {
+
+        if(s.equals(""))
+            return false;
+
+        s = s.trim();
+
+        try {
+            Integer.parseInt(s);
+        } catch(NumberFormatException e) {
+            return false;
+        }
+
+        return true;
     }
 
 }

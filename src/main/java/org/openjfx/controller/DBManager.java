@@ -197,6 +197,7 @@ public class DBManager {
                 + "testID INTEGER,\n"
                 + "name TEXT,\n"
                 + "points INTEGER,\n"
+                + "isScored INTEGER,\n"
                 + "year INTEGER,\n"
                 + "session INTEGER,\n"
                 + "PRIMARY KEY (testID)"
@@ -231,6 +232,7 @@ public class DBManager {
                 + "eventID INTEGER,\n"
                 + "name TEXT,\n"
                 + "notes TEXT,\n"
+                + "isScored INTEGER,\n"
                 + "year INTEGER,\n"
                 + "session INTEGER,\n"
                 + "PRIMARY KEY (eventID)"
@@ -601,7 +603,7 @@ public class DBManager {
 
         try{
 
-            for(Integer id : ids)
+            for(Integer ignored : ids)
                 sql.append("testID = ? OR ");
 
             sql.delete(sql.length() - 4, sql.length() - 1);
@@ -719,7 +721,7 @@ public class DBManager {
 
         try{
 
-            for(Integer id : ids)
+            for(Integer ignored : ids)
                 sql.append("eventID = ? OR ");
 
             sql.delete(sql.length() - 4, sql.length() - 1);
@@ -1099,8 +1101,8 @@ public class DBManager {
         Vector<Test> results = new Vector<>();
         while(rs.next())
             results.add(new Test(rs.getInt("testID"), rs.getString("name"),
-                    rs.getInt("points"), rs.getInt("year"),
-                    rs.getInt("session")));
+                    rs.getInt("points"), 1 == rs.getInt("isScored"),
+                    rs.getInt("year"), rs.getInt("session")));
 
         return results;
 
@@ -1134,7 +1136,8 @@ public class DBManager {
         Vector<Event> results = new Vector<>();
         while(rs.next())
             results.add(new Event(rs.getInt("eventID"), rs.getString("name"),
-                    rs.getString("notes"), rs.getInt("year"), rs.getInt("session")));
+                    rs.getString("notes"), 1 == rs.getInt("isScored"),
+                    rs.getInt("year"), rs.getInt("session")));
 
         return results;
 
@@ -1560,15 +1563,16 @@ public class DBManager {
      */
     public static boolean addTest(Test tToAdd){
 
-        String sql = "INSERT INTO tests (testID, name, points, year, session) VALUES (null, ?, ?, ?, ?)";
+        String sql = "INSERT INTO tests (testID, name, points, isScored, year, session) VALUES (null, ?, ?, ?, ?, ?)";
 
         try{
 
             PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setString(1, tToAdd.getName());
             stmt.setInt(2, tToAdd.getPoints());
-            stmt.setInt(3, tToAdd.getYear());
-            stmt.setInt(4, tToAdd.getSession());
+            stmt.setInt(3, 0);
+            stmt.setInt(4, tToAdd.getYear());
+            stmt.setInt(5, tToAdd.getSession());
             stmt.executeUpdate();
 
             return true;
@@ -1601,6 +1605,31 @@ public class DBManager {
             return true;
 
         }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Updates the test isScored attribute, making it indicate scored.
+     * @param tToUpdate
+     * @return
+     */
+    public static boolean testScoredUpdate(Test tToUpdate){
+
+        String sql = "UPDATE tests SET isScored = 1 WHERE testID = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, tToUpdate.getTestID());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch (SQLException e){
             e.printStackTrace();
         }
 
@@ -1677,15 +1706,16 @@ public class DBManager {
      */
     public static boolean addEvent(Event eToAdd){
 
-        String sql = "INSERT INTO events (eventID, name, notes, year, session) VALUES (null, ?, ?, ?, ?)";
+        String sql = "INSERT INTO events (eventID, name, notes, isScored, year, session) VALUES (null, ?, ?, ?, ?, ?)";
 
         try{
 
             PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setString(1, eToAdd.getName());
             stmt.setString(2, eToAdd.getNotes());
-            stmt.setInt(3, eToAdd.getYear());
-            stmt.setInt(4, eToAdd.getSession());
+            stmt.setInt(3, 0);
+            stmt.setInt(4, eToAdd.getYear());
+            stmt.setInt(5, eToAdd.getSession());
             stmt.executeUpdate();
 
             return true;
@@ -1713,6 +1743,31 @@ public class DBManager {
             stmt.setString(1, eToAdd.getName());
             stmt.setString(2, eToAdd.getNotes());
             stmt.setInt(3, eToAdd.getEventID());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Updates the given event so that it indicates that it has been scored already.
+     * @param eToUpdate
+     * @return
+     */
+    public static boolean eventScoredUpdate(Event eToUpdate){
+
+        String sql = "UPDATE events SET isScored = 1 WHERE eventID = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, eToUpdate.getEventID());
             stmt.executeUpdate();
 
             return true;
