@@ -563,7 +563,7 @@
                         </HBox>
                      </content>
                 </Tab>
-                  <Tab text="Events/Tests">
+                  <Tab text="Events/Tests/Instructors">
                      <content>
                         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="15.0">
                            <children>

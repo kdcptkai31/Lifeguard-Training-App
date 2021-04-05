@@ -190,11 +190,8 @@ public class OverviewView {
         scoreColumn.setText("Score");
         saveScoresButton.setText("Save Scores");
         ObservableList<TableData> data = FXCollections.observableArrayList();
-        ObservableList<String> newData = FXCollections.observableArrayList();
-        for(Trainee trainee: controller.getCurrentTrainees()){
-            newData.add("0");
+        for(Trainee trainee: controller.getCurrentTrainees())
             data.add(new TableData(trainee.getFullName(), "0"));
-        }
 
         enterInfoTableView.setItems(data);
         saveScoresButton.setVisible(true);

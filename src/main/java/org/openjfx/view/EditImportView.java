@@ -1,5 +1,7 @@
 package org.openjfx.view;
 
+import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
@@ -8,15 +10,19 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Paint;
+import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import javafx.util.Pair;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -193,8 +199,8 @@ public class EditImportView {
         editEventsListView.setCellFactory(stringListView -> new CenteredListViewCell());
         editTestsListView.setCellFactory(stringListView -> new CenteredListViewCell());
         traineeTabRefresh();
-        importComboBox.getItems().addAll("Choose Import Type", "Comments", "Trainee Information", "Questionnaire 1",
-                "Questionnaire 2");
+        importComboBox.getItems().addAll("Choose Import Type", "Comments", "Questionnaire 1",
+                "Questionnaire 2", "Year's Trainee Info");
         tCIncidentComboBox.getItems().addAll("Academics", "Physical Performance", "Safety Violation", "Behavioral",
                 "EMS Skills", "Aquatic Skills");
         tCRotationComboBox.getItems().addAll("PSFA", "AQUATICS");
@@ -209,13 +215,13 @@ public class EditImportView {
                 case 1: onAddCommentsClicked();
                     break;
                 //Trainee Info picked
-                case 2: onAddTraineesClicked();
+                case 2: onAddQ1Clicked();
                     break;
                 //Questionnaire 1 Picked
-                case 3: onAddQ1Clicked();
+                case 3: onAddQ2Clicked();
                     break;
                 //Questionnaire 2 Picked
-                case 4: onAddQ2Clicked();
+                case 4: onAddTraineesClicked();
                     break;
                 default:break;
             }
@@ -2078,7 +2084,9 @@ public class EditImportView {
 
         }
 
+
         List<Trainee> tmpTrainees = new ArrayList<>();
+
         //Handle Trainees
         try {
 
@@ -2086,39 +2094,189 @@ public class EditImportView {
             CSVParser parser = new CSVParser(new FileReader(selectedFile), format);
             //Checks that only the initial trainee .csv is being read
             Vector<CSVRecord> records = new Vector<>(parser.getRecords());
-            if (records.get(0).size() != 20)
+            if (records.get(0).size() != 21)
                 throw new Exception("Wrong File");
-
             for (CSVRecord record : records)
-                tmpTrainees.add(new Trainee(record.get(2), record.get(3), record.get(4), record.get(5), record.get(6),
-                        record.get(7), record.get(8), record.get(9), record.get(10),
-                        record.get(11).charAt(0) == 'Y',
-                        new EmergencyContact(record.get(12), record.get(13), record.get(14),
-                                record.get(15), record.get(16), record.get(17),
-                                record.get(18)),
-                        0, false, false, true,
-                        controller.getCurrentSession().getYear(), controller.getCurrentSession().getSession()));
+                tmpTrainees.add(new Trainee(record.get(3), record.get(4), record.get(5), record.get(6), record.get(7),
+                        record.get(8), record.get(9), record.get(10), record.get(11),
+                        record.get(12).charAt(0) == 'Y',
+                        new EmergencyContact(record.get(13), record.get(14), record.get(15),
+                                record.get(16), record.get(17), record.get(18),
+                                record.get(19)),
+                        0, false, false, true, 2222, Integer.parseInt(record.get(2))));
 
             parser.close();
+            List<Integer> sessionChoices = new ArrayList<>();
+            for(Trainee trainee : tmpTrainees) {
+                if (!sessionChoices.contains(trainee.getSession()))
+                    sessionChoices.add(trainee.getSession());
+            }
+            Collections.sort(sessionChoices);
 
-            //Adds to db if does not exist
-            for (int i = 0; i < tmpTrainees.size(); i++) {
-                boolean isFound = false;
-                for (int j = 0; j < controller.getCurrentTrainees().size(); j++) {
+            //Initialize Dialog box contents for session inputs.
+            final Stage dialog = new Stage();
+            dialog.setTitle("Import - Create Needed Sessions");
+            dialog.initModality(Modality.APPLICATION_MODAL);
+            dialog.initOwner(LifeguardTrainingApplication.getCoordinator().getStage());
+            VBox dialogVBox = new VBox();
+            Label label = new Label("These are the sessions found in the .csv file,\nall sessions which do not " +
+                                    "exist already will\nbe added with the below information.");
+            label.setFont(new Font("System", 14));
+            label.setStyle("-fx-font-weight: bold; -fx-text-fill: #efb748;");
 
-                    if (tmpTrainees.get(i).getFirstName().equals(controller.getCurrentTrainees().get(j).getFirstName()) &&
-                            tmpTrainees.get(i).getLastName().equals(controller.getCurrentTrainees().get(j).getLastName()))
-                        isFound = true;
+            TextField yearTextField = new TextField();
+            yearTextField.setPromptText("year");
+            yearTextField.setMaxWidth(50);
+            yearTextField.setFocusTraversable(false);
+
+            //Creates and fills teh TableView
+            TableView<AddSessionsData> newSessionsTableView = new TableView<>();
+            newSessionsTableView.requestFocus();
+            newSessionsTableView.layout();
+            newSessionsTableView.setEditable(true);
+            TableColumn<AddSessionsData, String> sessionColumn = new TableColumn<>("Session");
+            sessionColumn.setEditable(false);
+            sessionColumn.setSortable(false);
+            sessionColumn.setCellValueFactory(new PropertyValueFactory<>("session"));
+            TableColumn<AddSessionsData, String> startDateColumn = new TableColumn<>("Start Date");
+            startDateColumn.setEditable(true);
+            startDateColumn.setSortable(false);
+            startDateColumn.setCellValueFactory(new PropertyValueFactory<>("startDate"));
+            startDateColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+            TableColumn<AddSessionsData, String> endDateColumn = new TableColumn<>("End Date");
+            endDateColumn.setEditable(true);
+            endDateColumn.setSortable(false);
+            endDateColumn.setCellValueFactory(new PropertyValueFactory<>("endDate"));
+            endDateColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+            newSessionsTableView.getColumns().addAll(sessionColumn, startDateColumn, endDateColumn);
+            ObservableList<AddSessionsData> data = FXCollections.observableArrayList();
+            for(Integer sessionNum : sessionChoices)
+                data.add(new AddSessionsData(String.valueOf(sessionNum), "mm/dd", "mm/dd"));
+            newSessionsTableView.setItems(data);
+
+            //Action event where the user presses enter to enter that cell, which then increments the edit focus to the
+            //next cell.
+            startDateColumn.setOnEditCommit((TableColumn.CellEditEvent<AddSessionsData, String> t) -> {
+
+                t.getTableView().getItems().get(t.getTablePosition().getRow()).setStartDate(t.getNewValue());
+                int index = newSessionsTableView.getSelectionModel().getSelectedIndex();
+
+                Platform.runLater(() -> {
+                    newSessionsTableView.edit(index, endDateColumn);
+                });
+            });
+
+            //Action event where the user presses enter to enter that cell, which then increments the edit focus to the
+            //next row, this time at the startDateColumn, not the currently selected endDateColumn.
+            endDateColumn.setOnEditCommit((TableColumn.CellEditEvent<AddSessionsData, String> t) -> {
+
+                t.getTableView().getItems().get(t.getTablePosition().getRow()).setEndDate(t.getNewValue());
+                int index = newSessionsTableView.getSelectionModel().getSelectedIndex();
+                if(index + 1 < sessionChoices.size()){
+
+                    Platform.runLater(() -> {
+
+                        newSessionsTableView.getSelectionModel().select(index + 1);
+                        newSessionsTableView.edit(index + 1, startDateColumn);
+
+                    });
+                }
+            });
+
+            Label addSessionsErrorLabel = new Label("*ERROR* enter valid year and dates");
+            addSessionsErrorLabel.setStyle("-fx-text-fill: #57ff8c;");
+            addSessionsErrorLabel.setVisible(false);
+
+            Button sessionButton = new Button("Save and Import");
+            sessionButton.setStyle("-fx-font-weight: bold");
+            Button cancelButton = new Button("Cancel");
+            HBox buttonHBox = new HBox(sessionButton, cancelButton);
+
+            dialogVBox.getChildren().addAll(label, yearTextField, newSessionsTableView, addSessionsErrorLabel, buttonHBox);
+
+            //Set dialog box style
+            buttonHBox.setSpacing(10);
+            buttonHBox.setAlignment(Pos.CENTER);
+            dialogVBox.setAlignment(Pos.CENTER);
+            dialogVBox.setSpacing(10);
+            dialogVBox.setStyle("-fx-background-color: #3476f7;");
+
+            newSessionsTableView.setMaxWidth(205);
+            newSessionsTableView.setMaxHeight(300);
+            VBox.setMargin(label, new Insets(10, 0, 0, 10));
+            VBox.setMargin(buttonHBox, new Insets(10));
+
+            Scene dialogScene = new Scene(dialogVBox, 300, 500);
+            dialog.setScene(dialogScene);
+
+            //Button Events
+            sessionButton.setOnMouseClicked(event -> {
+
+                //Verify needed data entries
+                if(yearTextField.getText().isEmpty() || !isGoodYear(yearTextField.getText())){
+                    addSessionsErrorLabel.setVisible(true);
+                    return;
+                }
+                Vector<Session> pendingSessions = new Vector<>();
+                for(int i = 0; i < sessionChoices.size(); i++){
+
+                    if(!isGoodHalfDate(startDateColumn.getCellObservableValue(i).getValue()) ||
+                       !isGoodHalfDate(endDateColumn.getCellObservableValue(i).getValue())){
+                        addSessionsErrorLabel.setVisible(true);
+                        return;
+                    }else
+                        pendingSessions.add(new Session(Integer.parseInt(yearTextField.getText()),
+                                            Integer.parseInt(sessionColumn.getCellObservableValue(i).getValue()),
+                                            startDateColumn.getCellObservableValue(i).getValue(),
+                                            endDateColumn.getCellObservableValue(i).getValue()));
 
                 }
 
-                if (!isFound)
-                    DBManager.addInitialTrainee(tmpTrainees.get(i));
+                //Verified, save data now
+                //Adds the session if it is not found
+                Vector<Session> existingSessions = DBManager.getAllSessions();
+                for(Session newSes : pendingSessions){
 
-            }
+                    boolean isFound = false;
+                    for(Session oldSes : Objects.requireNonNull(existingSessions))
+                        if (oldSes.getYear() == newSes.getYear() && oldSes.getSession() == newSes.getSession()) {
+                            isFound = true;
+                            break;
+                        }
 
-            controller.updateCurrentTrainees();
-            importComboBox.getSelectionModel().selectFirst();
+                    //Add Session and copy over Event, Test, and District data from current session.
+                    if(!isFound) {
+                        DBManager.addNewSession(newSes.getYear(), newSes.getSession(), newSes.getStartDate(),
+                                newSes.getEndDate());
+                        for(Event copyEvent : controller.getCurrentEvents())
+                            DBManager.addEvent(new Event(copyEvent.getName(), "", false, newSes.getYear(),
+                                                         newSes.getSession()));
+
+                        for(Test copyTest : controller.getCurrentTests())
+                            DBManager.addTest(new Test(copyTest.getName(), copyTest.getPoints(), false,
+                                                       newSes.getYear(), newSes.getSession()));
+
+                        for(District district : Objects.requireNonNull(DBManager.getAllDistrictsFromSession(controller.getCurrentSession().getYear(),
+                                controller.getCurrentSession().getSession())))
+                            DBManager.addDistrict(new District(newSes.getYear(), newSes.getSession(), district.getName(),
+                                                            ""));
+
+                    }
+
+                }
+
+                //Save Trainees to their respective sessions
+                for(Trainee trainee : tmpTrainees)
+                    DBManager.addInitialTrainee(trainee);
+
+                controller.updateCurrentTrainees();
+                dialog.close();
+                traineeTabRefresh();
+
+            });
+            cancelButton.setOnMouseClicked(event -> dialog.close());
+
+            dialog.showAndWait();
             traineeTabRefresh();
 
         } catch (Exception e) {
@@ -2492,7 +2650,7 @@ public class EditImportView {
     /**
      * Checks if the given date is valid " mm/dd/yyyy"
      * @param date
-     * @return
+     * @return true if successful, false if not.
      */
     private boolean isGoodDate(String date){
 
@@ -2510,9 +2668,27 @@ public class EditImportView {
     }
 
     /**
+     * Checks if the given string is in the 'mm/dd' format
+     * @param date
+     * @return true if successful, false if not.
+     */
+    private boolean isGoodHalfDate(String date){
+
+        if(date == null || date.equals("") || date.equals("mm/dd"))
+            return false;
+
+        date = date.trim();
+
+        //Checks if correct format
+        return date.length() == 5 && isDigit(date.charAt(0)) && isDigit(date.charAt(1)) && date.charAt(2) == '/'
+                && isDigit(date.charAt(3)) && isDigit(date.charAt(4));
+
+    }
+
+    /**
      * Checks if the given phone number is in the correct format "xxx-xxx-xxxx"
      * @param num
-     * @return
+     * @return true if successful, false if not.
      */
     private boolean isGoodPhoneNumber(String num){
 
@@ -2522,9 +2698,35 @@ public class EditImportView {
     }
 
     /**
+     * Checks if the given year is valid.
+     * @param year
+     * @return true if valid, false if not.
+     */
+    private boolean isGoodYear(String year){
+
+        //Checks if empty
+        if (year == null || year.equals(""))
+            return false;
+
+        //Removes whitespaces
+        year = year.trim();
+
+        //Checks if numeric
+        try {
+            double d = Double.parseDouble(year);
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+
+        //Fits 2XXX format
+        return year.charAt(0) == '2' && year.length() == 4;
+
+    }
+
+    /**
      * Checks if the given string is an integer
      * @param s
-     * @return
+     * @return true if successful, false if not.
      */
     public static boolean isInteger(String s) {
 
@@ -2545,7 +2747,7 @@ public class EditImportView {
     /**
      * Returns the given placement as a string with the correct suffix behind it.
      * @param place
-     * @return
+     * @return true if successful, false if not.
      */
     private String getPlaceSuffix(int place){
 
@@ -2570,6 +2772,34 @@ public class EditImportView {
         super.updateItem(item, empty);
         setText(item);
         }
+    }
+
+    /**
+     * Used to hold the table view data for the add trainees from .csv dialog box.
+     */
+    public class AddSessionsData{
+
+        SimpleStringProperty session;
+        SimpleStringProperty startDate;
+        SimpleStringProperty endDate;
+
+        AddSessionsData(String session, String startDate, String endDate){
+
+            this.session = new SimpleStringProperty(session);
+            this.startDate = new SimpleStringProperty(startDate);
+            this.endDate = new SimpleStringProperty(endDate);
+
+        }
+
+        //Getters
+        public String getSession(){return session.get();}
+        public String getStartDate(){return startDate.get();}
+        public String getEndDate(){return endDate.get();}
+        //Setters
+        public void setSession(String s){session.set(s);}
+        public void setStartDate(String s){startDate.set(s);}
+        public void setEndDate(String s){endDate.set(s);}
+
     }
 
 }

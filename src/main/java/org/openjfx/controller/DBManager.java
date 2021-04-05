@@ -827,6 +827,7 @@ public class DBManager {
 
     }
 
+
     /**
      * Returns the most current session, used to initialize the application.
      * @return a pair containing the most current session.
