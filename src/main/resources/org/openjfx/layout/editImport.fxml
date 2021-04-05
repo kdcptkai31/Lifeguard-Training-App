@@ -563,7 +563,7 @@
                         </HBox>
                      </content>
                 </Tab>
-                  <Tab text="Events/Tests/Instructors">
+                  <Tab text="All Other">
                      <content>
                         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="15.0">
                            <children>
@@ -672,6 +672,63 @@
                                        </children>
                                     </HBox>
                                     <Label fx:id="editTestErrorLabel" text="*Error* Enter Valid Name and Points" textFill="RED" visible="false">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                                 <HBox.margin>
+                                    <Insets top="50.0" />
+                                 </HBox.margin>
+                              </VBox>
+                              <VBox alignment="TOP_CENTER" layoutX="618.0" layoutY="60.0" prefHeight="671.0" prefWidth="250.0" spacing="5.0">
+                                 <children>
+                                    <Label text="Districts" textFill="#efb748">
+                                       <font>
+                                          <Font name="System Bold" size="18.0" />
+                                       </font>
+                                    </Label>
+                                    <ListView fx:id="editDistrictsListView" onMouseClicked="#onEditDistrictListViewClicked" prefHeight="200.0" prefWidth="200.0" />
+                                    <CheckBox fx:id="newDistrictCheckBox" mnemonicParsing="false" selected="true" text="Make a New District" textFill="#efb748">
+                                       <font>
+                                          <Font name="System Bold" size="14.0" />
+                                       </font>
+                                    </CheckBox>
+                                    <HBox alignment="CENTER" prefHeight="25.0" prefWidth="250.0">
+                                       <children>
+                                          <Label text="Name: " textFill="#efb748">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="editDistrictNameTextField" alignment="CENTER" prefHeight="25.0" prefWidth="201.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" layoutX="10.0" layoutY="452.0" prefHeight="25.0" prefWidth="250.0">
+                                       <children>
+                                          <Label text="Supervisor Email: " textFill="#efb748">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="editSupervisorEmailTextField" alignment="CENTER" prefHeight="25.0" prefWidth="130.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" spacing="5.0">
+                                       <children>
+                                          <Button fx:id="addDistrictButton" mnemonicParsing="false" onMouseClicked="#onAddDistrictClicked" text="Add District">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Button>
+                                          <Button mnemonicParsing="false" onMouseClicked="#onDeleteDistrictClicked" text="Delete District">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Button>
+                                       </children>
+                                    </HBox>
+                                    <Label fx:id="editDistrictErrorLabel" text="*Error* Enter Valid Name and Email" textFill="RED" visible="false">
                                        <font>
                                           <Font size="14.0" />
                                        </font>

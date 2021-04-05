@@ -8,6 +8,11 @@ public class District {
     private String supervisorEmail;
 
     /**
+     * Default Constructor
+     */
+    public District(){}
+
+    /**
      * Constructor
      * @param y
      * @param s

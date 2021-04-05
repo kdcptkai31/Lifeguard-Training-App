@@ -1909,7 +1909,7 @@ public class DBManager {
      */
     public static boolean updateDistrict(District dToAdd){
 
-        String sql = "UPDATE districts SET superEmail = ? WHERE year = ?, session = ?, district = ?";
+        String sql = "UPDATE districts SET superEmail = ? WHERE year = ? AND session = ? AND district = ?";
 
         try{
 
@@ -2094,7 +2094,7 @@ public class DBManager {
      */
     public static boolean deleteComment(Comment cToDelete){
 
-        String sql = "DELETE FROM comments WHERE traineeID = ?, commentID = ?";
+        String sql = "DELETE FROM comments WHERE traineeID = ? AND commentID = ?";
 
         try{
 
@@ -2198,7 +2198,7 @@ public class DBManager {
      */
     public static boolean deleteTestScore(TestScore tsToDelete){
 
-        String sql = "DELETE FROM testScores WHERE testID = ?, traineeID = ?";
+        String sql = "DELETE FROM testScores WHERE testID = ? AND traineeID = ?";
 
         try{
 
@@ -2302,7 +2302,7 @@ public class DBManager {
      */
     public static boolean deleteEventScore(EventScore esToDelete){
 
-        String sql = "DELETE FROM eventScores WHERE eventID = ?, traineeID = ?";
+        String sql = "DELETE FROM eventScores WHERE eventID = ? AND traineeID = ?";
 
         try{
 
@@ -2328,7 +2328,7 @@ public class DBManager {
      */
     public static boolean deleteDistrict(District dToDelete){
 
-        String sql = "DELETE FROM districts WHERE year = ?, session = ?, district = ?";
+        String sql = "DELETE FROM districts WHERE year = ? AND session = ? AND district = ?";
 
         try{
 
@@ -2355,7 +2355,7 @@ public class DBManager {
      */
     public static boolean deleteInstructor(Instructor iToDelete){
 
-        String sql = "DELETE FROM instructors WHERE year = ?, session = ?, name = ?";
+        String sql = "DELETE FROM instructors WHERE year = ? AND session = ? AND name = ?";
 
         try{
 
