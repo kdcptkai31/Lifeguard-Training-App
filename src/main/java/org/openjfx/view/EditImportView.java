@@ -199,6 +199,22 @@ public class EditImportView {
     @FXML
     private Label editDistrictErrorLabel;
 
+    //Instructors
+    @FXML
+    private ImageView instructorPFPImageView;
+    private Image tmpInstructorImage;
+    @FXML
+    private CheckBox newInstructorCheckBox;
+    @FXML
+    private ListView<String> editInstructorListView;
+    @FXML
+    private TextField editInstructorNameTextField;
+    private Vector<Instructor> editInstructorVector;
+    @FXML
+    private Button addInstructorButton;
+    @FXML
+    private Label editInstructorErrorLabel;
+
 
     @FXML
     protected void initialize() {
@@ -206,15 +222,18 @@ public class EditImportView {
         controller = LifeguardTrainingApplication.getController();
         defaultImage = traineePFPImageView.getImage();
         tmpTraineeImage = null;
+        tmpInstructorImage = null;
         traineeEventScores = new Vector<>();
         traineeTestScores = new Vector<>();
         traineeComments = new Vector<>();
         editEventVector = new Vector<>();
         editTestVector = new Vector<>();
         editDistrictVector = new Vector<>();
+        editInstructorVector = new Vector<>();
         editEventsListView.setCellFactory(stringListView -> new CenteredListViewCell());
         editTestsListView.setCellFactory(stringListView -> new CenteredListViewCell());
         editDistrictsListView.setCellFactory(stringListView -> new CenteredListViewCell());
+        editInstructorListView.setCellFactory(stringListView -> new CenteredListViewCell());
         traineeTabRefresh();
         importComboBox.getItems().addAll("Choose Import Type", "Comments", "Questionnaire 1",
                 "Questionnaire 2", "Year's Trainee Info");
@@ -427,6 +446,23 @@ public class EditImportView {
 
         });
 
+        newInstructorCheckBox.selectedProperty().addListener((observable, oldValue, newValue) ->{
+
+            if(newValue){
+
+                editInstructorListView.getSelectionModel().clearSelection();
+                addInstructorButton.setText("Add Instructor");
+                instructorPFPImageView.setImage(defaultImage);
+
+            }else
+                addInstructorButton.setText("Update Instructor");
+
+            editInstructorNameTextField.clear();
+            editInstructorNameTextField.setPromptText("");
+            editInstructorErrorLabel.setVisible(false);
+
+        });
+
         if(controller.getCurrentTrainees().size() != 0){
 
             traineeListView.getSelectionModel().select(0);
@@ -441,18 +477,173 @@ public class EditImportView {
      ******************************************************************************************************************/
 
     /**
+     * Runs when the Instructor pfp image view is clicked, allowing the user to change their image.
+     */
+    public void onIPFPClicked(){
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JPEG Images", "*.jpg"));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG Images", "*.png"));
+        File selectedFile = fileChooser.showOpenDialog(LifeguardTrainingApplication.getCoordinator().getStage());
+        if(selectedFile == null)
+            return;
+
+        //If successful, save image to memory for later.
+        try {
+            BufferedImage bufferedImage = ImageIO.read(selectedFile);
+            tmpInstructorImage = SwingFXUtils.toFXImage(bufferedImage, null);
+            instructorPFPImageView.setImage(tmpInstructorImage);
+            VBox.setMargin(instructorPFPImageView, new Insets(0, 0,
+                    139 - Math.ceil(instructorPFPImageView.getBoundsInLocal().getHeight()), 0));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Populates the data fields with the selected instructor's data, if applicable.
+     */
+    public void onEditInstructorListViewClicked(){
+
+        int selectedIndex = editInstructorListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1)
+            return;
+
+        newInstructorCheckBox.setSelected(false);
+
+        Instructor tmp = editInstructorVector.get(selectedIndex);
+        editInstructorNameTextField.setPromptText(tmp.getName());
+
+        //Makes sure the image resizing does not affect the other UI objects
+        instructorPFPImageView.setPreserveRatio(true);
+        instructorPFPImageView.setSmooth(true);
+        instructorPFPImageView.setCache(true);
+        instructorPFPImageView.setImage(tmp.getActualImage());
+        VBox.setMargin(instructorPFPImageView, new Insets(0, 0,
+                139 - Math.ceil(instructorPFPImageView.getBoundsInLocal().getHeight()), 0));
+
+    }
+
+    /**
+     * Adds or updates the selected instructor, if valid.
+     */
+    public void onAddInstructorClicked(){
+
+        int selectedIndex = editInstructorListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1 && !newInstructorCheckBox.isSelected())
+            return;
+
+        Instructor tmp = new Instructor();
+        tmp.setYear(controller.getCurrentSession().getYear());
+        tmp.setSession(controller.getCurrentSession().getSession());
+
+        //New Instructor
+        if(newInstructorCheckBox.isSelected()){
+
+            if(editInstructorNameTextField.getText().isEmpty()){
+                editInstructorErrorLabel.setVisible(true);
+                return;
+            }
+
+            boolean isFound = false;
+            for(Instructor instructor : editInstructorVector){
+                if(instructor.getName().equals(editInstructorNameTextField.getText())){
+                    isFound = true;
+                    break;
+                }
+            }
+            if(isFound){
+                editInstructorErrorLabel.setVisible(true);
+                return;
+            }
+
+            tmp.setName(editInstructorNameTextField.getText());
+            //Updates PFP if needed
+            if(!instructorPFPImageView.getImage().equals(defaultImage))
+                tmp.setImage(instructorPFPImageView.getImage());
+            else
+                tmp.setImage(defaultImage);
+
+            DBManager.addInstructor(tmp);
+            eventTestTabRefresh();
+
+            //Update Instructor
+        }else{
+
+            String oldName = editInstructorVector.get(selectedIndex).getName();
+            tmp = editInstructorVector.get(selectedIndex);
+
+            if(!editInstructorNameTextField.getText().isEmpty()){
+
+                boolean isFound = false;
+                for(Instructor instructor : editInstructorVector){
+                    if(instructor.getName().equals(editInstructorNameTextField.getText())){
+                        isFound = true;
+                        break;
+                    }
+                }
+                if(isFound){
+                    editEventErrorLabel.setVisible(true);
+                    return;
+                }
+
+                tmp.setName(editInstructorNameTextField.getText());
+
+            }
+
+            if(!instructorPFPImageView.getImage().equals(tmp.getImage()))
+                tmp.setImage(instructorPFPImageView.getImage());
+
+
+            DBManager.deleteInstructor(new Instructor(tmp.getYear(), tmp.getSession(), oldName, tmp.getActualImage()));
+            DBManager.addInstructor(tmp);
+            eventTestTabRefresh();
+            editInstructorListView.getSelectionModel().select(selectedIndex);
+            onEditInstructorListViewClicked();
+
+        }
+
+    }
+
+    /**
+     * Deletes the selected instructor.
+     */
+    public void onDeleteInstructorClicked(){
+
+        Instructor tmp = editInstructorVector.get(editInstructorListView.getSelectionModel().getSelectedIndex());
+
+        String str = "Deleting " + tmp.getName() + ".\nDo you want to continue?";
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, str, ButtonType.YES, ButtonType.CANCEL);
+        alert.showAndWait();
+
+        if(alert.getResult() == ButtonType.CANCEL)
+            return;
+
+        DBManager.deleteInstructor(tmp);
+        eventTestTabRefresh();
+
+    }
+
+    /**
      * Refreshes the page's data with the most current data from Controller
      */
     public void eventTestTabRefresh(){
 
+        instructorPFPImageView.setImage(defaultImage);
+        newInstructorCheckBox.setSelected(true);
         editEventVector = controller.getCurrentEvents();
         editTestVector = controller.getCurrentTests();
         editDistrictVector = DBManager.getAllDistrictsFromSession(controller.getCurrentSession().getYear(),
                                                                   controller.getCurrentSession().getSession());
+        editInstructorVector = DBManager.getAllInstructorsFromSession(controller.getCurrentSession().getYear(),
+                                                                      controller.getCurrentSession().getSession());
 
         ObservableList<String> eventOL = FXCollections.observableArrayList();
         ObservableList<String> testOL = FXCollections.observableArrayList();
         ObservableList<String> districtOL = FXCollections.observableArrayList();
+        ObservableList<String> instructorOL = FXCollections.observableArrayList();
 
         for(Event event : editEventVector)
             eventOL.add(event.getName());
@@ -464,16 +655,20 @@ public class EditImportView {
             else
                 districtOL.add(district.getName() + " | " + district.getSupervisorEmail());
         }
+        for(Instructor instructor : Objects.requireNonNull(editInstructorVector))
+            instructorOL.add(instructor.getName());
 
         editEventsListView.setItems(eventOL);
         editTestsListView.setItems(testOL);
         editDistrictsListView.setItems(districtOL);
+        editInstructorListView.setItems(instructorOL);
         editEventErrorLabel.setVisible(false);
         editTestErrorLabel.setVisible(false);
         editDistrictErrorLabel.setVisible(false);
         editEventsListView.getSelectionModel().clearSelection();
         editTestsListView.getSelectionModel().clearSelection();
         editDistrictsListView.getSelectionModel().clearSelection();
+        editInstructorListView.getSelectionModel().clearSelection();
         editEventNameTextField.clear();
         editEventNameTextField.setPromptText("");
         editEventNotesTextField.clear();
@@ -486,6 +681,8 @@ public class EditImportView {
         editDistrictNameTextField.setPromptText("");
         editSupervisorEmailTextField.clear();
         editSupervisorEmailTextField.setPromptText("");
+        editInstructorNameTextField.clear();
+        editInstructorNameTextField.setPromptText("");
 
     }
 
@@ -734,6 +931,8 @@ public class EditImportView {
             DBManager.updateTest(tmp);
             controller.updateCurrentTests();
             eventTestTabRefresh();
+            editTestsListView.getSelectionModel().select(selectedIndex);
+            onEditTestListViewClicked();
 
         }
 
@@ -855,12 +1054,13 @@ public class EditImportView {
 
             if(!editSupervisorEmailTextField.getText().isEmpty() && editSupervisorEmailTextField.getText().matches(regex))
                 tmp.setSupervisorEmail(editSupervisorEmailTextField.getText());
-            else {
+            else if(!editSupervisorEmailTextField.getText().isEmpty()){
 
                 editDistrictErrorLabel.setVisible(true);
                 return;
 
-            }
+            }else
+                tmp.setSupervisorEmail(editSupervisorEmailTextField.getPromptText());
 
             DBManager.updateDistrict(tmp);
             eventTestTabRefresh();

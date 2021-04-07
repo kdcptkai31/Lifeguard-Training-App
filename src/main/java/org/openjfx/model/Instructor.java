@@ -4,9 +4,8 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 
 import javax.imageio.ImageIO;
+
 import java.awt.image.BufferedImage;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class Instructor {
@@ -15,6 +14,11 @@ public class Instructor {
     private int session;
     private String name;
     private Image image;
+
+    /**
+     * Default Constructor
+     */
+    public Instructor(){}
 
     /**
      * Constructor
