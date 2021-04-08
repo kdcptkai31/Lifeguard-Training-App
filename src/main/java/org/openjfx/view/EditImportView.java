@@ -2477,8 +2477,8 @@ public class EditImportView {
             if (records.get(0).size() != 21)
                 throw new Exception("Wrong File");
             for (CSVRecord record : records)
-                tmpTrainees.add(new Trainee(record.get(3), record.get(4), record.get(5), record.get(6), record.get(7),
-                        record.get(8), record.get(9), record.get(10), record.get(11),
+                tmpTrainees.add(new Trainee(record.get(3).trim(), record.get(4).trim(), record.get(5).trim(),
+                        record.get(6), record.get(7), record.get(8), record.get(9), record.get(10), record.get(11),
                         record.get(12).charAt(0) == 'Y',
                         new EmergencyContact(record.get(13), record.get(14), record.get(15),
                                 record.get(16), record.get(17), record.get(18),
@@ -2486,6 +2486,31 @@ public class EditImportView {
                         0, false, false, true, 2222, Integer.parseInt(record.get(2))));
 
             parser.close();
+
+            //Remove early duplicates
+            Vector<Pair<String, String>> currentNames = new Vector<>();
+            Iterator<Trainee> it = tmpTrainees.iterator();
+            Vector<Trainee> removeList = new Vector<>();
+            Vector<Integer> removedIndecies = new Vector<>();
+            while (it.hasNext()){
+                Trainee tmp = it.next();
+                for(int index = 0; index < currentNames.size(); index++){
+                    if(currentNames.get(index).getKey().toUpperCase().equals(tmp.getFirstName().toUpperCase())
+                            && currentNames.get(index).getValue().toUpperCase().equals(tmp.getLastName().toUpperCase())
+                            && !removedIndecies.contains(index)){
+
+                        removedIndecies.add(index);
+                        removeList.add(tmpTrainees.get(index));
+                        break;
+
+                    }
+                }
+                currentNames.add(new Pair<>(tmp.getFirstName(), tmp.getLastName()));
+
+            }
+            tmpTrainees.removeAll(removeList);
+
+
             List<Integer> sessionChoices = new ArrayList<>();
             for(Trainee trainee : tmpTrainees) {
                 if (!sessionChoices.contains(trainee.getSession()))
@@ -2607,8 +2632,8 @@ public class EditImportView {
                     }else
                         pendingSessions.add(new Session(Integer.parseInt(yearTextField.getText()),
                                             Integer.parseInt(sessionColumn.getCellObservableValue(i).getValue()),
-                                            startDateColumn.getCellObservableValue(i).getValue(),
-                                            endDateColumn.getCellObservableValue(i).getValue()));
+                                            startDateColumn.getCellObservableValue(i).getValue() + "/" + yearTextField.getText(),
+                                            endDateColumn.getCellObservableValue(i).getValue() + "/" + yearTextField.getText()));
 
                 }
 
@@ -2646,8 +2671,12 @@ public class EditImportView {
                 }
 
                 //Save Trainees to their respective sessions
-                for(Trainee trainee : tmpTrainees)
+                for(Trainee trainee : tmpTrainees) {
+
+                    trainee.setYear(Integer.parseInt(yearTextField.getText()));
                     DBManager.addInitialTrainee(trainee);
+
+                }
 
                 controller.updateCurrentTrainees();
                 dialog.close();
@@ -2700,7 +2729,6 @@ public class EditImportView {
 
         List<Trainee> tmpTraineeQ1 = new ArrayList<>();
         //Handle Trainees
-
         try {
 
             CSVFormat format = CSVFormat.RFC4180.withHeader().withDelimiter(',');
@@ -2711,10 +2739,10 @@ public class EditImportView {
                 throw new Exception("Wrong File");
 
             for (CSVRecord record : records)
-                tmpTraineeQ1.add(new Trainee(record.get(3), record.get(2), record.get(1), record.get(4), record.get(5),
-                        record.get(6),
-                        !(record.get(7).charAt(0) == 'N' && record.get(7).charAt(1) == '/'),
-                        (record.get(7).charAt(0) == 'N' && record.get(7).charAt(1) == '/') ? null : record.get(7),
+                tmpTraineeQ1.add(new Trainee(record.get(3).trim(), record.get(2).trim(), record.get(1).trim(),
+                        record.get(4), record.get(5), record.get(6),
+                        !(Character.toUpperCase(record.get(7).charAt(0)) == 'N' && record.get(7).charAt(1) == '/'),
+                        (Character.toUpperCase(record.get(7).charAt(0)) == 'N' && record.get(7).charAt(1) == '/') ? null : record.get(7),
                         record.get(8), record.get(9), record.get(10).charAt(0) == 'Y',
                         record.get(11), record.get(12).charAt(0) == 'Y',
                         record.get(13), record.get(14).charAt(0) == 'Y',
@@ -2725,27 +2753,55 @@ public class EditImportView {
 
             parser.close();
 
+            //Remove early duplicates
+            Vector<Pair<String, String>> currentNames = new Vector<>();
+            Iterator<Trainee> it = tmpTraineeQ1.iterator();
+            Vector<Trainee> removeList = new Vector<>();
+            Vector<Integer> removedIndecies = new Vector<>();
+            while (it.hasNext()){
+                Trainee tmp = it.next();
+                for(int index = 0; index < currentNames.size(); index++){
+                    if(currentNames.get(index).getKey().toUpperCase().equals(tmp.getFirstName().toUpperCase())
+                            && currentNames.get(index).getValue().toUpperCase().equals(tmp.getLastName().toUpperCase())
+                            && !removedIndecies.contains(index)){
+
+                        removedIndecies.add(index);
+                        removeList.add(tmpTraineeQ1.get(index));
+                        break;
+
+                    }
+                }
+                currentNames.add(new Pair<>(tmp.getFirstName(), tmp.getLastName()));
+
+            }
+            tmpTraineeQ1.removeAll(removeList);
+
             //Adds to db if does not exist
+            Vector<Trainee> allTrainees = DBManager.getAllTrainees();
+            Collections.reverse(Objects.requireNonNull(allTrainees));
             for (int i = 0; i < tmpTraineeQ1.size(); i++) {
+
                 boolean isFound = false;
                 boolean isFilled = false;
-                for (int j = 0; j < controller.getCurrentTrainees().size() && !isFound; j++) {
+                for (int j = 0; j < allTrainees.size() && !isFound; j++) {
 
-                    if (tmpTraineeQ1.get(i).getFirstName().equals(controller.getCurrentTrainees().get(j).getFirstName()) &&
-                            tmpTraineeQ1.get(i).getLastName().equals(controller.getCurrentTrainees().get(j).getLastName())) {
+                    if (tmpTraineeQ1.get(i).getFirstName().equals(allTrainees.get(j).getFirstName()) &&
+                            tmpTraineeQ1.get(i).getLastName().equals(allTrainees.get(j).getLastName())) {
 
-                        tmpTraineeQ1.get(i).setId(controller.getCurrentTrainees().get(j).getId());
+                        tmpTraineeQ1.get(i).setId(allTrainees.get(j).getId());
                         isFound = true;
 
-                        if (controller.getCurrentTrainees().get(j).isQuestionnaire1Complete())
+                        if (allTrainees.get(j).isQuestionnaire1Complete())
                             isFilled = true;
 
                     }
 
                 }
 
-                if (isFound && !isFilled)
+                if (isFound && !isFilled) {
                     DBManager.addExistingTraineeQuestionnaire1Data(tmpTraineeQ1.get(i));
+                    System.out.println(tmpTraineeQ1.get(i).getFirstName() + " ADDED");
+                }
 
             }
 
@@ -2804,36 +2860,63 @@ public class EditImportView {
                 throw new Exception("Wrong File");
 
             for (CSVRecord record : records)
-                tmpTraineeQ2.add(new Trainee(record.get(1), record.get(2), record.get(3), record.get(4),
+                tmpTraineeQ2.add(new Trainee(record.get(1).trim(), record.get(2).trim(), record.get(3), record.get(4),
                         Integer.parseInt(record.get(5)), Integer.parseInt(record.get(6)),
                         Integer.parseInt(record.get(7)), Integer.parseInt(record.get(8)),
                         Integer.parseInt(record.get(9)), record.get(10), record.get(11),
                         record.get(12), record.get(13), record.get(14), record.get(15),
-                        record.get(16).charAt(0) == 'Y'));
+                        record.get(16).charAt(0) == 'Y' || record.get(16).charAt(0) == 'y'));
 
             parser.close();
 
+            //Remove early duplicates
+            Vector<Pair<String, String>> currentNames = new Vector<>();
+            Iterator<Trainee> it = tmpTraineeQ2.iterator();
+            Vector<Trainee> removeList = new Vector<>();
+            Vector<Integer> removedIndecies = new Vector<>();
+            while (it.hasNext()){
+                Trainee tmp = it.next();
+                for(int index = 0; index < currentNames.size(); index++){
+                    if(currentNames.get(index).getKey().toUpperCase().equals(tmp.getFirstName().toUpperCase())
+                            && currentNames.get(index).getValue().toUpperCase().equals(tmp.getLastName().toUpperCase())
+                            && !removedIndecies.contains(index)){
+
+                        removedIndecies.add(index);
+                        removeList.add(tmpTraineeQ2.get(index));
+                        break;
+
+                    }
+                }
+                currentNames.add(new Pair<>(tmp.getFirstName(), tmp.getLastName()));
+
+            }
+            tmpTraineeQ2.removeAll(removeList);
+
             //Adds to db if does not exist
+            Vector<Trainee> allTrainees = DBManager.getAllTrainees();
+            Collections.reverse(Objects.requireNonNull(allTrainees));
             for (int i = 0; i < tmpTraineeQ2.size(); i++) {
                 boolean isFound = false;
                 boolean isFilled = false;
-                for (int j = 0; j < controller.getCurrentTrainees().size() && !isFound; j++) {
+                for (int j = 0; j < allTrainees.size() && !isFound; j++) {
 
-                    if (tmpTraineeQ2.get(i).getFirstName().equals(controller.getCurrentTrainees().get(j).getFirstName()) &&
-                            tmpTraineeQ2.get(i).getLastName().equals(controller.getCurrentTrainees().get(j).getLastName())) {
+                    if (tmpTraineeQ2.get(i).getFirstName().equals(allTrainees.get(j).getFirstName()) &&
+                            tmpTraineeQ2.get(i).getLastName().equals(allTrainees.get(j).getLastName())) {
 
-                        tmpTraineeQ2.get(i).setId(controller.getCurrentTrainees().get(j).getId());
+                        tmpTraineeQ2.get(i).setId(allTrainees.get(j).getId());
                         isFound = true;
 
-                        if (controller.getCurrentTrainees().get(j).isQuestionnaire2Complete())
+                        if (allTrainees.get(j).isQuestionnaire2Complete())
                             isFilled = true;
 
                     }
 
                 }
 
-                if (isFound && !isFilled)
+                if (isFound && !isFilled) {
                     DBManager.addExistingTraineeQuestionnaire2Data(tmpTraineeQ2.get(i));
+                    System.out.println(tmpTraineeQ2.get(i).getFirstName() + " ADDED");
+                }
 
             }
 

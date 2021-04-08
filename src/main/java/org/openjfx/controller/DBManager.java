@@ -315,6 +315,29 @@ public class DBManager {
      */
 
     /**
+     * Returns all trainees in the database.
+     * @return
+     */
+    public static Vector<Trainee> getAllTrainees(){
+
+        String sql = "SELECT * FROM trainees";
+
+        try{
+
+            Statement stmt = connection.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            return getTraineesHelper(rs);
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    /**
      * Returns all trainees from a given year and session.
      * @param year
      * @param session
@@ -961,6 +984,7 @@ public class DBManager {
     private static Vector<Trainee> getTraineesHelper(ResultSet rs) throws SQLException{
 
         Vector<Trainee> results = new Vector<>();
+
         while(rs.next()){
 
             Trainee tmp = new Trainee();
