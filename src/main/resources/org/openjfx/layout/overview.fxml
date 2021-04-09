@@ -188,6 +188,9 @@
                   </Button>
                </children>
             </VBox>
-         </children></HBox>
+         </children>
+         <effect>
+            <InnerShadow blurType="GAUSSIAN" />
+         </effect></HBox>
    </center>
 </BorderPane>

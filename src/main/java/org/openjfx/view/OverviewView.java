@@ -74,6 +74,9 @@ public class OverviewView {
         scoreColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         scoreColumn.setCellValueFactory(new PropertyValueFactory<>("score"));
 
+        testListView.setCellFactory(stringListView -> new CenteredTestListViewCell());
+        eventListView.setCellFactory(stringListView -> new CenteredEventListViewCell());
+
         //Action event where the user presses enter to enter that row's score/place, and it increments the edit focus
         //until the end of the list.
         scoreColumn.setOnEditCommit((TableColumn.CellEditEvent<TableData, String> t) -> {
@@ -111,12 +114,11 @@ public class OverviewView {
         //Fill Placement List//////////////////////////////////////////////////////////////////////////////////////////
         traineeVector = DBManager.getAllTraineesFromSession(controller.getCurrentSession().getYear(),
                                                             controller.getCurrentSession().getSession());
-        int numberOfEvents = DBManager.getAllEventsFromSession(controller.getCurrentSession().getYear(),
-                                                                controller.getCurrentSession().getSession()).size();
+
         traineeTotalScores = new Vector<>();
         Vector<Pair<Integer, Double>> averagePlacement = new Vector<>();
         int counter = 0;
-        for(Trainee trainee : traineeVector){
+        for(Trainee trainee : Objects.requireNonNull(traineeVector)){
 
             double totalScore = 0;
             Vector<TestScore> traineeTestScores = DBManager.getAllTestScoresFromTraineeID(trainee.getId());
@@ -235,7 +237,7 @@ public class OverviewView {
             for(int i = 0; i < controller.getCurrentTrainees().size(); i++){
 
                 String tmpCheck = scoreColumn.getCellObservableValue(i).getValue();
-                if(!isInteger(tmpCheck) || Integer.parseInt(tmpCheck) < 0 || Integer.parseInt(tmpCheck) > maxTestScore){
+                if(isInteger(tmpCheck) || Integer.parseInt(tmpCheck) < 0 || Integer.parseInt(tmpCheck) > maxTestScore){
 
                     addScoresErrorLabel.setText("*ERROR* Enter valid scores less than or equal to " + maxTestScore);
                     addScoresErrorLabel.setVisible(true);
@@ -272,7 +274,7 @@ public class OverviewView {
             for(int i = 0; i < controller.getCurrentTrainees().size(); i++){
 
                 String tmpCheck = scoreColumn.getCellObservableValue(i).getValue();
-                if(!isInteger(tmpCheck) || Integer.parseInt(tmpCheck) < 1 || Integer.parseInt(tmpCheck) > maxPlacement){
+                if(isInteger(tmpCheck) || Integer.parseInt(tmpCheck) < 1 || Integer.parseInt(tmpCheck) > maxPlacement){
 
                     addScoresErrorLabel.setText("*ERROR* Enter valid places less than or equal to " + maxPlacement);
                     addScoresErrorLabel.setVisible(true);
@@ -388,7 +390,7 @@ public class OverviewView {
         VBox.setMargin(buttonHBox, new Insets(10));
         VBox.setMargin(sessionListView, new Insets(0, 5, 0, 5));
 
-        Scene dialogScene = new Scene(dialogVBox, 300, 200);
+        Scene dialogScene = new Scene(dialogVBox, 300, 400);
         dialog.setScene(dialogScene);
         dialog.show();
 
@@ -481,17 +483,38 @@ public class OverviewView {
     public static boolean isInteger(String s) {
 
         if(s.equals(""))
-            return false;
+            return true;
 
         s = s.trim();
 
         try {
             Integer.parseInt(s);
         } catch(NumberFormatException e) {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
+    }
+
+    static final class CenteredTestListViewCell extends ListCell<Test> { { setAlignment(Pos.BASELINE_CENTER); }
+
+        @Override protected void updateItem(Test item, boolean empty) {
+            super.updateItem(item, empty);
+            if(item != null)
+                setText(item.getName());
+            else
+                setText(null);
+        }
+    }
+    static final class CenteredEventListViewCell extends ListCell<Event> { { setAlignment(Pos.BASELINE_CENTER); }
+
+        @Override protected void updateItem(Event item, boolean empty) {
+            super.updateItem(item, empty);
+            if(item != null)
+                setText(item.getName());
+            else
+                setText(null);
+        }
     }
 
 }

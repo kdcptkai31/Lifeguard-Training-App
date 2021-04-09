@@ -1931,17 +1931,20 @@ public class DBManager {
      * @param dToAdd
      * @return true if successful, false if not.
      */
-    public static boolean updateDistrict(District dToAdd){
+    public static boolean updateDistrict(District dToAdd, String oldName){
 
-        String sql = "UPDATE districts SET superEmail = ? WHERE year = ? AND session = ? AND district = ?";
+        String sql = "UPDATE districts SET year = ?, session = ?, district = ?, superEmail = ? WHERE year = ? AND session = ? AND district = ?";
 
         try{
 
             PreparedStatement stmt = connection.prepareStatement(sql);
-            stmt.setString(1, dToAdd.getSupervisorEmail());
-            stmt.setInt(2, dToAdd.getYear());
-            stmt.setInt(3, dToAdd.getSession());
-            stmt.setString(4, dToAdd.getName());
+            stmt.setInt(1, dToAdd.getYear());
+            stmt.setInt(2, dToAdd.getSession());
+            stmt.setString(3, dToAdd.getName());
+            stmt.setString(4, dToAdd.getSupervisorEmail());
+            stmt.setInt(5, dToAdd.getYear());
+            stmt.setInt(6, dToAdd.getSession());
+            stmt.setString(7, oldName);
             stmt.executeUpdate();
 
             return true;
@@ -1989,6 +1992,48 @@ public class DBManager {
             return true;
 
         }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Updates the given instructor with the most current information.
+     * @param iToAdd
+     * @param oldName
+     * @return true if successful, false if not.
+     */
+    public static boolean updateInstructor(Instructor iToAdd, String oldName){
+
+        String sql = "UPDATE instructors SET year = ?, session = ?, name = ?, image = ? WHERE year = ? AND session = ? AND name = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, iToAdd.getYear());
+            stmt.setInt(2, iToAdd.getSession());
+            stmt.setString(3, iToAdd.getName());
+            if(iToAdd.getImage() == null)
+                stmt.setBytes(4, null);
+            else{
+
+                ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
+                ImageIO.write(SwingFXUtils.fromFXImage(iToAdd.getImage(), null), "png", byteOutput);
+                stmt.setBytes(4, byteOutput.toByteArray());
+
+            }
+
+            stmt.setInt(5, iToAdd.getYear());
+            stmt.setInt(6, iToAdd.getSession());
+            stmt.setString(7, oldName);
+
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch (Exception e){
             e.printStackTrace();
         }
 

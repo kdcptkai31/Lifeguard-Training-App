@@ -230,6 +230,9 @@ public class EditImportView {
         editTestVector = new Vector<>();
         editDistrictVector = new Vector<>();
         editInstructorVector = new Vector<>();
+        traineeListView.setCellFactory(stringListView -> new CenteredListViewCell());
+        traineeEventScoresListView.setCellFactory(stringListView -> new CenteredListViewCell());
+        traineeTestScoresListView.setCellFactory(stringListView -> new CenteredListViewCell());
         editEventsListView.setCellFactory(stringListView -> new CenteredListViewCell());
         editTestsListView.setCellFactory(stringListView -> new CenteredListViewCell());
         editDistrictsListView.setCellFactory(stringListView -> new CenteredListViewCell());
@@ -595,9 +598,7 @@ public class EditImportView {
             if(!instructorPFPImageView.getImage().equals(tmp.getImage()))
                 tmp.setImage(instructorPFPImageView.getImage());
 
-
-            DBManager.deleteInstructor(new Instructor(tmp.getYear(), tmp.getSession(), oldName, tmp.getActualImage()));
-            DBManager.addInstructor(tmp);
+            DBManager.updateInstructor(tmp, oldName);
             eventTestTabRefresh();
             editInstructorListView.getSelectionModel().select(selectedIndex);
             onEditInstructorListViewClicked();
@@ -889,6 +890,7 @@ public class EditImportView {
                     }
                 }
                 if(isFound){
+                    System.out.println("FOUND");
                     editTestErrorLabel.setVisible(true);
                     return;
                 }
@@ -901,12 +903,14 @@ public class EditImportView {
                 Integer.parseInt(editTestPointsTextField.getText()) > 0)
                 tmp.setPoints(Integer.parseInt(editTestPointsTextField.getText()));
 
-            if(!isInteger(editTestPointsTextField.getText()) || Integer.parseInt(editTestPointsTextField.getText()) < 1){
+            if(!editTestPointsTextField.getText().isEmpty() && (!isInteger(editTestPointsTextField.getText())
+                    || Integer.parseInt(editTestPointsTextField.getText()) < 1)){
+                System.out.println("HERE");
                 editTestErrorLabel.setVisible(true);
                 return;
             }
 
-            String str = "Are you sure you want to change the point value of " + tmp.getName() + "?\n"
+            String str = "Are you sure you want to set the point value of " + tmp.getName() + " to " + tmp.getPoints() + "?\n"
                         + "It will change all trainee test scores to a value of the same ratio as before.";
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION, str, ButtonType.YES, ButtonType.CANCEL);
             alert.showAndWait();
@@ -1032,6 +1036,7 @@ public class EditImportView {
             //Update District
         }else{
 
+            String oldName = editDistrictVector.get(selectedIndex).getName();
             tmp = editDistrictVector.get(selectedIndex);
 
             if(!editDistrictNameTextField.getText().isEmpty()) {
@@ -1062,7 +1067,7 @@ public class EditImportView {
             }else
                 tmp.setSupervisorEmail(editSupervisorEmailTextField.getPromptText());
 
-            DBManager.updateDistrict(tmp);
+            DBManager.updateDistrict(tmp, oldName);
             eventTestTabRefresh();
             editDistrictsListView.getSelectionModel().select(selectedIndex);
             onEditDistrictListViewClicked();
@@ -2999,7 +3004,7 @@ public class EditImportView {
                     return -1 * yearDiff;
             }
         }
-        Collections.sort(sessions, new SortByNewestSession());
+        sessions.sort(new SortByNewestSession());
         for(Session session: sessions)
             sessionObList.add("Year: " + session.getYear() + " Session: " + session.getSession() + " | " +
                     session.getStartDate() + " - " + session.getEndDate());
@@ -3036,7 +3041,7 @@ public class EditImportView {
         VBox.setMargin(buttonHBox, new Insets(10));
         VBox.setMargin(sessionListView, new Insets(0, 5, 0, 5));
 
-        Scene dialogScene = new Scene(dialogVBox, 300, 200);
+        Scene dialogScene = new Scene(dialogVBox, 300, 400);
         dialog.setScene(dialogScene);
         dialog.show();
 

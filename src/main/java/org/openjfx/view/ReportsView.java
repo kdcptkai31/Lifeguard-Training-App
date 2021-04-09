@@ -118,7 +118,7 @@ public class ReportsView {
                     return -1 * yearDiff;
             }
         }
-        Collections.sort(sessions, new SortByNewestSession());
+        sessions.sort(new SortByNewestSession());
         for(Session session: sessions)
             sessionObList.add("Year: " + session.getYear() + " Session: " + session.getSession() + " | " +
                     session.getStartDate() + " - " + session.getEndDate());
@@ -150,11 +150,11 @@ public class ReportsView {
         buttonHBox.setAlignment(Pos.CENTER);
         dialogVBox.setAlignment(Pos.CENTER);
         dialogVBox.setSpacing(10);
-        dialogVBox.setMargin(label, new Insets(10, 0, 0, 0));
-        dialogVBox.setMargin(buttonHBox, new Insets(10));
-        dialogVBox.setMargin(sessionListView, new Insets(0, 5, 0, 5));
+        VBox.setMargin(label, new Insets(10, 0, 0, 0));
+        VBox.setMargin(buttonHBox, new Insets(10));
+        VBox.setMargin(sessionListView, new Insets(0, 5, 0, 5));
 
-        Scene dialogScene = new Scene(dialogVBox, 300, 200);
+        Scene dialogScene = new Scene(dialogVBox, 300, 400);
         dialog.setScene(dialogScene);
         dialog.show();
 
