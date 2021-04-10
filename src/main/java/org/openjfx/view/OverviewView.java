@@ -114,6 +114,7 @@ public class OverviewView {
         //Fill Placement List//////////////////////////////////////////////////////////////////////////////////////////
         traineeVector = DBManager.getAllTraineesFromSession(controller.getCurrentSession().getYear(),
                                                             controller.getCurrentSession().getSession());
+        Objects.requireNonNull(traineeVector).removeIf(b -> !b.isActive());
 
         traineeTotalScores = new Vector<>();
         Vector<Pair<Integer, Double>> averagePlacement = new Vector<>();

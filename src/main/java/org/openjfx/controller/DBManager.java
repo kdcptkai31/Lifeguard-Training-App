@@ -1297,6 +1297,33 @@ public class DBManager {
     }
 
     /**
+     * Sets the given trainee to inactive, removing them from lists and use inside the application, with data only
+     * persisting in reports.
+     * @param tToRemove
+     * @return true if successful, false if not.
+     */
+    public static boolean setTraineeInactive(Trainee tToRemove){
+
+        String sql = "UPDATE trainees SET isActive = ? WHERE tid = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, 0);
+            stmt.setInt(2, tToRemove.getId());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
      * Adds the given image to the database for the trainee.
      * @param tToAdd
      * @return true if successful, false if not

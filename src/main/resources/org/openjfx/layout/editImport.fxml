@@ -309,14 +309,14 @@
                                     </Button>
                                  </children>
                               </VBox>
-                              <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="342.0" prefWidth="188.0">
+                              <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="429.0" prefWidth="188.0">
                                  <children>
                                     <Label text="Emergency Contact" textFill="#efb748">
                                        <font>
                                           <Font name="System Bold" size="16.0" />
                                        </font>
                                        <VBox.margin>
-                                          <Insets bottom="10.0" />
+                                          <Insets bottom="10.0" top="60.0" />
                                        </VBox.margin>
                                     </Label>
                                     <HBox alignment="CENTER" prefHeight="32.0" prefWidth="188.0">
@@ -402,6 +402,15 @@
                                           <Insets top="3.0" />
                                        </VBox.margin>
                                     </Label>
+                                    <Label text="Set Trainee Inactive" textFill="#efb748">
+                                       <font>
+                                          <Font name="System Bold" size="16.0" />
+                                       </font>
+                                       <VBox.margin>
+                                          <Insets top="30.0" />
+                                       </VBox.margin>
+                                    </Label>
+                                    <Button mnemonicParsing="false" onMouseClicked="#onSetTraineeInactiveClicked" text="Execute" />
                                  </children>
                                  <HBox.margin>
                                     <Insets top="160.0" />

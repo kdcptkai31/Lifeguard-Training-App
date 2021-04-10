@@ -6,6 +6,8 @@ import javafx.collections.ObservableList;
 import org.openjfx.model.*;
 
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Objects;
 import java.util.Vector;
 
 public class Controller {
@@ -74,7 +76,9 @@ public class Controller {
             }
         }
         currentTrainees = DBManager.getAllTraineesFromSession(currentSession.getYear(), currentSession.getSession());
-        currentTrainees.sort(new SortByLastName());
+
+        Objects.requireNonNull(currentTrainees).removeIf(b -> !b.isActive());
+        Objects.requireNonNull(currentTrainees).sort(new SortByLastName());
 
     }
 

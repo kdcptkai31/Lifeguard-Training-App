@@ -1,5 +1,9 @@
 package org.openjfx.view;
 
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.util.*;
+
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -21,8 +25,10 @@ import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-
 import javafx.util.Pair;
+
+import javax.imageio.ImageIO;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -31,11 +37,6 @@ import org.openjfx.controller.Controller;
 import org.openjfx.controller.DBManager;
 import org.openjfx.controller.LifeguardTrainingApplication;
 import org.openjfx.model.*;
-
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.*;
-import java.util.*;
 
 import static java.lang.Character.isDigit;
 
@@ -153,7 +154,7 @@ public class EditImportView {
     @FXML
     private Label tCErrorLabel;
 
-    ////////////////////////////////////////////////////////////////////All Other Tab Objects
+    ////////////////////////////////////////////////////////////////////All Other Tab
     //Events
     @FXML
     private ListView<String> editEventsListView;
@@ -1179,6 +1180,31 @@ public class EditImportView {
         tCNextStepsComboBox.getSelectionModel().clearSelection();
         tCDateTextField.clear();
         tCDateTextField.setPromptText("mm/dd/yyyy");
+
+    }
+
+    /**
+     * Sets the selected trainee to inactive, removing them from runnings but keeping their data for reports.
+     */
+    public void onSetTraineeInactiveClicked(){
+
+        int selectedIndex = traineeListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1)
+            return;
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "You are about to set " +
+                controller.getCurrentTrainees().get(selectedIndex).getFullName() + " as INACTIVE.\nThis means they will "
+                + "be removed from all rankings and lists, however their info will persist on reports.\n\nThis cannot be undone.",
+                ButtonType.APPLY, ButtonType.CANCEL);
+
+        alert.showAndWait();
+        //If this was a mistake, leave, if not, continue
+        if (alert.getResult() == ButtonType.CANCEL)
+            return;
+
+        DBManager.setTraineeInactive(controller.getCurrentTrainees().get(selectedIndex));
+        controller.updateCurrentTrainees();
+        traineeTabRefresh();
 
     }
 
