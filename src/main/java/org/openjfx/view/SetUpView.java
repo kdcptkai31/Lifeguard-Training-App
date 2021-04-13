@@ -423,7 +423,7 @@ public class SetUpView {
 
         Session tmp = new Session(Integer.parseInt(yearTextField.getText().trim()), Integer.parseInt(sessionTextField.getText().trim()),
                                   startDateTextField.getText() + "/" + yearTextField.getText().trim(),
-                                  endDateTextField.getText() + "/" + yearTextField.getText().trim() );
+                                  endDateTextField.getText() + "/" + yearTextField.getText().trim(), 1);
 
         //Save the entered data in the database
         //Save Year and Session

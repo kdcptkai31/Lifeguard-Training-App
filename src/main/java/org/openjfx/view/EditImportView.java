@@ -2664,7 +2664,8 @@ public class EditImportView {
                         pendingSessions.add(new Session(Integer.parseInt(yearTextField.getText()),
                                             Integer.parseInt(sessionColumn.getCellObservableValue(i).getValue()),
                                             startDateColumn.getCellObservableValue(i).getValue() + "/" + yearTextField.getText(),
-                                            endDateColumn.getCellObservableValue(i).getValue() + "/" + yearTextField.getText()));
+                                            endDateColumn.getCellObservableValue(i).getValue() + "/" + yearTextField.getText(),
+                                            1));
 
                 }
 

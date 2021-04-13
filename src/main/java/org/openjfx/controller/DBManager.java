@@ -38,6 +38,7 @@ public class DBManager {
                 + "session INTEGER,\n"
                 + "startDate TEXT,\n"
                 + "endDate TEXT,\n"
+                + "currentDay INTEGER,\n"
                 + "PRIMARY KEY (year, session)"
                 + ");";
 
@@ -838,7 +839,8 @@ public class DBManager {
             Vector<Session> results = new Vector<>();
             while(rs.next())
                 results.add(new Session(rs.getInt("year"), rs.getInt("session"),
-                                        rs.getString("startDate"), rs.getString("endDate")));
+                                        rs.getString("startDate"), rs.getString("endDate"),
+                                        rs.getInt("currentDay")));
 
             return results;
 
@@ -867,10 +869,11 @@ public class DBManager {
             Vector<Session> results = new Vector<>();
             while(rs.next())
                 results.add(new Session(rs.getInt("year"), rs.getInt("session"),
-                                        rs.getString("startDate"), rs.getString("endDate")));
+                                        rs.getString("startDate"), rs.getString("endDate"),
+                                        rs.getInt("currentDay")));
 
             //Find newest session
-            Session maxSession = new Session(0, 0, "", "");
+            Session maxSession = new Session(0, 0, "", "", 0);
             for(int i = 0; i < results.size(); i++){
 
                 if(results.elementAt(i).getYear() >= maxSession.getYear()){
@@ -1287,6 +1290,28 @@ public class DBManager {
             stmt.executeUpdate();
 
             return true;
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    public static boolean updateTraineeHours(Trainee tToAdd){
+
+        String sql = "UPDATE trainees SET hoursAttended = ? WHERE tid = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, tToAdd.getHoursAttended());
+            stmt.setInt(2, tToAdd.getId());
+            stmt.executeUpdate();
+
+            return true;
+
 
         }catch(SQLException e){
             e.printStackTrace();
@@ -1898,11 +1923,13 @@ public class DBManager {
      * Adds a new year and session to the db.
      * @param newYear
      * @param newSession
+     * @param sDate
+     * @param eDate
      * @return true if successful, false if not.
      */
     public static boolean addNewSession(int newYear, int newSession, String sDate, String eDate){
 
-        String sql = "INSERT INTO sessions(year, session, startDate, endDate) VALUES(?, ?, ?, ?)";
+        String sql = "INSERT INTO sessions(year, session, startDate, endDate, currentDay) VALUES(?, ?, ?, ?, ?)";
 
         try{
             PreparedStatement stmt = connection.prepareStatement(sql);
@@ -1910,10 +1937,38 @@ public class DBManager {
             stmt.setInt(2, newSession);
             stmt.setString(3, sDate);
             stmt.setString(4, eDate);
+            stmt.setInt(5, 1);
             stmt.executeUpdate();
             return true;
 
         }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Updates the given's session currentDay.
+     * @param ses
+     * @return true if successful, false if not.
+     */
+    public static boolean updateSessionDay(Session ses){
+
+        String sql = "UPDATE sessions SET currentDay = ? WHERE year = ? AND session = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, ses.getCurrentDay());
+            stmt.setInt(2, ses.getYear());
+            stmt.setInt(3, ses.getSession());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch(SQLException e){
             e.printStackTrace();
         }
 

@@ -6,7 +6,6 @@ import javafx.collections.ObservableList;
 import org.openjfx.model.*;
 
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.Vector;
 

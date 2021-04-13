@@ -59,6 +59,17 @@ public class OverviewView {
     private Button saveScoresButton;
 
     @FXML
+    private Label attendanceDayLabel;
+    @FXML
+    private TableView<TableData> enterHoursTableView;
+    @FXML
+    private TableColumn<TableData, String> traineeHoursColumn;
+    @FXML
+    private TableColumn<TableData, String> hoursColumn;
+    @FXML
+    private Label addHoursErrorLabel;
+
+    @FXML
     protected void initialize(){
 
         traineeVector = new Vector<>();
@@ -70,12 +81,21 @@ public class OverviewView {
         enterInfoTableView.requestFocus();
         enterInfoTableView.layout();
 
+        enterHoursTableView.requestFocus();
+        enterHoursTableView.layout();
+
         traineeColumn.setCellValueFactory(new PropertyValueFactory<>("traineeName"));
         scoreColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         scoreColumn.setCellValueFactory(new PropertyValueFactory<>("score"));
 
         testListView.setCellFactory(stringListView -> new CenteredTestListViewCell());
         eventListView.setCellFactory(stringListView -> new CenteredEventListViewCell());
+
+        enterHoursTableView.requestFocus();
+        enterHoursTableView.layout();
+        traineeHoursColumn.setCellValueFactory(new PropertyValueFactory<>("traineeName"));
+        hoursColumn.setCellValueFactory(new PropertyValueFactory<>("score"));
+        hoursColumn.setCellFactory(TextFieldTableCell.forTableColumn());
 
         //Action event where the user presses enter to enter that row's score/place, and it increments the edit focus
         //until the end of the list.
@@ -94,6 +114,25 @@ public class OverviewView {
 
         });
 
+        //Action event where the user presses enter to enter that row's hours and it increments the edit focus until the
+        //end of the list.
+        hoursColumn.setOnEditCommit((TableColumn.CellEditEvent<TableData, String> t) -> {
+
+            t.getTableView().getItems().get(t.getTablePosition().getRow()).setScore(t.getNewValue());
+            int index = enterHoursTableView.getSelectionModel().getSelectedIndex();
+            if(index + 1 < controller.getCurrentTrainees().size()){
+
+                Platform.runLater(() -> {
+
+                    enterHoursTableView.getSelectionModel().select(index + 1);
+                    enterHoursTableView.edit(index + 1, hoursColumn);
+
+                });
+
+            }
+
+        });
+
         refresh();
 
     }
@@ -108,8 +147,10 @@ public class OverviewView {
         datesLabel.setText(controller.getCurrentSession().getStartDate() + " - " + controller.getCurrentSession().getEndDate());
 
         enterInfoTableView.getItems().clear();
+        enterHoursTableView.getItems().clear();
         saveScoresButton.setVisible(false);
         addScoresErrorLabel.setVisible(false);
+        addHoursErrorLabel.setVisible(false);
 
         //Fill Placement List//////////////////////////////////////////////////////////////////////////////////////////
         traineeVector = DBManager.getAllTraineesFromSession(controller.getCurrentSession().getYear(),
@@ -178,6 +219,88 @@ public class OverviewView {
         Vector<Event> displayEvents = controller.getCurrentEvents();
         displayEvents.removeIf(Event::isScored);
         eventListView.setItems(FXCollections.observableArrayList(displayEvents));
+
+
+        ObservableList<TableData> hoursTableData = FXCollections.observableArrayList();
+        for(Trainee trainee: controller.getCurrentTrainees())
+            hoursTableData.add(new TableData(trainee.getFullName(), "10"));
+
+        enterHoursTableView.setItems(hoursTableData);
+
+        attendanceDayLabel.setText("Add Day " + controller.getCurrentSession().getCurrentDay() + " Attendance");
+
+    }
+
+    /**
+     * Validates then saves the entered or automatically used hour values, increments the Session's currentDay.
+     */
+    public void onSaveHoursClicked(){
+
+        //Validate Entries
+        Set<Integer> hourValues = new HashSet<>();
+        for(int i = 0; i < controller.getCurrentTrainees().size(); i++){
+
+            String tmpCheck =  hoursColumn.getCellObservableValue(i).getValue();
+            if(isNotInteger(tmpCheck) || Integer.parseInt(tmpCheck) < 1) {
+
+                addHoursErrorLabel.setVisible(true);
+                return;
+
+            }
+            hourValues.add(Integer.parseInt(tmpCheck));
+
+        }
+
+        //Initialize Dialog box contents
+        final Stage dialog = new Stage();
+        dialog.setTitle("Add Attendance Hours");
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.initOwner(LifeguardTrainingApplication.getCoordinator().getStage());
+        VBox dialogVBox = new VBox();
+        dialogVBox.setStyle("-fx-background: #3476f7;");
+        dialogVBox.setAlignment(Pos.CENTER);
+        dialogVBox.setSpacing(10);
+        Label message = new Label();
+        message.setText("The highest hours to be added is " + Collections.max(hourValues) + ".\n              The minimum is " +
+                        Collections.min(hourValues) + ".\n      If this is correct, click Apply.");
+        message.setStyle("-fx-text-fill: #efb748; -fx-font-size: 14; -fx-font-weight: bold;");
+        HBox buttonHBox = new HBox();
+        buttonHBox.setAlignment(Pos.CENTER);
+        buttonHBox.setSpacing(10);
+        Button applyHoursButton = new Button("Apply");
+        applyHoursButton.setStyle("-fx-font-weight: bold");
+
+        //Saves the data and increments the currentDay value of the session.
+        applyHoursButton.setOnMouseClicked(event -> {
+
+            int counter = 0;
+            for(Trainee trainee : controller.getCurrentTrainees()){
+
+                trainee.setHoursAttended(trainee.getHoursAttended() + Integer.parseInt(hoursColumn.getCellObservableValue(counter).getValue()));
+                DBManager.updateTraineeHours(trainee);
+                counter++;
+
+            }
+
+            Session tmp = controller.getCurrentSession();
+            tmp.setCurrentDay(tmp.getCurrentDay() + 1);
+            DBManager.updateSessionDay(tmp);
+            controller.setCurrentSession(tmp);
+            controller.updateCurrentTrainees();
+            refresh();
+            dialog.close();
+
+        });
+
+        Button cancelHoursButton = new Button("Cancel");
+        cancelHoursButton.setOnMouseClicked(event -> {dialog.close();});
+
+        buttonHBox.getChildren().addAll(applyHoursButton, cancelHoursButton);
+        dialogVBox.getChildren().addAll(message, buttonHBox);
+        Scene dialogScene = new Scene(dialogVBox, 275, 100);
+        dialog.setScene(dialogScene);
+        dialog.show();
+
     }
 
     /**
@@ -238,7 +361,7 @@ public class OverviewView {
             for(int i = 0; i < controller.getCurrentTrainees().size(); i++){
 
                 String tmpCheck = scoreColumn.getCellObservableValue(i).getValue();
-                if(isInteger(tmpCheck) || Integer.parseInt(tmpCheck) < 0 || Integer.parseInt(tmpCheck) > maxTestScore){
+                if(isNotInteger(tmpCheck) || Integer.parseInt(tmpCheck) < 0 || Integer.parseInt(tmpCheck) > maxTestScore){
 
                     addScoresErrorLabel.setText("*ERROR* Enter valid scores less than or equal to " + maxTestScore);
                     addScoresErrorLabel.setVisible(true);
@@ -275,7 +398,7 @@ public class OverviewView {
             for(int i = 0; i < controller.getCurrentTrainees().size(); i++){
 
                 String tmpCheck = scoreColumn.getCellObservableValue(i).getValue();
-                if(isInteger(tmpCheck) || Integer.parseInt(tmpCheck) < 1 || Integer.parseInt(tmpCheck) > maxPlacement){
+                if(isNotInteger(tmpCheck) || Integer.parseInt(tmpCheck) < 1 || Integer.parseInt(tmpCheck) > maxPlacement){
 
                     addScoresErrorLabel.setText("*ERROR* Enter valid places less than or equal to " + maxPlacement);
                     addScoresErrorLabel.setVisible(true);
@@ -481,7 +604,7 @@ public class OverviewView {
      * @param s
      * @return
      */
-    public static boolean isInteger(String s) {
+    public static boolean isNotInteger(String s) {
 
         if(s.equals(""))
             return true;
