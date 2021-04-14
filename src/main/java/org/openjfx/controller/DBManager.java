@@ -7,11 +7,11 @@ import org.openjfx.model.*;
 import org.openjfx.model.Event;
 
 import javax.imageio.ImageIO;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.sql.*;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Vector;
 
 public class DBManager {
@@ -1392,7 +1392,7 @@ public class DBManager {
             else{
 
                 ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
-                ImageIO.write(SwingFXUtils.fromFXImage(tToAdd.getImage(), null), "png", byteOutput);
+                ImageIO.write(Objects.requireNonNull(SwingFXUtils.fromFXImage(tToAdd.getImage(), null)), "png", byteOutput);
                 stmt.setBytes(1, byteOutput.toByteArray());
 
             }

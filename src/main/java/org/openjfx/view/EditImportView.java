@@ -2197,7 +2197,7 @@ public class EditImportView {
                         holdsEditQuestionnaireData.setPhysicalConfidence(physicalComboBox.getSelectionModel().getSelectedItem());
                         holdsEditQuestionnaireData.setMentalConfidence(mentalComboBox.getSelectionModel().getSelectedItem());
                         if(trainingCountTextField.getText().isEmpty())
-                            if(!isInteger(trainingCountTextField.getText()) || trainingCountTextField.getPromptText().equals("# of Trainings Attended"))
+                            if(trainingCountTextField.getPromptText().equals("# of Trainings Attended"))
                                 throw new Exception("");
                             else
                                 holdsEditQuestionnaireData.setPreTrainingSeminarsAttended(Integer.parseInt(trainingCountTextField.getPromptText()));
