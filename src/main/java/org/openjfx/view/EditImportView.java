@@ -1913,7 +1913,7 @@ public class EditImportView {
         Label prepInfoLabel = new Label("Preparation: ");
         prepInfoLabel.setStyle("-fx-text-fill: #efb748; -fx-font-weight: bold;");
         TextField prepInfoTextField = new TextField();
-        prepInfoTextField.setPromptText(" What have they done to prep?");
+        prepInfoTextField.setPromptText("What have they done to prep?");
         HBox h15 = new HBox(prepInfoLabel, prepInfoTextField);
         h15.setAlignment(Pos.CENTER);
 
@@ -2067,7 +2067,7 @@ public class EditImportView {
 
             ///Fill tmp trainee with recorded data.
             if(finalIsUpdate){
-                if(finalTmp.isQuestionnaire1Complete()){
+                if(q1Validator == 3){
 
                     try{
                         holdsEditQuestionnaireData.setQuestionnaire1Complete(true);
@@ -2174,25 +2174,34 @@ public class EditImportView {
                     }
 
                 }
-                if(finalTmp.isQuestionnaire2Complete()){
-
+                if(q2Validator == 10){
+System.out.println("HERE");
                     try{
                         holdsEditQuestionnaireData.setQuestionnaire2Complete(true);
                         if(expectedChallengeTextField.getText().isEmpty())
-                            throw new Exception("");
+                            if(expectedChallengeTextField.getPromptText().equals("Expected challenges?"))
+                                throw new Exception("");
+                            else
+                                holdsEditQuestionnaireData.setExpectedBiggestTrainingChallengeInfo(expectedChallengeTextField.getPromptText());
                         else
                             holdsEditQuestionnaireData.setExpectedBiggestTrainingChallengeInfo(expectedChallengeTextField.getText());
                         if(prepInfoTextField.getText().isEmpty())
-                            throw new Exception("");
+                            if(prepInfoTextField.getPromptText().equals("What have they done to prep?"))
+                                throw new Exception("");
+                            else
+                                holdsEditQuestionnaireData.setPreparationInfo(prepInfoTextField.getPromptText());
                         else
                             holdsEditQuestionnaireData.setPreparationInfo(prepInfoTextField.getText());
                         holdsEditQuestionnaireData.setMedicalConfidence(firstAidComboBox.getSelectionModel().getSelectedItem());
                         holdsEditQuestionnaireData.setCprConfidence(cprComboBox.getSelectionModel().getSelectedItem());
                         holdsEditQuestionnaireData.setPhysicalConfidence(physicalComboBox.getSelectionModel().getSelectedItem());
                         holdsEditQuestionnaireData.setMentalConfidence(mentalComboBox.getSelectionModel().getSelectedItem());
-                        if(trainingCountTextField.getText().isEmpty() || !isInteger(trainingCountTextField.getText()))
-                            throw new Exception("");
-                        else
+                        if(trainingCountTextField.getText().isEmpty())
+                            if(!isInteger(trainingCountTextField.getText()) || trainingCountTextField.getPromptText().equals("# of Trainings Attended"))
+                                throw new Exception("");
+                            else
+                                holdsEditQuestionnaireData.setPreTrainingSeminarsAttended(Integer.parseInt(trainingCountTextField.getPromptText()));
+                        else if(isInteger(trainingCountTextField.getText()))
                             holdsEditQuestionnaireData.setPreTrainingSeminarsAttended(Integer.parseInt(trainingCountTextField.getText()));
                         holdsEditQuestionnaireData.setOrganizedSwimPoloFreq(getRealString(orgSwimFreqComboBox.getSelectionModel().getSelectedItem()));
                         holdsEditQuestionnaireData.setPersonalSwimFreq(getRealString(personalSwimFreqComboBox.getSelectionModel().getSelectedItem()));
@@ -2321,7 +2330,6 @@ public class EditImportView {
                         holdsEditQuestionnaireData.setSurfingFreq(getRealString(surfFreqComboBox.getSelectionModel().getSelectedItem()));
                         holdsEditQuestionnaireData.setDisabled(isDisabledCheckBox.isSelected());
 
-                        System.out.println("RAN");
                     }catch (Exception ex){
                         ex.printStackTrace();
                         holdsEditQuestionnaireData.setQuestionnaire2Complete(false);
@@ -2331,9 +2339,6 @@ public class EditImportView {
 
                 }else
                     holdsEditQuestionnaireData.setQuestionnaire2Complete(false);
-
-                System.out.println("1: " + holdsEditQuestionnaireData.isQuestionnaire1Complete());
-                System.out.println("2: " + holdsEditQuestionnaireData.isQuestionnaire2Complete());
 
             }
 
@@ -2381,6 +2386,7 @@ public class EditImportView {
      * Adds or updates the trainee who's data is entered.
      */
     public void onAddTraineeClicked(){
+
 
         boolean isUpdate = false;
         Trainee tmp = null;
@@ -2479,13 +2485,20 @@ public class EditImportView {
 
         }
 
+        System.out.println("START Qs");
         //Updates Q1 Data if needed
-        if(holdsEditQuestionnaireData.isQuestionnaire1Complete())
+        if(holdsEditQuestionnaireData.isQuestionnaire1Complete()){
+            System.out.println("ADD Q1");
             DBManager.addExistingTraineeQuestionnaire1Data(holdsEditQuestionnaireData);
+        }
+
 
         //Updates Q2 Data if needed
-        if(holdsEditQuestionnaireData.isQuestionnaire2Complete())
+        if(holdsEditQuestionnaireData.isQuestionnaire2Complete()){
+            System.out.println("ADD Q2");
             DBManager.addExistingTraineeQuestionnaire2Data(holdsEditQuestionnaireData);
+        }
+
 
         //Updates PFP if needed
         if(!traineePFPImageView.getImage().equals(defaultImage)) {

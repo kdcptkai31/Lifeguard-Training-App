@@ -296,7 +296,7 @@ public class DBManager {
             e.printStackTrace();
         }
 
-        String sqlFindDefaultSector = "SELECT * FROM sectors WHERE id = 1";
+        String sqlFindDefaultSector = "SELECT * FROM sectors WHERE sectorId = 1";
         try{
             Statement stmt = connection.createStatement();
             ResultSet rs = stmt.executeQuery(sqlFindDefaultSector);
