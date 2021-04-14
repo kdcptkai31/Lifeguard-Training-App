@@ -2175,7 +2175,7 @@ public class EditImportView {
 
                 }
                 if(q2Validator == 10){
-System.out.println("HERE");
+
                     try{
                         holdsEditQuestionnaireData.setQuestionnaire2Complete(true);
                         if(expectedChallengeTextField.getText().isEmpty())
@@ -2832,13 +2832,26 @@ System.out.println("HERE");
                     }
 
                 }
+                Vector<Trainee> allRelevantTrainees = new Vector<>();
+                for(Session ses : pendingSessions)
+                    allRelevantTrainees.addAll(Objects.requireNonNull(DBManager.getAllTraineesFromSession(ses.getYear(), ses.getSession())));
 
                 //Save Trainees to their respective sessions
                 for(Trainee trainee : tmpTrainees) {
 
-                    trainee.setYear(Integer.parseInt(yearTextField.getText()));
-                    DBManager.addInitialTrainee(trainee);
+                    boolean found = false;
+                    for(Trainee currentTrainees : allRelevantTrainees){
+                        if(trainee.getFullName().equals(currentTrainees.getFullName())){
+                            found = true;
+                            System.out.println("Duplicate: " + trainee.getFullName());
+                            break;
+                        }
+                    }
 
+                    if(!found){
+                        trainee.setYear(Integer.parseInt(yearTextField.getText()));
+                        DBManager.addInitialTrainee(trainee);
+                    }
                 }
 
                 controller.updateCurrentTrainees();
