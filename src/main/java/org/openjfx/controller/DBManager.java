@@ -66,6 +66,20 @@ public class DBManager {
             e.printStackTrace();
         }
 
+        String sqlSectors = "CREATE TABLE IF NOT EXISTS sectors (\n"
+                + "sectorID INTEGER,\n"
+                + "year INTEGER,\n"
+                + "session INTEGER,\n"
+                + "name TEXT,\n"
+                + "PRIMARY KEY(sectorID)"
+                + ");";
+        try{
+            Statement stmt = connection.createStatement();
+            stmt.execute(sqlSectors);
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
         //Creates a new instructors table
         String sqlInstructors = "CREATE TABLE IF NOT EXISTS instructors (\n"
                 + "year INTEGER,\n"
@@ -182,6 +196,7 @@ public class DBManager {
                 + "nextSteps TEXT,\n"
                 + "year INTEGER,\n"
                 + "session INTEGER,\n"
+                + "currentDay INTEGER,\n"
                 + "FOREIGN KEY(traineeID) REFERENCES trainees(tid),\n"
                 + "PRIMARY KEY (commentID)"
                 + ");";
@@ -278,6 +293,17 @@ public class DBManager {
             }
 
         }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        String sqlFindDefaultSector = "SELECT * FROM sectors WHERE id = 1";
+        try{
+            Statement stmt = connection.createStatement();
+            ResultSet rs = stmt.executeQuery(sqlFindDefaultSector);
+            if(!rs.next())
+                addSector(new Sector(0, 0, ""));
+
+        }catch (SQLException e){
             e.printStackTrace();
         }
 
@@ -506,17 +532,17 @@ public class DBManager {
 
     /**
      * Returns all comments from a specific day
-     * @param date
+     * @param day
      * @return
      */
-    public static Vector<Comment> getAllCommentsFromDay(int date, int year, int session){
+    public static Vector<Comment> getAllCommentsFromDay(int day, int year, int session){
 
-        String sql = "SELECT * FROM comments WHERE date = ? AND year = ? AND session = ?";
+        String sql = "SELECT * FROM comments WHERE currentDay = ? AND year = ? AND session = ?";
 
         try{
 
             PreparedStatement stmt = connection.prepareStatement(sql);
-            stmt.setInt(1, date);
+            stmt.setInt(1, day);
             stmt.setInt(2, year);
             stmt.setInt(3, session);
             ResultSet rs = stmt.executeQuery();
@@ -1109,6 +1135,7 @@ public class DBManager {
             tmp.setNextSteps(rs.getString("nextSteps"));
             tmp.setYear(rs.getInt("year"));
             tmp.setSession(rs.getInt("session"));
+            tmp.setCurrentDay(rs.getInt("currentDay"));
 
             results.add(tmp);
 
@@ -1564,8 +1591,8 @@ public class DBManager {
 
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT INTO comments(commentID, traineeID, date, rotation, instructorName, traineeName, incidentType, "
-                 + "incidentDescription, instructorActions, nextSteps, year, session) VALUES (NULL, ?, ?, ?, ?, ?, ?, "
-                 + "?, ?, ?, ?, ?)");
+                 + "incidentDescription, instructorActions, nextSteps, year, session, currentDay) VALUES (NULL, ?, ?, ?, ?, ?, ?, "
+                 + "?, ?, ?, ?, ?, ?)");
 
         try{
 
@@ -1581,6 +1608,7 @@ public class DBManager {
             stmt.setString(9, cToAdd.getNextSteps());
             stmt.setInt(10, cToAdd.getYear());
             stmt.setInt(11, cToAdd.getSession());
+            stmt.setInt(12, cToAdd.getCurrentDay());
             stmt.executeUpdate();
 
             return true;
@@ -2027,6 +2055,37 @@ public class DBManager {
             stmt.setInt(5, dToAdd.getYear());
             stmt.setInt(6, dToAdd.getSession());
             stmt.setString(7, oldName);
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /*
+    ******************************** Sectors ******************************************
+     */
+
+    /**
+     * Adds a sector to the database.
+     * @param sToAdd
+     * @return true if successful, false if not.
+     */
+    public static boolean addSector(Sector sToAdd){
+
+        String sql = "INSERT INTO sectors (sectorID, year, session, name) VALUES (null, ?, ?, ?)";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, sToAdd.getYear());
+            stmt.setInt(2, sToAdd.getSession());
+            stmt.setString(3, sToAdd.getName());
             stmt.executeUpdate();
 
             return true;

@@ -1110,11 +1110,11 @@ public class EditImportView {
         holdsEditQuestionnaireData = new Trainee();
         BufferedImage bufferedImage = null;
         try {
-            bufferedImage = ImageIO.read(getClass().getClassLoader().getResource("org/openjfx/images/blankpfp.png"));
+            bufferedImage = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("org/openjfx/images/blankpfp.png")));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        traineePFPImageView.setImage(SwingFXUtils.toFXImage(bufferedImage, null));
+        traineePFPImageView.setImage(SwingFXUtils.toFXImage(Objects.requireNonNull(bufferedImage), null));
         yearLabel.setText(String.valueOf(controller.getCurrentSession().getYear()));
         sessionLabel.setText("Session " + controller.getCurrentSession().getSession());
         datesLabel.setText(controller.getCurrentSession().getStartDate() + " - " + controller.getCurrentSession().getEndDate());
@@ -1292,7 +1292,7 @@ public class EditImportView {
             ObservableList<String> traineeEventScoresList = FXCollections.observableArrayList();
             for(EventScore score : traineeEventScores){
 
-                for(Event event : associatedTraineeEvents){
+                for(Event event : Objects.requireNonNull(associatedTraineeEvents)){
 
                     if(event.getEventID() == score.getEventID()) {
 
@@ -1319,7 +1319,7 @@ public class EditImportView {
             ObservableList<String> traineeTestScoresList = FXCollections.observableArrayList();
             for(TestScore score : traineeTestScores){
 
-                for(Test test : associatedTraineeTests){
+                for(Test test : Objects.requireNonNull(associatedTraineeTests)){
 
                     if(test.getTestID() == score.getTestID()){
 
@@ -1377,7 +1377,6 @@ public class EditImportView {
         tCRotationComboBox.getSelectionModel().select(tmpComment.getRotation());
         tCNextStepsComboBox.getSelectionModel().select(tmpComment.getNextSteps());
         tCDateTextField.setPromptText(tmpComment.getDate());
-
 
     }
 
@@ -2053,9 +2052,15 @@ public class EditImportView {
             if(!surfFreqComboBox.getSelectionModel().isEmpty())
                 q2Validator++;
 
+            boolean check = false;
+            if(trainingCountTextField.getText().isEmpty())
+                check = true;
+            else if(isInteger(trainingCountTextField.getText()))
+                check = true;
+
             //Test Validation
             if(!((q1Validator == 0 || q1Validator == 3) && (q2Validator == 0 || q2Validator == 10)) ||
-                    !isInteger(trainingCountTextField.getText())){
+                    !check){
                 errorLabel.setVisible(true);
                 return;
             }
@@ -2064,100 +2069,145 @@ public class EditImportView {
             if(finalIsUpdate){
                 if(finalTmp.isQuestionnaire1Complete()){
 
-                    holdsEditQuestionnaireData.setQuestionnaire1Complete(true);
-                    holdsEditQuestionnaireData.setShirtSize(shirtSizeComboBox.getSelectionModel().getSelectedItem());
-                    holdsEditQuestionnaireData.setShortSize(shortSizeComboBox.getSelectionModel().getSelectedItem());
-                    holdsEditQuestionnaireData.setSwimSuitSize(swimSuitSizeComboBox.getSelectionModel().getSelectedItem());
-                    holdsEditQuestionnaireData.setReturningTrainee(isReturningCheckBox.isSelected());
-                    if(isReturningCheckBox.isSelected()) {
-                        if (whyReturningTextField.getText().isEmpty())
-                            holdsEditQuestionnaireData.setWhyReturning(whyReturningTextField.getPromptText());
+                    try{
+                        holdsEditQuestionnaireData.setQuestionnaire1Complete(true);
+                        holdsEditQuestionnaireData.setShirtSize(shirtSizeComboBox.getSelectionModel().getSelectedItem());
+                        holdsEditQuestionnaireData.setShortSize(shortSizeComboBox.getSelectionModel().getSelectedItem());
+                        holdsEditQuestionnaireData.setSwimSuitSize(swimSuitSizeComboBox.getSelectionModel().getSelectedItem());
+                        holdsEditQuestionnaireData.setReturningTrainee(isReturningCheckBox.isSelected());
+                        if(isReturningCheckBox.isSelected()) {
+                            if (whyReturningTextField.getText().isEmpty())
+                                if(whyReturningTextField.getPromptText().equals("What are they returning?"))
+                                    throw new Exception("");
+                                else
+                                    holdsEditQuestionnaireData.setWhyReturning(whyReturningTextField.getPromptText());
+                            else
+                                holdsEditQuestionnaireData.setWhyReturning(whyReturningTextField.getText());
+                        }
+                        if(whyBeStateLGTextField.getText().isEmpty())
+                            if(whyBeStateLGTextField.getPromptText().equals("Why be State LG?"))
+                                throw new Exception("");
+                            else
+                                holdsEditQuestionnaireData.setWhyBeStateLG(whyBeStateLGTextField.getPromptText());
                         else
-                            holdsEditQuestionnaireData.setWhyReturning(whyReturningTextField.getText());
+                            holdsEditQuestionnaireData.setWhyBeStateLG(whyBeStateLGTextField.getText());
+                        if(whatLearnInTrainingTextField.getText().isEmpty())
+                            if(whatLearnInTrainingTextField.getPromptText().equals("What they want to learn?"))
+                                throw new Exception("");
+                            else
+                                holdsEditQuestionnaireData.setWhatWantLearnTraining(whatLearnInTrainingTextField.getPromptText());
+                        else
+                            holdsEditQuestionnaireData.setWhatWantLearnTraining(whatLearnInTrainingTextField.getText());
+                        holdsEditQuestionnaireData.setJG(isJGCheckBox.isSelected());
+                        if(isJGCheckBox.isSelected()){
+                            if(jgInfoTextField.getText().isEmpty())
+                                if(jgInfoTextField.getPromptText().equals("JG Info"))
+                                    throw new Exception("");
+                                else
+                                    holdsEditQuestionnaireData.setJgInfo(jgInfoTextField.getPromptText());
+                            else
+                                holdsEditQuestionnaireData.setJgInfo(jgInfoTextField.getText());
+                        }
+                        holdsEditQuestionnaireData.setOpenWaterLG(isOpenWaterLGCheckBox.isSelected());
+                        if(isOpenWaterLGCheckBox.isSelected()){
+                            if(openWaterLGInfoTextField.getText().isEmpty())
+                                if(openWaterLGInfoTextField.getPromptText().equals("Open Water LG Info"))
+                                    throw new Exception("");
+                                else
+                                    holdsEditQuestionnaireData.setOpenWaterLGInfo(openWaterLGInfoTextField.getPromptText());
+                            else
+                                holdsEditQuestionnaireData.setOpenWaterLGInfo(openWaterLGInfoTextField.getText());
+                        }
+                        holdsEditQuestionnaireData.setPoolLG(isPoolLGCheckBox.isSelected());
+                        if(isPoolLGCheckBox.isSelected()){
+                            if(poolLGInfoTextField.getText().isEmpty())
+                                if(poolLGInfoTextField.getPromptText().equals("Pool LG Info"))
+                                    throw new Exception("");
+                                else
+                                    holdsEditQuestionnaireData.setPoolLGInfo(poolLGInfoTextField.getPromptText());
+                            else
+                                holdsEditQuestionnaireData.setPoolLGInfo(poolLGInfoTextField.getText());
+                        }
+                        holdsEditQuestionnaireData.setEMT(isEMTCheckBox.isSelected());
+                        if(isEMTCheckBox.isSelected()){
+                            if(emtInfoTextField.getText().isEmpty())
+                                if(emtInfoTextField.getPromptText().equals("EMT Info"))
+                                    throw new Exception("");
+                                else
+                                    holdsEditQuestionnaireData.setEmtInfo(emtInfoTextField.getPromptText());
+                            else
+                                holdsEditQuestionnaireData.setEmtInfo(emtInfoTextField.getText());
+                        }
+                        holdsEditQuestionnaireData.setOtherAdvancedMedicalTraining(isOtherMedicalCheckBox.isSelected());
+                        if(isOtherMedicalCheckBox.isSelected()){
+                            if(otherMedicalInfoTextField.getText().isEmpty())
+                                if(otherMedicalInfoTextField.getPromptText().equals("Other Medical Training Info"))
+                                    throw new Exception("");
+                                else
+                                    holdsEditQuestionnaireData.setAdvancedMedicalTrainingInfo(otherMedicalInfoTextField.getPromptText());
+                            else
+                                holdsEditQuestionnaireData.setAdvancedMedicalTrainingInfo(otherMedicalInfoTextField.getText());
+                        }
+                        holdsEditQuestionnaireData.setFirstJob(isFirstJobCheckBox.isSelected());
+                        if(!isFirstJobCheckBox.isSelected()){
+                            if(jobInfoTextField.getText().isEmpty())
+                                if(jobInfoTextField.getPromptText().equals("Previous Employment Info"))
+                                    throw new Exception("");
+                                else
+                                    holdsEditQuestionnaireData.setJobExperienceInfo(jobInfoTextField.getPromptText());
+                            else
+                                holdsEditQuestionnaireData.setJobExperienceInfo(jobInfoTextField.getText());
+                        }
+                        if(anyOtherInfoTextField.getText().isEmpty())
+                            if(anyOtherInfoTextField.getPromptText().equals("Any other extra info?"))
+                                throw new Exception("");
+                            else
+                                holdsEditQuestionnaireData.setAnyExtraInfo(anyOtherInfoTextField.getPromptText());
+                        else
+                            holdsEditQuestionnaireData.setAnyExtraInfo(anyOtherInfoTextField.getText());
 
+                    }catch (Exception ex){
+                        ex.printStackTrace();
+                        holdsEditQuestionnaireData.setQuestionnaire1Complete(false);
+                        errorLabel.setVisible(true);
+                        return;
                     }
-                    if(whyBeStateLGTextField.getText().isEmpty())
-                        holdsEditQuestionnaireData.setWhyBeStateLG(whyBeStateLGTextField.getPromptText());
-                    else
-                        holdsEditQuestionnaireData.setWhyBeStateLG(whyBeStateLGTextField.getText());
-                    if(whatLearnInTrainingTextField.getText().isEmpty())
-                        holdsEditQuestionnaireData.setWhatWantLearnTraining(whatLearnInTrainingTextField.getPromptText());
-                    else
-                        holdsEditQuestionnaireData.setWhatWantLearnTraining(whatLearnInTrainingTextField.getText());
-                    holdsEditQuestionnaireData.setJG(isJGCheckBox.isSelected());
-                    if(isJGCheckBox.isSelected()){
-                        if(jgInfoTextField.getText().isEmpty())
-                            holdsEditQuestionnaireData.setJgInfo(jgInfoTextField.getPromptText());
-                        else
-                            holdsEditQuestionnaireData.setJgInfo(jgInfoTextField.getText());
-                    }
-                    holdsEditQuestionnaireData.setOpenWaterLG(isOpenWaterLGCheckBox.isSelected());
-                    if(isOpenWaterLGCheckBox.isSelected()){
-                        if(openWaterLGInfoTextField.getText().isEmpty())
-                            holdsEditQuestionnaireData.setOpenWaterLGInfo(openWaterLGInfoTextField.getPromptText());
-                        else
-                            holdsEditQuestionnaireData.setOpenWaterLGInfo(openWaterLGInfoTextField.getText());
-                    }
-                    holdsEditQuestionnaireData.setPoolLG(isPoolLGCheckBox.isSelected());
-                    if(isPoolLGCheckBox.isSelected()){
-                        if(poolLGInfoTextField.getText().isEmpty())
-                            holdsEditQuestionnaireData.setPoolLGInfo(poolLGInfoTextField.getPromptText());
-                        else
-                            holdsEditQuestionnaireData.setPoolLGInfo(poolLGInfoTextField.getText());
-                    }
-                    holdsEditQuestionnaireData.setEMT(isEMTCheckBox.isSelected());
-                    if(isEMTCheckBox.isSelected()){
-                        if(emtInfoTextField.getText().isEmpty())
-                            holdsEditQuestionnaireData.setEmtInfo(emtInfoTextField.getPromptText());
-                        else
-                            holdsEditQuestionnaireData.setEmtInfo(emtInfoTextField.getText());
-                    }
-                    holdsEditQuestionnaireData.setOtherAdvancedMedicalTraining(isOtherMedicalCheckBox.isSelected());
-                    if(isOtherMedicalCheckBox.isSelected()){
-                        if(otherMedicalInfoTextField.getText().isEmpty())
-                            holdsEditQuestionnaireData.setAdvancedMedicalTrainingInfo(otherMedicalInfoTextField.getPromptText());
-                        else
-                            holdsEditQuestionnaireData.setAdvancedMedicalTrainingInfo(otherMedicalInfoTextField.getText());
-                    }
-                    holdsEditQuestionnaireData.setFirstJob(isFirstJobCheckBox.isSelected());
-                    if(!isFirstJobCheckBox.isSelected()){
-                        if(jobInfoTextField.getText().isEmpty())
-                            holdsEditQuestionnaireData.setJobExperienceInfo(jobInfoTextField.getPromptText());
-                        else
-                            holdsEditQuestionnaireData.setJobExperienceInfo(jobInfoTextField.getText());
-                    }
-                    if(anyOtherInfoTextField.getText().isEmpty())
-                        holdsEditQuestionnaireData.setAnyExtraInfo(anyOtherInfoTextField.getPromptText());
-                    else
-                        holdsEditQuestionnaireData.setAnyExtraInfo(anyOtherInfoTextField.getText());
 
                 }
                 if(finalTmp.isQuestionnaire2Complete()){
 
-                    holdsEditQuestionnaireData.setQuestionnaire2Complete(true);
-                    if(expectedChallengeTextField.getText().isEmpty())
-                        holdsEditQuestionnaireData.setExpectedBiggestTrainingChallengeInfo(expectedChallengeTextField.getPromptText());
-                    else
-                        holdsEditQuestionnaireData.setExpectedBiggestTrainingChallengeInfo(expectedChallengeTextField.getText());
-                    if(prepInfoTextField.getText().isEmpty())
-                        holdsEditQuestionnaireData.setPreparationInfo(prepInfoTextField.getPromptText());
-                    else
-                        holdsEditQuestionnaireData.setPreparationInfo(prepInfoTextField.getText());
-                    holdsEditQuestionnaireData.setMedicalConfidence(firstAidComboBox.getSelectionModel().getSelectedItem());
-                    holdsEditQuestionnaireData.setCprConfidence(cprComboBox.getSelectionModel().getSelectedItem());
-                    holdsEditQuestionnaireData.setPhysicalConfidence(physicalComboBox.getSelectionModel().getSelectedItem());
-                    holdsEditQuestionnaireData.setMentalConfidence(mentalComboBox.getSelectionModel().getSelectedItem());
-                    if(trainingCountTextField.getText().isEmpty())
-                        holdsEditQuestionnaireData.setPreTrainingSeminarsAttended(Integer.parseInt(trainingCountTextField.getPromptText()));
-                    else
-                        holdsEditQuestionnaireData.setPreTrainingSeminarsAttended(Integer.parseInt(trainingCountTextField.getText()));
-                    holdsEditQuestionnaireData.setOrganizedSwimPoloFreq(getRealString(orgSwimFreqComboBox.getSelectionModel().getSelectedItem()));
-                    holdsEditQuestionnaireData.setPersonalSwimFreq(getRealString(personalSwimFreqComboBox.getSelectionModel().getSelectedItem()));
-                    holdsEditQuestionnaireData.setGymFreq(getRealString(gymFreqComboBox.getSelectionModel().getSelectedItem()));
-                    holdsEditQuestionnaireData.setOceanSwimFreq(getRealString(oceanFreqComboBox.getSelectionModel().getSelectedItem()));
-                    holdsEditQuestionnaireData.setRunningFreq(getRealString(runningFreqComboBox.getSelectionModel().getSelectedItem()));
-                    holdsEditQuestionnaireData.setSurfingFreq(getRealString(surfFreqComboBox.getSelectionModel().getSelectedItem()));
-                    holdsEditQuestionnaireData.setDisabled(isDisabledCheckBox.isSelected());
+                    try{
+                        holdsEditQuestionnaireData.setQuestionnaire2Complete(true);
+                        if(expectedChallengeTextField.getText().isEmpty())
+                            throw new Exception("");
+                        else
+                            holdsEditQuestionnaireData.setExpectedBiggestTrainingChallengeInfo(expectedChallengeTextField.getText());
+                        if(prepInfoTextField.getText().isEmpty())
+                            throw new Exception("");
+                        else
+                            holdsEditQuestionnaireData.setPreparationInfo(prepInfoTextField.getText());
+                        holdsEditQuestionnaireData.setMedicalConfidence(firstAidComboBox.getSelectionModel().getSelectedItem());
+                        holdsEditQuestionnaireData.setCprConfidence(cprComboBox.getSelectionModel().getSelectedItem());
+                        holdsEditQuestionnaireData.setPhysicalConfidence(physicalComboBox.getSelectionModel().getSelectedItem());
+                        holdsEditQuestionnaireData.setMentalConfidence(mentalComboBox.getSelectionModel().getSelectedItem());
+                        if(trainingCountTextField.getText().isEmpty() || !isInteger(trainingCountTextField.getText()))
+                            throw new Exception("");
+                        else
+                            holdsEditQuestionnaireData.setPreTrainingSeminarsAttended(Integer.parseInt(trainingCountTextField.getText()));
+                        holdsEditQuestionnaireData.setOrganizedSwimPoloFreq(getRealString(orgSwimFreqComboBox.getSelectionModel().getSelectedItem()));
+                        holdsEditQuestionnaireData.setPersonalSwimFreq(getRealString(personalSwimFreqComboBox.getSelectionModel().getSelectedItem()));
+                        holdsEditQuestionnaireData.setGymFreq(getRealString(gymFreqComboBox.getSelectionModel().getSelectedItem()));
+                        holdsEditQuestionnaireData.setOceanSwimFreq(getRealString(oceanFreqComboBox.getSelectionModel().getSelectedItem()));
+                        holdsEditQuestionnaireData.setRunningFreq(getRealString(runningFreqComboBox.getSelectionModel().getSelectedItem()));
+                        holdsEditQuestionnaireData.setSurfingFreq(getRealString(surfFreqComboBox.getSelectionModel().getSelectedItem()));
+                        holdsEditQuestionnaireData.setDisabled(isDisabledCheckBox.isSelected());
+
+                    }catch(Exception ex){
+                        ex.printStackTrace();
+                        holdsEditQuestionnaireData.setQuestionnaire2Complete(false);
+                        errorLabel.setVisible(true);
+                        return;
+                    }
 
                 }
 
@@ -2167,57 +2217,123 @@ public class EditImportView {
 
                 //Fill tmp trainee with recorded q1 data.
                 if(q1Validator == 3) {
-                    holdsEditQuestionnaireData.setQuestionnaire1Complete(true);
-                    holdsEditQuestionnaireData.setShirtSize(shirtSizeComboBox.getSelectionModel().getSelectedItem());
-                    holdsEditQuestionnaireData.setShortSize(shortSizeComboBox.getSelectionModel().getSelectedItem());
-                    holdsEditQuestionnaireData.setSwimSuitSize(swimSuitSizeComboBox.getSelectionModel().getSelectedItem());
-                    holdsEditQuestionnaireData.setReturningTrainee(isReturningCheckBox.isSelected());
-                    if(isReturningCheckBox.isSelected())
-                        holdsEditQuestionnaireData.setWhyReturning(whyReturningTextField.getText());
-                    holdsEditQuestionnaireData.setWhyBeStateLG(whyBeStateLGTextField.getText());
-                    holdsEditQuestionnaireData.setWhatWantLearnTraining(whatLearnInTrainingTextField.getText());
-                    holdsEditQuestionnaireData.setJG(isJGCheckBox.isSelected());
-                    if(isJGCheckBox.isSelected())
-                        holdsEditQuestionnaireData.setJgInfo(jgInfoTextField.getText());
-                    holdsEditQuestionnaireData.setOpenWaterLG(isOpenWaterLGCheckBox.isSelected());
-                    if(isOpenWaterLGCheckBox.isSelected())
-                        holdsEditQuestionnaireData.setOpenWaterLGInfo(openWaterLGInfoTextField.getText());
-                    holdsEditQuestionnaireData.setPoolLG(isPoolLGCheckBox.isSelected());
-                    if(isPoolLGCheckBox.isSelected())
-                        holdsEditQuestionnaireData.setPoolLGInfo(poolLGInfoTextField.getText());
-                    holdsEditQuestionnaireData.setEMT(isEMTCheckBox.isSelected());
-                    if(isEMTCheckBox.isSelected())
-                        holdsEditQuestionnaireData.setEmtInfo(emtInfoTextField.getText());
-                    holdsEditQuestionnaireData.setOtherAdvancedMedicalTraining(isOtherMedicalCheckBox.isSelected());
-                    if(isOtherMedicalCheckBox.isSelected())
-                        holdsEditQuestionnaireData.setAdvancedMedicalTrainingInfo(otherMedicalInfoTextField.getText());
-                    holdsEditQuestionnaireData.setFirstJob(isFirstJobCheckBox.isSelected());
-                    if(!isFirstJobCheckBox.isSelected())
-                        holdsEditQuestionnaireData.setJobExperienceInfo(jobInfoTextField.getText());
-                    holdsEditQuestionnaireData.setAnyExtraInfo(anyOtherInfoTextField.getText());
+
+                    try{
+                        holdsEditQuestionnaireData.setQuestionnaire1Complete(true);
+                        holdsEditQuestionnaireData.setShirtSize(shirtSizeComboBox.getSelectionModel().getSelectedItem());
+                        holdsEditQuestionnaireData.setShortSize(shortSizeComboBox.getSelectionModel().getSelectedItem());
+                        holdsEditQuestionnaireData.setSwimSuitSize(swimSuitSizeComboBox.getSelectionModel().getSelectedItem());
+                        holdsEditQuestionnaireData.setReturningTrainee(isReturningCheckBox.isSelected());
+                        if(isReturningCheckBox.isSelected()) {
+                            if (whyReturningTextField.getText().isEmpty())
+                                throw new Exception("");
+                            else
+                                holdsEditQuestionnaireData.setWhyReturning(whyReturningTextField.getText());
+                        }
+                        if(whyBeStateLGTextField.getText().isEmpty())
+                            throw new Exception("");
+                        else
+                            holdsEditQuestionnaireData.setWhyBeStateLG(whyBeStateLGTextField.getText());
+                        if(whatLearnInTrainingTextField.getText().isEmpty())
+                            throw new Exception("");
+                        else
+                            holdsEditQuestionnaireData.setWhatWantLearnTraining(whatLearnInTrainingTextField.getText());
+                        holdsEditQuestionnaireData.setJG(isJGCheckBox.isSelected());
+                        if(isJGCheckBox.isSelected()){
+                            if(jgInfoTextField.getText().isEmpty())
+                                throw new Exception("");
+                            else
+                                holdsEditQuestionnaireData.setJgInfo(jgInfoTextField.getText());
+                        }
+                        holdsEditQuestionnaireData.setOpenWaterLG(isOpenWaterLGCheckBox.isSelected());
+                        if(isOpenWaterLGCheckBox.isSelected()){
+                            if(openWaterLGInfoTextField.getText().isEmpty())
+                                throw new Exception("");
+                            else
+                                holdsEditQuestionnaireData.setOpenWaterLGInfo(openWaterLGInfoTextField.getText());
+                        }
+                        holdsEditQuestionnaireData.setPoolLG(isPoolLGCheckBox.isSelected());
+                        if(isPoolLGCheckBox.isSelected()){
+                            if(poolLGInfoTextField.getText().isEmpty())
+                                throw new Exception("");
+                            else
+                                holdsEditQuestionnaireData.setPoolLGInfo(poolLGInfoTextField.getText());
+                        }
+                        holdsEditQuestionnaireData.setEMT(isEMTCheckBox.isSelected());
+                        if(isEMTCheckBox.isSelected()){
+                            if(emtInfoTextField.getText().isEmpty())
+                                throw new Exception("");
+                            else
+                                holdsEditQuestionnaireData.setEmtInfo(emtInfoTextField.getText());
+                        }
+                        holdsEditQuestionnaireData.setOtherAdvancedMedicalTraining(isOtherMedicalCheckBox.isSelected());
+                        if(isOtherMedicalCheckBox.isSelected()){
+                            if(otherMedicalInfoTextField.getText().isEmpty())
+                                throw new Exception("");
+                            else
+                                holdsEditQuestionnaireData.setAdvancedMedicalTrainingInfo(otherMedicalInfoTextField.getText());
+                        }
+                        holdsEditQuestionnaireData.setFirstJob(isFirstJobCheckBox.isSelected());
+                        if(!isFirstJobCheckBox.isSelected()){
+                            if(jobInfoTextField.getText().isEmpty())
+                                throw new Exception("");
+                            else
+                                holdsEditQuestionnaireData.setJobExperienceInfo(jobInfoTextField.getText());
+                        }
+                        holdsEditQuestionnaireData.setAnyExtraInfo(anyOtherInfoTextField.getText());
+
+                    }catch(Exception ex){
+                        ex.printStackTrace();
+                        holdsEditQuestionnaireData.setQuestionnaire1Complete(false);
+                        errorLabel.setVisible(true);
+                        return;
+                    }
 
                 }else
                     holdsEditQuestionnaireData.setQuestionnaire1Complete(false);
                 //Fill tmp trainee with recorded q2 data.
                 if(q2Validator == 10){
-                    holdsEditQuestionnaireData.setQuestionnaire2Complete(true);
-                    holdsEditQuestionnaireData.setExpectedBiggestTrainingChallengeInfo(expectedChallengeTextField.getText());
-                    holdsEditQuestionnaireData.setPreparationInfo(prepInfoTextField.getText());
-                    holdsEditQuestionnaireData.setMedicalConfidence(firstAidComboBox.getSelectionModel().getSelectedItem());
-                    holdsEditQuestionnaireData.setCprConfidence(cprComboBox.getSelectionModel().getSelectedItem());
-                    holdsEditQuestionnaireData.setPhysicalConfidence(physicalComboBox.getSelectionModel().getSelectedItem());
-                    holdsEditQuestionnaireData.setMentalConfidence(mentalComboBox.getSelectionModel().getSelectedItem());
-                    holdsEditQuestionnaireData.setPreTrainingSeminarsAttended(Integer.parseInt(trainingCountTextField.getText()));
-                    holdsEditQuestionnaireData.setOrganizedSwimPoloFreq(getRealString(orgSwimFreqComboBox.getSelectionModel().getSelectedItem()));
-                    holdsEditQuestionnaireData.setPersonalSwimFreq(getRealString(personalSwimFreqComboBox.getSelectionModel().getSelectedItem()));
-                    holdsEditQuestionnaireData.setGymFreq(getRealString(gymFreqComboBox.getSelectionModel().getSelectedItem()));
-                    holdsEditQuestionnaireData.setOceanSwimFreq(getRealString(oceanFreqComboBox.getSelectionModel().getSelectedItem()));
-                    holdsEditQuestionnaireData.setRunningFreq(getRealString(runningFreqComboBox.getSelectionModel().getSelectedItem()));
-                    holdsEditQuestionnaireData.setSurfingFreq(getRealString(surfFreqComboBox.getSelectionModel().getSelectedItem()));
-                    holdsEditQuestionnaireData.setDisabled(isDisabledCheckBox.isSelected());
+
+                    try{
+                        holdsEditQuestionnaireData.setQuestionnaire2Complete(true);
+                        if(expectedChallengeTextField.getText().isEmpty())
+                            throw new Exception("");
+                        else
+                            holdsEditQuestionnaireData.setExpectedBiggestTrainingChallengeInfo(expectedChallengeTextField.getText());
+                        if(prepInfoTextField.getText().isEmpty())
+                            throw new Exception("");
+                        else
+                            holdsEditQuestionnaireData.setPreparationInfo(prepInfoTextField.getText());
+
+                        holdsEditQuestionnaireData.setMedicalConfidence(firstAidComboBox.getSelectionModel().getSelectedItem());
+                        holdsEditQuestionnaireData.setCprConfidence(cprComboBox.getSelectionModel().getSelectedItem());
+                        holdsEditQuestionnaireData.setPhysicalConfidence(physicalComboBox.getSelectionModel().getSelectedItem());
+                        holdsEditQuestionnaireData.setMentalConfidence(mentalComboBox.getSelectionModel().getSelectedItem());
+                        if(trainingCountTextField.getText().isEmpty() || !isInteger(trainingCountTextField.getText()))
+                            throw new Exception("");
+                        else
+                            holdsEditQuestionnaireData.setPreTrainingSeminarsAttended(Integer.parseInt(trainingCountTextField.getText()));
+                        holdsEditQuestionnaireData.setOrganizedSwimPoloFreq(getRealString(orgSwimFreqComboBox.getSelectionModel().getSelectedItem()));
+                        holdsEditQuestionnaireData.setPersonalSwimFreq(getRealString(personalSwimFreqComboBox.getSelectionModel().getSelectedItem()));
+                        holdsEditQuestionnaireData.setGymFreq(getRealString(gymFreqComboBox.getSelectionModel().getSelectedItem()));
+                        holdsEditQuestionnaireData.setOceanSwimFreq(getRealString(oceanFreqComboBox.getSelectionModel().getSelectedItem()));
+                        holdsEditQuestionnaireData.setRunningFreq(getRealString(runningFreqComboBox.getSelectionModel().getSelectedItem()));
+                        holdsEditQuestionnaireData.setSurfingFreq(getRealString(surfFreqComboBox.getSelectionModel().getSelectedItem()));
+                        holdsEditQuestionnaireData.setDisabled(isDisabledCheckBox.isSelected());
+
+                        System.out.println("RAN");
+                    }catch (Exception ex){
+                        ex.printStackTrace();
+                        holdsEditQuestionnaireData.setQuestionnaire2Complete(false);
+                        errorLabel.setVisible(true);
+                        return;
+                    }
 
                 }else
                     holdsEditQuestionnaireData.setQuestionnaire2Complete(false);
+
+                System.out.println("1: " + holdsEditQuestionnaireData.isQuestionnaire1Complete());
+                System.out.println("2: " + holdsEditQuestionnaireData.isQuestionnaire2Complete());
 
             }
 
@@ -2401,7 +2517,8 @@ public class EditImportView {
         }
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to load " +
-                selectedFile.getName() + " into the Comments database?", ButtonType.YES, ButtonType.CANCEL);
+                                selectedFile.getName() + " into the Comments database for Session " +
+                                controller.getCurrentSession().getSession() + "?", ButtonType.YES, ButtonType.CANCEL);
         alert.showAndWait();
         //If this was a mistake, leave, if not, continue
         if (alert.getResult() == ButtonType.CANCEL) {
@@ -2426,7 +2543,8 @@ public class EditImportView {
                 tmpComments.add(new Comment(record.get(1), record.get(2), record.get(3), record.get(4), record.get(5),
                                             record.get(6), record.get(7), record.get(8),
                                             controller.getCurrentSession().getYear(),
-                                            controller.getCurrentSession().getSession()));
+                                            controller.getCurrentSession().getSession(),
+                                            controller.getCurrentSession().getCurrentDay()));
 
             //Adds to db if does not exist
             for(Comment comment : tmpComments){

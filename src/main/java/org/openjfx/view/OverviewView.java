@@ -260,6 +260,8 @@ public class OverviewView {
         dialogVBox.setStyle("-fx-background: #3476f7;");
         dialogVBox.setAlignment(Pos.CENTER);
         dialogVBox.setSpacing(10);
+        Label cautionMessage = new Label(" WAIT! Make sure to import today's\n       comments before you take\n                   attendance!");
+        cautionMessage.setStyle("-fx-text-fill: #efb748; -fx-font-size: 16; -fx-font-weight: bold;");
         Label message = new Label();
         message.setText("The highest hours to be added is " + Collections.max(hourValues) + ".\n              The minimum is " +
                         Collections.min(hourValues) + ".\n      If this is correct, click Apply.");
@@ -296,8 +298,8 @@ public class OverviewView {
         cancelHoursButton.setOnMouseClicked(event -> {dialog.close();});
 
         buttonHBox.getChildren().addAll(applyHoursButton, cancelHoursButton);
-        dialogVBox.getChildren().addAll(message, buttonHBox);
-        Scene dialogScene = new Scene(dialogVBox, 275, 100);
+        dialogVBox.getChildren().addAll(cautionMessage, message, buttonHBox);
+        Scene dialogScene = new Scene(dialogVBox, 275, 200);
         dialog.setScene(dialogScene);
         dialog.show();
 

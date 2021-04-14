@@ -1,6 +1,6 @@
 package org.openjfx.model;
 
-import org.openjfx.controller.LifeguardTrainingApplication;
+import org.openjfx.controller.DBManager;
 
 public class Comment {
 
@@ -16,6 +16,7 @@ public class Comment {
     private String nextSteps;
     private int year;
     private int session;
+    private int currentDay;
 
     /**
      * Default Constructor
@@ -36,9 +37,10 @@ public class Comment {
      * @param nS
      * @param y
      * @param s
+     * @param cD
      */
     public Comment(int cID, int tID, String d, String r, String iN, String tN, String iT, String iDes, String iA,
-                   String nS, int y, int s){
+                   String nS, int y, int s, int cD){
 
         id = cID;
         traineeID = tID;
@@ -52,6 +54,7 @@ public class Comment {
         nextSteps = nS;
         year = y;
         session = s;
+        currentDay = cD;
 
     }
 
@@ -69,9 +72,9 @@ public class Comment {
      * @param s
      */
     public Comment(String d, String r, String iN, String tN, String iT, String iDes, String iA,
-                   String nS, int y, int s){
+                   String nS, int y, int s, int cD){
 
-        traineeID = LifeguardTrainingApplication.getController().getDBManager().getTIDFromNameAndSession(tN, y, s);
+        traineeID = DBManager.getTIDFromNameAndSession(tN, y, s);
         id = 0;
         date = d;
         rotation = r;
@@ -83,13 +86,14 @@ public class Comment {
         nextSteps = nS;
         year = y;
         session = s;
+        currentDay = cD;
 
     }
 
     @Override
     public String toString(){
 
-        return incidentType + " | " + nextSteps + " | " + date;
+        return "Day " + currentDay + ": " + incidentType + " | " + nextSteps;
 
     }
 
@@ -118,6 +122,8 @@ public class Comment {
 
     public int getSession() { return session; }
 
+    public int getCurrentDay() { return currentDay; }
+
     //Setters
     public void setTraineeID(int traineeID) { this.traineeID = traineeID; }
 
@@ -142,5 +148,7 @@ public class Comment {
     public void setYear(int year) { this.year = year; }
 
     public void setSession(int session) { this.session = session; }
+
+    public void setCurrentDay(int cD) { currentDay = cD; }
 
 }
