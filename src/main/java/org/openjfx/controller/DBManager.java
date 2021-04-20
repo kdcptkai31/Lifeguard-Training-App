@@ -55,6 +55,7 @@ public class DBManager {
                 + "session INTEGER,\n"
                 + "district TEXT,\n"
                 + "superEmail TEXT,\n"
+                + "sectorID INTEGER,\n"
                 + "FOREIGN KEY(year, session) REFERENCES sessions(year, session),\n"
                 + "PRIMARY KEY(year, session, district)"
                 + ");";
@@ -347,7 +348,7 @@ public class DBManager {
      */
     public static Vector<Trainee> getAllTrainees(){
 
-        String sql = "SELECT * FROM trainees";
+        String sql = "SELECT * FROM trainees WHERE tid != 1";
 
         try{
 
@@ -945,11 +946,136 @@ public class DBManager {
 
             while(rs.next())
                 results.add(new District(rs.getInt("year"), rs.getInt("session"),
-                                         rs.getString("district"), rs.getString("superEmail")));
+                                         rs.getString("district"), rs.getString("superEmail"),
+                                         rs.getInt("sectorID")));
 
             return results;
 
         }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    /**
+     * Returns all districts from a given sector ID.
+     * @param sID
+     * @return
+     */
+    public static Vector<District> getAllDistrictsFromSectorID(int sID){
+
+        String sql = "SELECT * FROM districts WHERE sectorID = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, sID);
+            ResultSet rs = stmt.executeQuery();
+            Vector<District> results = new Vector<>();
+
+            while(rs.next())
+                results.add(new District(rs.getInt("year"), rs.getInt("session"),
+                                         rs.getString("district"), rs.getString("superEmail"),
+                                         rs.getInt("sectorID")));
+
+            return results;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    /*
+     ****************************** Sectors *******************************************
+     */
+
+    /**
+     * Retirms the sectors from the given session.
+     * @param year
+     * @param session
+     * @return
+     */
+    public static Vector<Sector> getAllSectorsFromSession(int year, int session){
+
+        String sql = "SELECT * FROM sectors WHERE year = ? AND session = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, year);
+            stmt.setInt(2, session);
+            ResultSet rs = stmt.executeQuery();
+            Vector<Sector> results = new Vector<>();
+
+            while(rs.next())
+                results.add(new Sector(rs.getInt("sectorID"), rs.getInt("year"),
+                                       rs.getInt("session"), rs.getString("name")));
+
+            return results;
+
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    /**
+     * Returns the sector from the given sectorID.
+     * @param sID
+     * @return
+     */
+    public static Sector getSectorFromSectorID(int sID){
+
+        String sql = "SELECT * FROM sectors WHERE sectorID = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, sID);
+            ResultSet rs = stmt.executeQuery();
+            rs.next();
+            return new Sector(rs.getInt("sectorID"), rs.getInt("year"), rs.getInt("session"),
+                              rs.getString("name"));
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    /**
+     * Returns the sector from the given session information and name.
+     * @param name
+     * @param year
+     * @param session
+     * @return
+     */
+    public static Sector getSectorFromSectorNameAndSession(String name, int year, int session){
+
+        String sql = "SELECT * FROM sectors WHERE year = ? AND session = ? AND name = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, year);
+            stmt.setInt(2, session);
+            stmt.setString(3, name);
+            ResultSet rs = stmt.executeQuery();
+            rs.next();
+            return new Sector(rs.getInt("sectorID"), rs.getInt("year"), rs.getInt("session"),
+                              rs.getString("name"));
+
+        }catch (SQLException e){
             e.printStackTrace();
         }
 
@@ -2015,7 +2141,7 @@ public class DBManager {
      */
     public static boolean addDistrict(District dToAdd){
 
-        String sql = "INSERT INTO districts (year, session, district, superEmail) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO districts (year, session, district, superEmail, sectorID) VALUES (?, ?, ?, ?, ?)";
 
         try{
 
@@ -2024,6 +2150,7 @@ public class DBManager {
             stmt.setInt(2, dToAdd.getSession());
             stmt.setString(3, dToAdd.getName());
             stmt.setString(4, dToAdd.getSupervisorEmail());
+            stmt.setInt(5, dToAdd.getSectorID());
             stmt.executeUpdate();
 
             return true;
@@ -2043,7 +2170,8 @@ public class DBManager {
      */
     public static boolean updateDistrict(District dToAdd, String oldName){
 
-        String sql = "UPDATE districts SET year = ?, session = ?, district = ?, superEmail = ? WHERE year = ? AND session = ? AND district = ?";
+        String sql = "UPDATE districts SET year = ?, session = ?, district = ?, superEmail = ?, sectorID = ?  WHERE " +
+                     "year = ? AND session = ? AND district = ?";
 
         try{
 
@@ -2052,9 +2180,10 @@ public class DBManager {
             stmt.setInt(2, dToAdd.getSession());
             stmt.setString(3, dToAdd.getName());
             stmt.setString(4, dToAdd.getSupervisorEmail());
-            stmt.setInt(5, dToAdd.getYear());
-            stmt.setInt(6, dToAdd.getSession());
-            stmt.setString(7, oldName);
+            stmt.setInt(5, dToAdd.getSectorID());
+            stmt.setInt(6, dToAdd.getYear());
+            stmt.setInt(7, dToAdd.getSession());
+            stmt.setString(8, oldName);
             stmt.executeUpdate();
 
             return true;
@@ -2091,6 +2220,32 @@ public class DBManager {
             return true;
 
         }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Updates the given sector with its new name.
+     * @param sToAdd
+     * @return true if successful, false if not.
+     */
+    public static boolean updateSector(Sector sToAdd){
+
+        String sql = "UPDATE sectors SET name = ? WHERE sectorID = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setString(1, sToAdd.getName());
+            stmt.setInt(2, sToAdd.getSectorID());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch (SQLException e){
             e.printStackTrace();
         }
 
@@ -2546,6 +2701,36 @@ public class DBManager {
             stmt.setInt(1, dToDelete.getYear());
             stmt.setInt(2, dToDelete.getSession());
             stmt.setString(3, dToDelete.getName());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Deletes the given sector, while resetting the value of all its districts to 1, the null default sector.
+     * @param sToDelete
+     * @return
+     */
+    public static boolean deleteSector(Sector sToDelete){
+
+        String sqlDistricts = "UPDATE districts SET sectorID = 1 WHERE sectorID = ?";
+        String sqlDSector = "DELETE FROM sectors WHERE sectorID = ?";
+
+        try{
+
+            PreparedStatement stmtFirst = connection.prepareStatement(sqlDistricts);
+            stmtFirst.setInt(1, sToDelete.getSectorID());
+            stmtFirst.executeUpdate();
+
+            PreparedStatement stmt = connection.prepareStatement(sqlDSector);
+            stmt.setInt(1, sToDelete.getSectorID());
             stmt.executeUpdate();
 
             return true;

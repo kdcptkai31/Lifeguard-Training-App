@@ -42,8 +42,8 @@ import static java.lang.Character.isDigit;
 
 public class EditImportView {
 
-    Controller controller;
-    Image defaultImage;
+    private Controller controller;
+    private Image defaultImage;
 
     @FXML
     private TabPane tabPane;
@@ -154,7 +154,7 @@ public class EditImportView {
     @FXML
     private Label tCErrorLabel;
 
-    ////////////////////////////////////////////////////////////////////All Other Tab
+    ////////////////////////////////////////////////////////////////////Events | Instructors | Tests Tab
     //Events
     @FXML
     private ListView<String> editEventsListView;
@@ -185,21 +185,6 @@ public class EditImportView {
     @FXML
     private Label editTestErrorLabel;
 
-    //Districts
-    @FXML
-    private ListView<String> editDistrictsListView;
-    @FXML
-    private CheckBox newDistrictCheckBox;
-    @FXML
-    private TextField editDistrictNameTextField;
-    @FXML
-    private TextField editSupervisorEmailTextField;
-    private Vector<District> editDistrictVector;
-    @FXML
-    private Button addDistrictButton;
-    @FXML
-    private Label editDistrictErrorLabel;
-
     //Instructors
     @FXML
     private ImageView instructorPFPImageView;
@@ -216,6 +201,41 @@ public class EditImportView {
     @FXML
     private Label editInstructorErrorLabel;
 
+    ///////////////////////////////////////////////////////////////////////All Other Tab
+    //Districts
+    @FXML
+    private ListView<String> editDistrictsListView;
+    @FXML
+    private CheckBox newDistrictCheckBox;
+    @FXML
+    private TextField editDistrictNameTextField;
+    @FXML
+    private TextField editSupervisorEmailTextField;
+    private Vector<District> editDistrictVector;
+    @FXML
+    private Button addDistrictButton;
+    @FXML
+    private Label editDistrictErrorLabel;
+
+    //Sectors
+    @FXML
+    private ListView<String> editSectorsListView;
+    private Vector<Sector> editSectorVector;
+    @FXML
+    private CheckBox newSectorCheckBox;
+    @FXML
+    private TextField editSectorNameTextField;
+    @FXML
+    private Label editSectorErrorLabel;
+    @FXML
+    private Label sectorInstructionsLabel;
+    @FXML
+    private ListView<String> sectorDistrictsListView;
+    private Vector<District> sectorDistrictsVector;
+    private Vector<District> pendingRemovalsVector;
+    @FXML
+    private Button addSectorButton;
+
 
     @FXML
     protected void initialize() {
@@ -231,6 +251,9 @@ public class EditImportView {
         editTestVector = new Vector<>();
         editDistrictVector = new Vector<>();
         editInstructorVector = new Vector<>();
+        editSectorVector = new Vector<>();
+        sectorDistrictsVector = new Vector<>();
+        pendingRemovalsVector = new Vector<>();
         traineeListView.setCellFactory(stringListView -> new CenteredListViewCell());
         traineeEventScoresListView.setCellFactory(stringListView -> new CenteredListViewCell());
         traineeTestScoresListView.setCellFactory(stringListView -> new CenteredListViewCell());
@@ -238,6 +261,8 @@ public class EditImportView {
         editTestsListView.setCellFactory(stringListView -> new CenteredListViewCell());
         editDistrictsListView.setCellFactory(stringListView -> new CenteredListViewCell());
         editInstructorListView.setCellFactory(stringListView -> new CenteredListViewCell());
+        editSectorsListView.setCellFactory(stringListView -> new CenteredListViewCell());
+        sectorDistrictsListView.setCellFactory(stringListView -> new CenteredListViewCell());
         traineeTabRefresh();
         importComboBox.getItems().addAll("Choose Import Type", "Comments", "Questionnaire 1",
                 "Questionnaire 2", "Year's Trainee Info");
@@ -246,6 +271,8 @@ public class EditImportView {
         tCRotationComboBox.getItems().addAll("PSFA", "AQUATICS");
         tCNextStepsComboBox.getItems().addAll("Meet with Supervisor (Formal)", "Instructor Check-in (Informal)",
                 "No Action Needed");
+
+        sectorInstructionsLabel.setText("Select a District from the far left\nDistricts table, then click the below\nbutton to add to this sector.");
 
         //Sets up listeners
         importComboBox.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
@@ -384,9 +411,9 @@ public class EditImportView {
                     traineeListView.getSelectionModel().select(0);
                     onTraineeListViewClicked();
                     break;
-                case 1: eventTestTabRefresh();
+                case 1: eventInstructorTestTabRefresh();
                     break;
-                case 2: //Other tab refresh
+                case 2: allOtherTabRefresh();
                     break;
 
             }
@@ -467,6 +494,26 @@ public class EditImportView {
 
         });
 
+        newSectorCheckBox.selectedProperty().addListener((observable, oldValue, newValue) ->{
+
+            if(newValue){
+
+                editSectorsListView.getSelectionModel().clearSelection();
+                addSectorButton.setText("Add Sector");
+                sectorDistrictsVector.clear();
+                pendingRemovalsVector.clear();
+
+            }else
+                addSectorButton.setText("Update Sector");
+
+            editSectorNameTextField.clear();
+            editSectorNameTextField.setPromptText("");
+            editSectorErrorLabel.setVisible(false);
+            sectorDistrictsListView.getItems().clear();
+            sectorDistrictsListView.getSelectionModel().clearSelection();
+
+        });
+
         if(controller.getCurrentTrainees().size() != 0){
 
             traineeListView.getSelectionModel().select(0);
@@ -475,9 +522,408 @@ public class EditImportView {
         }
 
     }
-
     /*******************************************************************************************************************
      *                                        All Other Tab Methods
+     ******************************************************************************************************************/
+
+    /**
+     * Populates the name text field and the list of districts in that sector.
+     */
+    public void onEditSectorListViewClicked(){
+
+        int selectedIndex = editSectorsListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1)
+            return;
+
+        newSectorCheckBox.setSelected(false);
+
+        Sector tmp = editSectorVector.get(selectedIndex);
+        editSectorNameTextField.setPromptText(tmp.getName());
+
+        ObservableList<String> sectorDistrictsOL = FXCollections.observableArrayList();
+        sectorDistrictsVector.clear();
+        pendingRemovalsVector.clear();
+        sectorDistrictsVector = DBManager.getAllDistrictsFromSectorID(tmp.getSectorID());
+        for(District district : Objects.requireNonNull(sectorDistrictsVector))
+            sectorDistrictsOL.add(district.getName());
+
+        sectorDistrictsListView.setItems(sectorDistrictsOL);
+
+    }
+
+    /**
+     * Deletes the selected sector, setting all districts within it to the default null sector.
+     */
+    public void onDeleteSectorClicked(){
+
+        int selectedIndex = editSectorsListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1)
+            return;
+
+        String str = "Are you sure you want to delete " + editSectorVector.get(selectedIndex).getName() +
+                     "? This will unlink all Districts within this sector for this session.";
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, str, ButtonType.YES, ButtonType.CANCEL);
+        alert.showAndWait();
+
+        if(alert.getResult() == ButtonType.CANCEL)
+            return;
+
+        if(!DBManager.deleteSector(editSectorVector.get(selectedIndex))){
+            Alert alert1 = new Alert(Alert.AlertType.ERROR, "Error Deleting " + editSectorVector.get(selectedIndex),
+                                     ButtonType.CLOSE);
+            alert1.show();
+        }else{
+
+            allOtherTabRefresh();
+
+        }
+
+    }
+
+    /**
+     * Adds or updates the sector.
+     */
+    public void onAddSectorClicked(){
+
+        int selectedIndex = editSectorsListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1 && !newSectorCheckBox.isSelected())
+            return;
+
+        Sector tmp = new Sector();
+        tmp.setYear(controller.getCurrentSession().getYear());
+        tmp.setSession(controller.getCurrentSession().getSession());
+
+        //New Sector
+        if(newSectorCheckBox.isSelected()){
+
+            if(editSectorNameTextField.getText().isEmpty())
+                editSectorErrorLabel.setVisible(true);
+
+            for(Sector sector : editSectorVector){
+                if(sector.getName().equals(editSectorNameTextField.getText())){
+                    editSectorErrorLabel.setVisible(true);
+                    return;
+                }
+            }
+
+            tmp.setName(editSectorNameTextField.getText());
+
+            if(DBManager.addSector(tmp)){
+                int sectorID = DBManager.getSectorFromSectorNameAndSession(tmp.getName(), controller.getCurrentSession().getYear(),
+                                                                           controller.getCurrentSession().getSession()).getSectorID();
+                for(District district : sectorDistrictsVector){
+
+                    district.setSectorID(sectorID);
+                    DBManager.updateDistrict(district, district.getName());
+
+                }
+
+                allOtherTabRefresh();
+
+            }else
+                editSectorErrorLabel.setVisible(true);
+
+            //Update Sector
+        }else{
+
+            tmp = editSectorVector.get(selectedIndex);
+
+            if(!editSectorNameTextField.getText().isEmpty()) {
+
+                for(Sector sector : editSectorVector) {
+
+                    if(sector.getName().equals(editSectorNameTextField.getText().trim())) {
+
+                        editSectorErrorLabel.setVisible(true);
+                        return;
+
+                    }
+                }
+
+                tmp.setName(editSectorNameTextField.getText().trim());
+
+            }
+
+            if(DBManager.updateSector(tmp)) {
+
+                for(District district : sectorDistrictsVector){
+                    System.out.print(district.getName());
+
+                    district.setSectorID(tmp.getSectorID());
+                    DBManager.updateDistrict(district, district.getName());
+
+                }
+                for(District district : pendingRemovalsVector){
+
+                    district.setSectorID(1);
+                    DBManager.updateDistrict(district, district.getName());
+
+                }
+
+                allOtherTabRefresh();
+                editSectorsListView.getSelectionModel().select(selectedIndex);
+                onEditSectorListViewClicked();
+
+            }else
+                editSectorErrorLabel.setVisible(true);
+
+        }
+
+    }
+
+    /**
+     * Removes the selected district from the list of districts belonging to the new or selected sector.
+     */
+    public void onRemoveDistrictClicked(){
+
+        int selectedDistrictIndex = sectorDistrictsListView.getSelectionModel().getSelectedIndex();
+        int selectedSectorIndex = editSectorsListView.getSelectionModel().getSelectedIndex();
+        if((newSectorCheckBox.isSelected() && selectedDistrictIndex != -1) || (selectedSectorIndex != -1 && selectedDistrictIndex != -1)) {
+
+            pendingRemovalsVector.add(sectorDistrictsVector.get(selectedDistrictIndex));
+            sectorDistrictsVector.remove(selectedDistrictIndex);
+            ObservableList<String> tmpOL = sectorDistrictsListView.getItems();
+            tmpOL.remove(selectedDistrictIndex);
+            sectorDistrictsListView.setItems(tmpOL);
+
+        }
+
+    }
+
+    /**
+     * Prompts the user on what is going to happen, then adds the selected district to the pending district list view.
+     */
+    public void onAddDistrictToSector(){
+
+        int selectedDistrictIndex = editDistrictsListView.getSelectionModel().getSelectedIndex();
+        int selectedSectorIndex = editSectorsListView.getSelectionModel().getSelectedIndex();
+        if((selectedDistrictIndex == -1 && selectedSectorIndex == -1) || (newSectorCheckBox.isSelected() && selectedDistrictIndex == -1))
+            return;
+
+        District selectedDistrict = editDistrictVector.get(selectedDistrictIndex);
+
+        if(selectedDistrict.getSectorID() == 1){
+
+            if(!sectorDistrictsVector.contains(selectedDistrict)) {
+
+                sectorDistrictsVector.add(selectedDistrict);
+                ObservableList<String> tmpOL = sectorDistrictsListView.getItems();
+                tmpOL.add(selectedDistrict.getName());
+                sectorDistrictsListView.setItems(tmpOL);
+
+            }
+
+        }else {
+
+            String str;
+            if(newSectorCheckBox.isSelected()){
+
+                str = selectedDistrict.getName() + " is currently under the " +
+                        Objects.requireNonNull(DBManager.getSectorFromSectorID(selectedDistrict.getSectorID())).getName()
+                        + " sector. Do you want to change it to belong to the new sector?";
+
+            }else{
+
+                str = selectedDistrict.getName() + " is currently under the " +
+                        Objects.requireNonNull(DBManager.getSectorFromSectorID(selectedDistrict.getSectorID())).getName()
+                        + " sector. Do you want to change it to the " +
+                        editSectorVector.get(selectedSectorIndex).getName() + " sector?";
+
+            }
+
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, str, ButtonType.OK, ButtonType.CANCEL);
+            alert.showAndWait();
+
+            if(alert.getResult() == ButtonType.CANCEL)
+                return;
+
+            if(!sectorDistrictsVector.contains(selectedDistrict)){
+
+                sectorDistrictsVector.add(selectedDistrict);
+                ObservableList<String> tmpOL = sectorDistrictsListView.getItems();
+                tmpOL.add(selectedDistrict.getName());
+                sectorDistrictsListView.setItems(tmpOL);
+
+            }
+
+        }
+
+    }
+
+    /**
+     * Refreshes the page's data with the most current data from controller.
+     */
+    public void allOtherTabRefresh(){
+
+        editDistrictVector = DBManager.getAllDistrictsFromSession(controller.getCurrentSession().getYear(),
+                controller.getCurrentSession().getSession());
+        editSectorVector = DBManager.getAllSectorsFromSession(controller.getCurrentSession().getYear(),
+                                                              controller.getCurrentSession().getSession());
+        ObservableList<String> districtOL = FXCollections.observableArrayList();
+        ObservableList<String> sectorOL = FXCollections.observableArrayList();
+
+        for(District district : Objects.requireNonNull(editDistrictVector)){
+            if(district.getSupervisorEmail().isEmpty() || district.getSupervisorEmail().isBlank())
+                districtOL.add(district.getName());
+            else
+                districtOL.add(district.getName() + " | " + district.getSupervisorEmail());
+        }
+
+        for(Sector sector : Objects.requireNonNull(editSectorVector))
+            sectorOL.add(sector.getName());
+
+        editDistrictsListView.setItems(districtOL);
+        editDistrictErrorLabel.setVisible(false);
+        editDistrictsListView.getSelectionModel().clearSelection();
+        editDistrictNameTextField.clear();
+        editDistrictNameTextField.setPromptText("");
+        editSupervisorEmailTextField.clear();
+        editSupervisorEmailTextField.setPromptText("");
+
+        editSectorsListView.setItems(sectorOL);
+        editSectorsListView.getSelectionModel().clearSelection();
+        editSectorErrorLabel.setVisible(false);
+        sectorDistrictsListView.getItems().clear();
+        sectorDistrictsListView.getSelectionModel().clearSelection();
+        editSectorNameTextField.clear();
+        editSectorNameTextField.setPromptText("");
+
+    }
+
+    /**
+     * Populates the textfields with the data of the selected district, if applicable.
+     */
+    public void onEditDistrictListViewClicked(){
+
+        int selectedIndex = editDistrictsListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1)
+            return;
+
+        newDistrictCheckBox.setSelected(false);
+
+        District tmp = editDistrictVector.get(selectedIndex);
+        editDistrictNameTextField.setPromptText(tmp.getName());
+        editSupervisorEmailTextField.setPromptText(tmp.getSupervisorEmail());
+
+    }
+
+    /**
+     * Adds or updates the district.
+     */
+    public void onAddDistrictClicked(){
+
+        int selectedIndex = editDistrictsListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1 && !newDistrictCheckBox.isSelected())
+            return;
+
+        District tmp = new District();
+        tmp.setYear(controller.getCurrentSession().getYear());
+        tmp.setSession(controller.getCurrentSession().getSession());
+        //Email address regex
+        String regex = "^[\\w-\\+]+(\\.[\\w]+)*@[\\w-]+(\\.[\\w]+)*(\\.[a-z]{2,})$";
+
+        //New District
+        if(newDistrictCheckBox.isSelected()){
+
+            if(editDistrictNameTextField.getText().isEmpty()){
+                editDistrictErrorLabel.setVisible(true);
+            }
+
+            boolean isFound = false;
+            for(District district : editDistrictVector)
+                if(district.getName().equals(editDistrictNameTextField.getText())){
+                    isFound = true;
+                    break;
+                }
+
+            if(isFound){
+                editDistrictErrorLabel.setVisible(true);
+                return;
+            }
+
+            tmp.setName(editDistrictNameTextField.getText().trim());
+
+
+            if(editSupervisorEmailTextField.getText().isEmpty())
+                tmp.setSupervisorEmail("");
+            else {
+
+                if (!editSupervisorEmailTextField.getText().matches(regex)) {
+                    editDistrictErrorLabel.setVisible(true);
+                    return;
+                } else
+                    tmp.setSupervisorEmail(editSupervisorEmailTextField.getText().trim());
+
+            }
+            DBManager.addDistrict(tmp);
+            eventInstructorTestTabRefresh();
+
+            //Update District
+        }else{
+
+            String oldName = editDistrictVector.get(selectedIndex).getName();
+            tmp = editDistrictVector.get(selectedIndex);
+
+            if(!editDistrictNameTextField.getText().isEmpty()) {
+
+                boolean isFound = false;
+                for (District district : editDistrictVector) {
+                    if (district.getName().equals(editEventNameTextField.getText().trim())) {
+                        isFound = true;
+                        break;
+                    }
+                }
+                if (isFound) {
+                    editDistrictErrorLabel.setVisible(true);
+                    return;
+                }
+
+                tmp.setName(editDistrictNameTextField.getText().trim());
+
+            }
+
+            if(!editSupervisorEmailTextField.getText().isEmpty() && editSupervisorEmailTextField.getText().matches(regex))
+                tmp.setSupervisorEmail(editSupervisorEmailTextField.getText());
+            else if(!editSupervisorEmailTextField.getText().isEmpty()){
+
+                editDistrictErrorLabel.setVisible(true);
+                return;
+
+            }else
+                tmp.setSupervisorEmail(editSupervisorEmailTextField.getPromptText());
+
+            DBManager.updateDistrict(tmp, oldName);
+            eventInstructorTestTabRefresh();
+            editDistrictsListView.getSelectionModel().select(selectedIndex);
+            onEditDistrictListViewClicked();
+
+        }
+
+    }
+
+    /**
+     * Deletes the selected district.
+     */
+    public void onDeleteDistrictClicked(){
+
+        District tmp = editDistrictVector.get(editDistrictsListView.getSelectionModel().getSelectedIndex());
+
+        String str = "Deleting " + tmp.getName() + ".\nDo you want to continue?";
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, str, ButtonType.YES, ButtonType.CANCEL);
+        alert.showAndWait();
+
+        if(alert.getResult() == ButtonType.CANCEL)
+            return;
+
+        DBManager.deleteDistrict(tmp);
+        eventInstructorTestTabRefresh();
+
+    }
+
+
+    /*******************************************************************************************************************
+     *                                        Events | Instructors | Tests Tab Methods
      ******************************************************************************************************************/
 
     /**
@@ -570,7 +1016,7 @@ public class EditImportView {
                 tmp.setImage(defaultImage);
 
             DBManager.addInstructor(tmp);
-            eventTestTabRefresh();
+            eventInstructorTestTabRefresh();
 
             //Update Instructor
         }else{
@@ -600,7 +1046,7 @@ public class EditImportView {
                 tmp.setImage(instructorPFPImageView.getImage());
 
             DBManager.updateInstructor(tmp, oldName);
-            eventTestTabRefresh();
+            eventInstructorTestTabRefresh();
             editInstructorListView.getSelectionModel().select(selectedIndex);
             onEditInstructorListViewClicked();
 
@@ -624,52 +1070,42 @@ public class EditImportView {
             return;
 
         DBManager.deleteInstructor(tmp);
-        eventTestTabRefresh();
+        eventInstructorTestTabRefresh();
 
     }
 
     /**
      * Refreshes the page's data with the most current data from Controller
      */
-    public void eventTestTabRefresh(){
+    public void eventInstructorTestTabRefresh(){
 
         instructorPFPImageView.setImage(defaultImage);
         newInstructorCheckBox.setSelected(true);
         editEventVector = controller.getCurrentEvents();
         editTestVector = controller.getCurrentTests();
-        editDistrictVector = DBManager.getAllDistrictsFromSession(controller.getCurrentSession().getYear(),
-                                                                  controller.getCurrentSession().getSession());
+
         editInstructorVector = DBManager.getAllInstructorsFromSession(controller.getCurrentSession().getYear(),
                                                                       controller.getCurrentSession().getSession());
 
         ObservableList<String> eventOL = FXCollections.observableArrayList();
         ObservableList<String> testOL = FXCollections.observableArrayList();
-        ObservableList<String> districtOL = FXCollections.observableArrayList();
+
         ObservableList<String> instructorOL = FXCollections.observableArrayList();
 
         for(Event event : editEventVector)
             eventOL.add(event.getName());
         for(Test test : editTestVector)
             testOL.add(test.getName() + " | " + test.getPoints());
-        for(District district : Objects.requireNonNull(editDistrictVector)){
-            if(district.getSupervisorEmail().isEmpty() || district.getSupervisorEmail().isBlank())
-                districtOL.add(district.getName());
-            else
-                districtOL.add(district.getName() + " | " + district.getSupervisorEmail());
-        }
         for(Instructor instructor : Objects.requireNonNull(editInstructorVector))
             instructorOL.add(instructor.getName());
 
         editEventsListView.setItems(eventOL);
         editTestsListView.setItems(testOL);
-        editDistrictsListView.setItems(districtOL);
         editInstructorListView.setItems(instructorOL);
         editEventErrorLabel.setVisible(false);
         editTestErrorLabel.setVisible(false);
-        editDistrictErrorLabel.setVisible(false);
         editEventsListView.getSelectionModel().clearSelection();
         editTestsListView.getSelectionModel().clearSelection();
-        editDistrictsListView.getSelectionModel().clearSelection();
         editInstructorListView.getSelectionModel().clearSelection();
         editEventNameTextField.clear();
         editEventNameTextField.setPromptText("");
@@ -679,10 +1115,6 @@ public class EditImportView {
         editTestNameTextField.setPromptText("");
         editTestPointsTextField.clear();
         editTestPointsTextField.setPromptText("");
-        editDistrictNameTextField.clear();
-        editDistrictNameTextField.setPromptText("");
-        editSupervisorEmailTextField.clear();
-        editSupervisorEmailTextField.setPromptText("");
         editInstructorNameTextField.clear();
         editInstructorNameTextField.setPromptText("");
 
@@ -748,7 +1180,7 @@ public class EditImportView {
 
             DBManager.addEvent(tmp);
             controller.updateCurrentEvents();
-            eventTestTabRefresh();
+            eventInstructorTestTabRefresh();
 
             //Update Event
         }else{
@@ -777,7 +1209,7 @@ public class EditImportView {
                 tmp.setNotes(editEventNotesTextField.getText());
 
             DBManager.updateEvent(tmp);
-            eventTestTabRefresh();
+            eventInstructorTestTabRefresh();
             editEventsListView.getSelectionModel().select(selectedIndex);
             onEditEventListViewClicked();
 
@@ -804,7 +1236,7 @@ public class EditImportView {
         DBManager.deleteAllEventScoresOfAnEvent(tmp.getEventID());
         DBManager.deleteEvent(tmp);
         controller.updateCurrentEvents();
-        eventTestTabRefresh();
+        eventInstructorTestTabRefresh();
 
     }
 
@@ -872,7 +1304,7 @@ public class EditImportView {
 
             DBManager.addTest(tmp);
             controller.updateCurrentTests();
-            eventTestTabRefresh();
+            eventInstructorTestTabRefresh();
 
             //Update Test
         }else{
@@ -935,7 +1367,7 @@ public class EditImportView {
 
             DBManager.updateTest(tmp);
             controller.updateCurrentTests();
-            eventTestTabRefresh();
+            eventInstructorTestTabRefresh();
             editTestsListView.getSelectionModel().select(selectedIndex);
             onEditTestListViewClicked();
 
@@ -962,138 +1394,7 @@ public class EditImportView {
         DBManager.deleteAllTestScoresOfATest(tmp.getTestID());
         DBManager.deleteTest(tmp);
         controller.updateCurrentTests();
-        eventTestTabRefresh();
-
-    }
-
-    /**
-     * Populates the textfields with the data of the selected district, if applicable.
-     */
-    public void onEditDistrictListViewClicked(){
-
-        int selectedIndex = editDistrictsListView.getSelectionModel().getSelectedIndex();
-        if(selectedIndex == -1)
-            return;
-
-        newDistrictCheckBox.setSelected(false);
-
-        District tmp = editDistrictVector.get(selectedIndex);
-        editDistrictNameTextField.setPromptText(tmp.getName());
-        editSupervisorEmailTextField.setPromptText(tmp.getSupervisorEmail());
-
-    }
-
-    /**
-     * Adds or updates the district.
-     */
-    public void onAddDistrictClicked(){
-
-        int selectedIndex = editDistrictsListView.getSelectionModel().getSelectedIndex();
-        if(selectedIndex == -1 && !newDistrictCheckBox.isSelected())
-            return;
-
-        District tmp = new District();
-        tmp.setYear(controller.getCurrentSession().getYear());
-        tmp.setSession(controller.getCurrentSession().getSession());
-        //Email address regex
-        String regex = "^[\\w-\\+]+(\\.[\\w]+)*@[\\w-]+(\\.[\\w]+)*(\\.[a-z]{2,})$";
-
-        //New District
-        if(newDistrictCheckBox.isSelected()){
-
-            if(editDistrictNameTextField.getText().isEmpty()){
-                editDistrictErrorLabel.setVisible(true);
-            }
-
-            boolean isFound = false;
-            for(District district : editDistrictVector)
-                if(district.getName().equals(editDistrictNameTextField.getText())){
-                    isFound = true;
-                    break;
-                }
-
-            if(isFound){
-                editDistrictErrorLabel.setVisible(true);
-                return;
-            }
-
-            tmp.setName(editDistrictNameTextField.getText().trim());
-
-
-            if(editSupervisorEmailTextField.getText().isEmpty())
-                tmp.setSupervisorEmail("");
-            else {
-
-                if (!editSupervisorEmailTextField.getText().matches(regex)) {
-                    editDistrictErrorLabel.setVisible(true);
-                    return;
-                } else
-                    tmp.setSupervisorEmail(editSupervisorEmailTextField.getText().trim());
-
-            }
-            DBManager.addDistrict(tmp);
-            eventTestTabRefresh();
-
-            //Update District
-        }else{
-
-            String oldName = editDistrictVector.get(selectedIndex).getName();
-            tmp = editDistrictVector.get(selectedIndex);
-
-            if(!editDistrictNameTextField.getText().isEmpty()) {
-
-                boolean isFound = false;
-                for (District district : editDistrictVector) {
-                    if (district.getName().equals(editEventNameTextField.getText().trim())) {
-                        isFound = true;
-                        break;
-                    }
-                }
-                if (isFound) {
-                    editDistrictErrorLabel.setVisible(true);
-                    return;
-                }
-
-                tmp.setName(editDistrictNameTextField.getText().trim());
-
-            }
-
-            if(!editSupervisorEmailTextField.getText().isEmpty() && editSupervisorEmailTextField.getText().matches(regex))
-                tmp.setSupervisorEmail(editSupervisorEmailTextField.getText());
-            else if(!editSupervisorEmailTextField.getText().isEmpty()){
-
-                editDistrictErrorLabel.setVisible(true);
-                return;
-
-            }else
-                tmp.setSupervisorEmail(editSupervisorEmailTextField.getPromptText());
-
-            DBManager.updateDistrict(tmp, oldName);
-            eventTestTabRefresh();
-            editDistrictsListView.getSelectionModel().select(selectedIndex);
-            onEditDistrictListViewClicked();
-
-        }
-
-    }
-
-    /**
-     * Deletes the selected district.
-     */
-    public void onDeleteDistrictClicked(){
-
-        District tmp = editDistrictVector.get(editDistrictsListView.getSelectionModel().getSelectedIndex());
-
-        String str = "Deleting " + tmp.getName() + ".\nDo you want to continue?";
-
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, str, ButtonType.YES, ButtonType.CANCEL);
-        alert.showAndWait();
-
-        if(alert.getResult() == ButtonType.CANCEL)
-            return;
-
-        DBManager.deleteDistrict(tmp);
-        eventTestTabRefresh();
+        eventInstructorTestTabRefresh();
 
     }
 
@@ -1180,6 +1481,15 @@ public class EditImportView {
         tCNextStepsComboBox.getSelectionModel().clearSelection();
         tCDateTextField.clear();
         tCDateTextField.setPromptText("mm/dd/yyyy");
+
+    }
+
+    /**
+     * Shows the user a table of all inactive trainees which can be reactivated.
+     */
+    public void onViewInactiveTraineesClicked(){
+
+
 
     }
 
@@ -2827,7 +3137,11 @@ public class EditImportView {
                         for(District district : Objects.requireNonNull(DBManager.getAllDistrictsFromSession(controller.getCurrentSession().getYear(),
                                 controller.getCurrentSession().getSession())))
                             DBManager.addDistrict(new District(newSes.getYear(), newSes.getSession(), district.getName(),
-                                                            ""));
+                                                            "", 1));
+
+                        for(Sector sector : Objects.requireNonNull(DBManager.getAllSectorsFromSession(controller.getCurrentSession().getYear(),
+                                                                                                      controller.getCurrentSession().getSession())))
+                            DBManager.addSector(new Sector(newSes.getYear(), newSes.getSession(), sector.getName()));
 
                     }
 
@@ -3198,7 +3512,8 @@ public class EditImportView {
             controller.updateCurrentSession(sessions.get(index));
             dialog.close();
             traineeTabRefresh();
-            eventTestTabRefresh();
+            eventInstructorTestTabRefresh();
+            allOtherTabRefresh();
 
         });
         cancelButton.setOnMouseClicked(event -> dialog.close());

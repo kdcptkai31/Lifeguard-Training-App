@@ -40,6 +40,13 @@ public class Sector {
 
     }
 
+    @Override
+    public String toString(){
+
+        return name;
+
+    }
+
     //Getters
     public int getSectorID() {
         return sectorID;

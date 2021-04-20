@@ -309,7 +309,7 @@
                                     </Button>
                                  </children>
                               </VBox>
-                              <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="429.0" prefWidth="188.0">
+                              <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="485.0" prefWidth="188.0">
                                  <children>
                                     <Label text="Emergency Contact" textFill="#efb748">
                                        <font>
@@ -402,7 +402,7 @@
                                           <Insets top="3.0" />
                                        </VBox.margin>
                                     </Label>
-                                    <Label text="Set Trainee Inactive" textFill="#efb748">
+                                    <Label text="Inactive Trainees" textFill="#efb748">
                                        <font>
                                           <Font name="System Bold" size="16.0" />
                                        </font>
@@ -410,10 +410,15 @@
                                           <Insets top="30.0" />
                                        </VBox.margin>
                                     </Label>
-                                    <Button mnemonicParsing="false" onMouseClicked="#onSetTraineeInactiveClicked" text="Execute" />
+                                    <Button mnemonicParsing="false" onMouseClicked="#onSetTraineeInactiveClicked" text="Inactivate Selected Trainee" />
+                                    <Button mnemonicParsing="false" onMouseClicked="#onViewInactiveTraineesClicked" text="View Inactive Trainees">
+                                       <VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                    </Button>
                                  </children>
                                  <HBox.margin>
-                                    <Insets top="160.0" />
+                                    <Insets top="100.0" />
                                  </HBox.margin>
                               </VBox>
                               <VBox alignment="CENTER" prefHeight="671.0" prefWidth="179.0" spacing="5.0">
@@ -572,7 +577,7 @@
                         </HBox>
                      </content>
                 </Tab>
-                  <Tab text="All Other">
+                  <Tab text="Events | Instructors | Tests ">
                      <content>
                         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="15.0">
                            <children>
@@ -690,6 +695,68 @@
                                     <Insets top="50.0" />
                                  </HBox.margin>
                               </VBox>
+                              <VBox alignment="TOP_CENTER" prefHeight="671.0" prefWidth="250.0" spacing="5.0">
+                                 <children>
+                                    <Label text="Instructors" textFill="#efb748">
+                                       <VBox.margin>
+                                          <Insets top="50.0" />
+                                       </VBox.margin>
+                                       <font>
+                                          <Font name="System Bold" size="18.0" />
+                                       </font>
+                                    </Label>
+                                    <ListView fx:id="editInstructorListView" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#onEditInstructorListViewClicked" prefHeight="150.0" prefWidth="185.0" />
+                                    <CheckBox fx:id="newInstructorCheckBox" mnemonicParsing="false" selected="true" text="Make a New Instructor" textFill="#efb748">
+                                       <font>
+                                          <Font name="System Bold" size="14.0" />
+                                       </font>
+                                    </CheckBox>
+                                    <ImageView fx:id="instructorPFPImageView" fitHeight="139.0" fitWidth="190.0" onMouseClicked="#onIPFPClicked" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@../images/blankpfp.png" />
+                                       </image>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
+                                    </ImageView>
+                                    <HBox alignment="CENTER" prefHeight="25.0" prefWidth="250.0">
+                                       <children>
+                                          <Label text="Name: " textFill="#efb748">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="editInstructorNameTextField" alignment="CENTER" prefHeight="25.0" prefWidth="139.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" spacing="5.0">
+                                       <children>
+                                          <Button fx:id="addInstructorButton" mnemonicParsing="false" onMouseClicked="#onAddInstructorClicked" prefHeight="25.0" prefWidth="125.0" text="Add Instructor">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Button>
+                                          <Button mnemonicParsing="false" onMouseClicked="#onDeleteInstructorClicked" prefHeight="25.0" prefWidth="125.0" text="Delete Instructor">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Button>
+                                       </children>
+                                    </HBox>
+                                    <Label fx:id="editInstructorErrorLabel" text="*Error* Enter Valid Name" textFill="RED" visible="false">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                              </VBox>
+                           </children></HBox>
+                     </content>
+                  </Tab>
+                  <Tab text="All Other">
+                     <content>
+                        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="15.0">
+                           <children>
                               <VBox alignment="TOP_CENTER" layoutX="618.0" layoutY="60.0" prefHeight="671.0" prefWidth="250.0" spacing="5.0">
                                  <children>
                                     <Label text="Districts" textFill="#efb748">
@@ -747,30 +814,19 @@
                                     <Insets top="50.0" />
                                  </HBox.margin>
                               </VBox>
-                              <VBox alignment="TOP_CENTER" prefHeight="671.0" prefWidth="250.0" spacing="5.0">
+                              <VBox alignment="TOP_CENTER" layoutX="485.0" layoutY="60.0" prefHeight="671.0" prefWidth="250.0" spacing="5.0">
                                  <children>
-                                    <Label text="Instructors" textFill="#efb748">
-                                       <VBox.margin>
-                                          <Insets top="50.0" />
-                                       </VBox.margin>
+                                    <Label text="Sectors" textFill="#efb748">
                                        <font>
                                           <Font name="System Bold" size="18.0" />
                                        </font>
                                     </Label>
-                                    <ListView fx:id="editInstructorListView" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#onEditInstructorListViewClicked" prefHeight="150.0" prefWidth="185.0" />
-                                    <CheckBox fx:id="newInstructorCheckBox" mnemonicParsing="false" selected="true" text="Make a New Instructor" textFill="#efb748">
+                                    <ListView fx:id="editSectorsListView" onMouseClicked="#onEditSectorListViewClicked" prefHeight="200.0" prefWidth="200.0" />
+                                    <CheckBox fx:id="newSectorCheckBox" mnemonicParsing="false" selected="true" text="Make a New Sector" textFill="#efb748">
                                        <font>
                                           <Font name="System Bold" size="14.0" />
                                        </font>
                                     </CheckBox>
-                                    <ImageView fx:id="instructorPFPImageView" fitHeight="139.0" fitWidth="190.0" onMouseClicked="#onIPFPClicked" pickOnBounds="true" preserveRatio="true">
-                                       <image>
-                                          <Image url="@../images/blankpfp.png" />
-                                       </image>
-                                       <cursor>
-                                          <Cursor fx:constant="HAND" />
-                                       </cursor>
-                                    </ImageView>
                                     <HBox alignment="CENTER" prefHeight="25.0" prefWidth="250.0">
                                        <children>
                                           <Label text="Name: " textFill="#efb748">
@@ -778,31 +834,54 @@
                                                 <Font name="System Bold" size="14.0" />
                                              </font>
                                           </Label>
-                                          <TextField fx:id="editInstructorNameTextField" alignment="CENTER" prefHeight="25.0" prefWidth="139.0" />
+                                          <TextField fx:id="editSectorNameTextField" alignment="CENTER" prefHeight="25.0" prefWidth="201.0" />
                                        </children>
                                     </HBox>
-                                    <HBox alignment="CENTER" spacing="5.0">
-                                       <children>
-                                          <Button fx:id="addInstructorButton" mnemonicParsing="false" onMouseClicked="#onAddInstructorClicked" prefHeight="25.0" prefWidth="125.0" text="Add Instructor">
-                                             <font>
-                                                <Font name="System Bold" size="12.0" />
-                                             </font>
-                                          </Button>
-                                          <Button mnemonicParsing="false" onMouseClicked="#onDeleteInstructorClicked" prefHeight="25.0" prefWidth="125.0" text="Delete Instructor">
-                                             <font>
-                                                <Font name="System Bold" size="12.0" />
-                                             </font>
-                                          </Button>
-                                       </children>
-                                    </HBox>
-                                    <Label fx:id="editInstructorErrorLabel" text="*Error* Enter Valid Name" textFill="RED" visible="false">
+                                    <Label fx:id="editSectorErrorLabel" text="*Error* Enter Valid Name and Email" textFill="RED" visible="false">
                                        <font>
                                           <Font size="14.0" />
                                        </font>
                                     </Label>
+                                    <HBox alignment="CENTER" spacing="5.0">
+                                       <children>
+                                          <Button fx:id="addSectorButton" mnemonicParsing="false" onMouseClicked="#onAddSectorClicked" text="Add Sector">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Button>
+                                          <Button mnemonicParsing="false" onMouseClicked="#onDeleteSectorClicked" text="Delete Sector" />
+                                       </children>
+                                    </HBox>
                                  </children>
+                                 <HBox.margin>
+                                    <Insets top="50.0" />
+                                 </HBox.margin>
                               </VBox>
-                           </children></HBox>
+                              <VBox alignment="TOP_CENTER" layoutX="618.0" layoutY="60.0" prefHeight="671.0" prefWidth="250.0" spacing="5.0">
+                                 <children>
+                                    <Label fx:id="sectorInstructionsLabel" text="Add To Sector Description" textAlignment="CENTER" textFill="#efb748">
+                                       <font>
+                                          <Font name="System Bold" size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <ListView fx:id="sectorDistrictsListView" prefHeight="150.0" prefWidth="250.0" />
+                                    <HBox alignment="CENTER" spacing="5.0">
+                                       <children>
+                                          <Button mnemonicParsing="false" onMouseClicked="#onAddDistrictToSector" text="Add District to Sector">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Button>
+                                          <Button mnemonicParsing="false" onMouseClicked="#onRemoveDistrictClicked" text="Remove District" />
+                                       </children>
+                                    </HBox>
+                                 </children>
+                                 <HBox.margin>
+                                    <Insets top="70.0" />
+                                 </HBox.margin>
+                              </VBox>
+                           </children>
+                        </HBox>
                      </content>
                   </Tab>
               </tabs>
