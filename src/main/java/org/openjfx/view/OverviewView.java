@@ -155,7 +155,6 @@ public class OverviewView {
         //Fill Placement List//////////////////////////////////////////////////////////////////////////////////////////
         traineeVector = DBManager.getAllTraineesFromSession(controller.getCurrentSession().getYear(),
                                                             controller.getCurrentSession().getSession());
-        Objects.requireNonNull(traineeVector).removeIf(b -> !b.isActive());
 
         traineeTotalScores = new Vector<>();
         Vector<Pair<Integer, Double>> averagePlacement = new Vector<>();
@@ -198,6 +197,8 @@ public class OverviewView {
         Vector<Pair<Trainee, Double>> sortTraineeVector = new Vector<>();
         for(int i = 0; i < traineeVector.size(); i++)
             sortTraineeVector.add(new Pair<>(traineeVector.get(i), traineeTotalScores.get(i)));
+
+        sortTraineeVector.removeIf(b -> !b.getKey().isActive());
 
         sortTraineeVector.sort(Comparator.comparing(p -> -p.getValue()));
         ObservableList<String> placingStringList = FXCollections.observableArrayList();

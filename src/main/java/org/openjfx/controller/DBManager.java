@@ -1502,6 +1502,32 @@ public class DBManager {
     }
 
     /**
+     * Sets the given trainee to active.
+     * @param tToAdd
+     * @return true if successful, false if not.
+     */
+    public static boolean setTraineeActive(Trainee tToAdd){
+
+        String sql = "UPDATE trainees SET isActive = ? WHERE tid = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, 1);
+            stmt.setInt(2, tToAdd.getId());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /**
      * Adds the given image to the database for the trainee.
      * @param tToAdd
      * @return true if successful, false if not

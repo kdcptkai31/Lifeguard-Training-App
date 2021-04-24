@@ -259,20 +259,17 @@ public class Trainee{
 
     }
 
-//    @Override
-//    public String toString(){
-//
-//        String tmpStr = "";
-//        if(isQuestionnaire2Complete)
-//            if(isDisabled)
-//                tmpStr.concat("* ");
-//
-//        if(middleName != null)
-//            return tmpStr.concat(firstName + " " + middleName + " " + lastName);
-//        else
-//            return tmpStr.concat(firstName + " " + lastName);
-//
-//    }
+    @Override
+    public String toString(){
+
+        String tmpStr = "";
+
+        if(middleName != null)
+            return tmpStr.concat(firstName + " " + middleName + " " + lastName);
+        else
+            return tmpStr.concat(firstName + " " + lastName);
+
+    }
 
     //Getters
     public int getId() {

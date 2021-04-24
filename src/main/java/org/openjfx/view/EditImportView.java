@@ -5,6 +5,7 @@ import java.io.*;
 import java.util.*;
 
 import javafx.application.Platform;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -647,7 +648,6 @@ public class EditImportView {
             if(DBManager.updateSector(tmp)) {
 
                 for(District district : sectorDistrictsVector){
-                    System.out.print(district.getName());
 
                     district.setSectorID(tmp.getSectorID());
                     DBManager.updateDistrict(district, district.getName());
@@ -1485,11 +1485,225 @@ public class EditImportView {
     }
 
     /**
-     * Shows the user a table of all inactive trainees which can be reactivated.
+     * Shows the user a table of all inactive trainees which can be reactivated, and prompts them to enter in the needed
+     * data.
      */
     public void onViewInactiveTraineesClicked(){
 
+        //Initialize Dialog box contents for session inputs.
+        final Stage dialog = new Stage();
+        dialog.setTitle("Re-activate Trainees");
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.initOwner(LifeguardTrainingApplication.getCoordinator().getStage());
+        VBox dialogVBox = new VBox();
+        Label label = new Label("          These are the inactive trainees,\nselect one, enter their info, and reactivate.");
+        label.setFont(new Font("System", 14));
+        label.setStyle("-fx-font-weight: bold; -fx-text-fill: #efb748;");
+        label.setAlignment(Pos.CENTER);
 
+        ListView<Trainee> inactiveTraineesListView = new ListView<>();
+        inactiveTraineesListView.setCellFactory(stringListView -> new CenteredTraineeListViewCell());
+        inactiveTraineesListView.setMaxWidth(200);
+        inactiveTraineesListView.setMaxHeight(250);
+        Vector<Trainee> inactiveTrainees = DBManager.getAllTraineesFromSession(controller.getCurrentSession().getYear(),
+                                                                               controller.getCurrentSession().getSession());
+        Objects.requireNonNull(inactiveTrainees).removeIf(Trainee::isActive);
+        if(inactiveTrainees.size() == 0)
+            return;
+
+        ObservableList<Trainee> inactiveTraineesOL = FXCollections.observableArrayList();
+        inactiveTraineesOL.setAll(inactiveTrainees);
+        inactiveTraineesListView.setItems(inactiveTraineesOL);
+
+
+        Label tableViewInstructions = new Label("Catch up the missed test scores!");
+        tableViewInstructions.setFont(new Font("System", 14));
+        tableViewInstructions.setStyle("-fx-font-weight: bold; -fx-text-fill: #efb748;");
+        tableViewInstructions.setAlignment(Pos.CENTER);
+
+        //Creates and fills the Test Table View
+        TableView<AddExamsData> testTableView = new TableView<>();
+        testTableView.requestFocus();
+        testTableView.layout();
+        testTableView.setEditable(true);
+        testTableView.setMaxHeight(200);
+
+        TableColumn<AddExamsData, String> examColumn = new TableColumn<>("Name");
+        examColumn.setEditable(false);
+        examColumn.setSortable(false);
+        examColumn.setCellValueFactory(new PropertyValueFactory<>("examName"));
+        examColumn.setMinWidth(140);
+        TableColumn<AddExamsData, String> scoreColumn = new TableColumn<>("Enter Score:");
+        scoreColumn.setEditable(true);
+        scoreColumn.setSortable(false);
+        scoreColumn.setCellValueFactory(new PropertyValueFactory<>("enteredScore"));
+        scoreColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        TableColumn<AddExamsData, String> maxScoreColumn = new TableColumn<>("Max Score");
+        maxScoreColumn.setEditable(false);
+        maxScoreColumn.setSortable(false);
+        maxScoreColumn.setCellValueFactory(new PropertyValueFactory<>("maxScore"));
+        testTableView.getColumns().addAll(examColumn, scoreColumn, maxScoreColumn);
+
+        Label hoursLabel = new Label();
+        hoursLabel.setFont(new Font("System", 14));
+        hoursLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #efb748;");
+        hoursLabel.setAlignment(Pos.CENTER);
+        TextField hoursTextField = new TextField();
+        hoursTextField.setPromptText("New cumulative value");
+        hoursTextField.setAlignment(Pos.CENTER);
+        HBox hoursHBox = new HBox();
+        hoursHBox.setAlignment(Pos.CENTER);
+        hoursHBox.setSpacing(5);
+        hoursHBox.getChildren().addAll(hoursLabel, hoursTextField);
+        hoursHBox.setVisible(false);
+
+        //Populates the table with the selected trainee's relevant data
+        inactiveTraineesListView.setOnMouseClicked(event -> {
+
+            int selectedIndex = inactiveTraineesListView.getSelectionModel().getSelectedIndex();
+            if(selectedIndex == -1)
+                return;
+
+            Vector<Test> completedTests = new Vector<>(Objects.requireNonNull(
+                    DBManager.getAllTestsFromSession(controller.getCurrentSession().getYear(),
+                                                     controller.getCurrentSession().getSession())));
+            //Remove non scored tests from the list
+            completedTests.removeIf(e -> !e.isScored());
+            //Remove trainee completed tests from list
+            Trainee selectedTrainee = inactiveTrainees.get(selectedIndex);
+            Vector<TestScore> traineeScores = DBManager.getAllTestScoresFromTraineeID(selectedTrainee.getId());
+            Vector<Test> toBeRemoved = new Vector<>();
+            for(TestScore ts : traineeScores){
+
+                for (Test completedTest : completedTests) {
+
+                    if (ts.getTestID() == completedTest.getTestID()) {
+
+                        toBeRemoved.add(completedTest);
+                        break;
+
+                    }
+                }
+            }
+
+            completedTests.removeAll(toBeRemoved);
+
+            ObservableList<AddExamsData> data = FXCollections.observableArrayList();
+            for(Test test : completedTests)
+                data.add(new AddExamsData(test.getName(), "0", String.valueOf(test.getPoints())));
+
+            testTableView.setItems(data);
+            testTableView.setPlaceholder(new Label("No missing test scores"));
+
+            hoursLabel.setText("Current Hours: " + selectedTrainee.getHoursAttended());
+            hoursHBox.setVisible(true);
+
+
+        });
+
+        //Action event where the user presses enter to enter that cell, which then increments the edit focus to the
+        //next cell.
+        scoreColumn.setOnEditCommit((TableColumn.CellEditEvent<AddExamsData, String> t) -> {
+
+            t.getTableView().getItems().get(t.getTablePosition().getRow()).setEnteredScore(t.getNewValue());
+            int focusedIndex = testTableView.getSelectionModel().getSelectedIndex();
+            if(focusedIndex + 1 < t.getTableView().getItems().size()){
+
+                Platform.runLater(() -> {
+                    testTableView.edit(focusedIndex + 1, scoreColumn);
+                    testTableView.getSelectionModel().select(focusedIndex + 1);
+                });
+            }
+
+        });
+
+        Label missedEventsLabel = new Label("All missed events by this trainee\nwill be set to last place by" +
+                                            " default.\nThey can manually be changed later.");
+        missedEventsLabel.setFont(new Font("System", 14));
+        missedEventsLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #efb748;");
+        missedEventsLabel.setAlignment(Pos.CENTER);
+
+        Button saveButton = new Button("Reactivate");
+        saveButton.setStyle("-fx-font-weight: bold");
+        Button cancelButton = new Button("Cancel");
+        HBox buttonHBox = new HBox(saveButton, cancelButton);
+
+        Label activateErrorLabel = new Label("*Error - enter valid info*");
+        activateErrorLabel.setAlignment(Pos.CENTER);
+        activateErrorLabel.setVisible(false);
+        activateErrorLabel.setStyle("-fx-text-fill: #57ff8c");
+
+        //Saves the entered data, and reactivates the trainee.
+        saveButton.setOnMouseClicked(event -> {
+
+            Trainee selectedTrainee = inactiveTrainees.get(inactiveTraineesListView.getSelectionModel().getSelectedIndex());
+
+            //Verify Entered Data
+            for(int i = 0; i < testTableView.getItems().size(); i++){
+                String tmp = scoreColumn.getCellObservableValue(i).getValue();
+                if(tmp.isEmpty() || !isInteger(tmp) ||
+                        Integer.parseInt(maxScoreColumn.getCellObservableValue(i).getValue()) < Integer.parseInt(tmp) ||
+                        Integer.parseInt(tmp) < 0){
+
+                    activateErrorLabel.setVisible(true);
+                    return;
+
+                }
+
+            }
+            if(hoursTextField.getText().isEmpty() || !isInteger(hoursTextField.getText()) ||
+                    Integer.parseInt(hoursTextField.getText()) < selectedTrainee.getHoursAttended() ||
+                    Integer.parseInt(hoursTextField.getText()) > 100){
+
+                activateErrorLabel.setVisible(true);
+                return;
+
+            }
+
+            Vector<Test> tests = new Vector<>(Objects.requireNonNull(
+                            DBManager.getAllTestsFromSession(controller.getCurrentSession().getYear(),
+                            controller.getCurrentSession().getSession())));
+
+            //Save New Data
+            for(int i = 0; i < testTableView.getItems().size(); i++){
+
+                int testID = -1;
+                for(Test test : tests)
+                    if(test.getName().equals(examColumn.getCellObservableValue(i).getValue())) {
+                        testID = test.getTestID();
+                        break;
+                    }
+
+                DBManager.addTestScore(new TestScore(testID, selectedTrainee.getId(),
+                                                     Integer.parseInt(scoreColumn.getCellObservableValue(i).getValue())));
+
+            }
+
+            selectedTrainee.setHoursAttended(Integer.parseInt(hoursTextField.getText()));
+            selectedTrainee.setActive(true);
+            DBManager.updateTraineeHours(selectedTrainee);
+            DBManager.setTraineeActive(selectedTrainee);
+
+            dialog.close();
+            controller.updateCurrentTrainees();
+            traineeTabRefresh();
+
+        });
+
+        cancelButton.setOnMouseClicked(event -> dialog.close());
+
+        dialogVBox.getChildren().addAll(label, inactiveTraineesListView, tableViewInstructions, testTableView, hoursHBox,
+                                        missedEventsLabel, activateErrorLabel, buttonHBox);
+
+        //Set dialog box style
+        buttonHBox.setSpacing(10);
+        buttonHBox.setAlignment(Pos.CENTER);
+        dialogVBox.setAlignment(Pos.CENTER);
+        dialogVBox.setSpacing(10);
+        dialogVBox.setStyle("-fx-background-color: #3476f7;");
+        Scene dialogScene = new Scene(dialogVBox, 300, 700);
+        dialog.setScene(dialogScene);
+        dialog.showAndWait();
 
     }
 
@@ -1504,7 +1718,7 @@ public class EditImportView {
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "You are about to set " +
                 controller.getCurrentTrainees().get(selectedIndex).getFullName() + " as INACTIVE.\nThis means they will "
-                + "be removed from all rankings and lists, however their info will persist on reports.\n\nThis cannot be undone.",
+                + "be removed from all rankings and lists, however their info will persist on reports.",
                 ButtonType.APPLY, ButtonType.CANCEL);
 
         alert.showAndWait();
@@ -3728,6 +3942,17 @@ public class EditImportView {
         }
     }
 
+    static final class CenteredTraineeListViewCell extends ListCell<Trainee> { { setAlignment(Pos.BASELINE_CENTER); }
+
+        @Override protected void updateItem(Trainee item, boolean empty) {
+            super.updateItem(item, empty);
+            if(item != null)
+                setText(item.getFullName());
+            else
+                setText(null);
+        }
+    }
+
     /**
      * Used to hold the table view data for the add trainees from .csv dialog box.
      */
@@ -3753,6 +3978,35 @@ public class EditImportView {
         public void setSession(String s){session.set(s);}
         public void setStartDate(String s){startDate.set(s);}
         public void setEndDate(String s){endDate.set(s);}
+
+    }
+
+    /**
+     * Used to hold the table view data for the reactivate trainees.
+     */
+    public class AddExamsData{
+
+        SimpleStringProperty examName;
+        SimpleStringProperty enteredScore;
+        SimpleStringProperty maxScore;
+
+        AddExamsData(String examName, String enteredScore, String maxScore){
+
+            this.examName = new SimpleStringProperty(examName);
+            this.enteredScore = new SimpleStringProperty(enteredScore);
+            this.maxScore = new SimpleStringProperty(maxScore);
+
+        }
+
+        //Getters
+        public String getExamName(){return examName.get();}
+        public String getEnteredScore(){return enteredScore.get();}
+        public String getMaxScore(){return maxScore.get();}
+
+        //Setters
+        public void setExamName(String s){examName.set(s);}
+        public void setEnteredScore(String s){enteredScore.set(s);}
+        public void setMaxScore(String s){maxScore.set(s);}
 
     }
 
