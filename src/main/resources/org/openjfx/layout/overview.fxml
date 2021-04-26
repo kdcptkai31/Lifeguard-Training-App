@@ -124,6 +124,21 @@
                      </VBox.margin>
                   </Label>
                   <ListView fx:id="traineePlacementListView" focusTraversable="false" prefHeight="475.0" prefWidth="204.0" />
+                  <Button fx:id="finalEvalButton" mnemonicParsing="false" onMouseClicked="#onFinalEvaluationsClicked" text="Final Evaluations">
+                     <font>
+                        <Font name="System Bold" size="12.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets top="30.0" />
+                     </VBox.margin>
+                  </Button>
+                  <Label fx:id="finalEvalErrorLabel" text="*Finish Day 8 Attendance First*" textFill="#57ff8c" visible="false">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets top="5.0" />
+                     </VBox.margin></Label>
                </children>
                <HBox.margin>
                   <Insets />

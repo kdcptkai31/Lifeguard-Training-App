@@ -59,6 +59,35 @@ public class Comment {
     }
 
     /**
+     * Used for making the final evaluation comment. Notice the hard coded changes to this type of comment.
+     * @param traineeID
+     * @param date
+     * @param traineeName
+     * @param finalEval
+     * @param pointDifference
+     * @param y
+     * @param s
+     */
+    public Comment(int traineeID, String date, String traineeName, String finalEval, String pointDifference, int y,
+                   int s){
+
+        id = 0;
+        this.traineeID = traineeID;
+        this.date = date;
+        rotation = "";
+        instructorName = "";
+        this.traineeName = traineeName;
+        incidentType = "Final Evaluation";
+        incidentDescription = finalEval;
+        instructorActions = pointDifference;
+        nextSteps = "";
+        year = y;
+        session = s;
+        currentDay = 9;
+
+    }
+
+    /**
      * Initial Comment Constructor: The id has not been generated yet.
      * @param d
      * @param r

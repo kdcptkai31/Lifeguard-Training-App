@@ -41,6 +41,12 @@ public class OverviewView {
     private ListView<String> traineePlacementListView;
     private Vector<Trainee> traineeVector;
     private Vector<Double> traineeTotalScores;
+    @FXML
+    private Button finalEvalButton;
+    @FXML
+    private Label finalEvalErrorLabel;
+    private int evalIndex;
+    private Vector<Pair<String, Integer>> finalEvals;
 
     @FXML
     private ListView<Test> testListView;
@@ -74,6 +80,7 @@ public class OverviewView {
 
         traineeVector = new Vector<>();
         traineeTotalScores = new Vector<>();
+        finalEvals = new Vector<>();
         controller = LifeguardTrainingApplication.getController();
         controller.updateCurrentSession(controller.getCurrentSession());
 
@@ -145,12 +152,15 @@ public class OverviewView {
         yearLabel.setText(String.valueOf(controller.getCurrentSession().getYear()));
         sessionLabel.setText("Session " + controller.getCurrentSession().getSession());
         datesLabel.setText(controller.getCurrentSession().getStartDate() + " - " + controller.getCurrentSession().getEndDate());
+        finalEvals.clear();
+        evalIndex = 0;
 
         enterInfoTableView.getItems().clear();
         enterHoursTableView.getItems().clear();
         saveScoresButton.setVisible(false);
         addScoresErrorLabel.setVisible(false);
         addHoursErrorLabel.setVisible(false);
+        finalEvalErrorLabel.setVisible(false);
 
         //Fill Placement List//////////////////////////////////////////////////////////////////////////////////////////
         traineeVector = DBManager.getAllTraineesFromSession(controller.getCurrentSession().getYear(),
@@ -200,6 +210,28 @@ public class OverviewView {
 
         sortTraineeVector.removeIf(b -> !b.getKey().isActive());
 
+        //Take into account the final evaluation score modifications, if applicable
+        if(controller.getCurrentSession().getCurrentDay() == 10){
+
+            counter = 0;
+            for(Pair<Trainee, Double> pair : sortTraineeVector){
+
+                Vector<Comment> traineeComments = new Vector<>(controller.getCurrentComments());
+                traineeComments.removeIf(comment -> !comment.getIncidentType().equals("Final Evaluation"));
+                for(Comment comment : traineeComments){
+
+                    if(comment.getTraineeID() == pair.getKey().getId()){
+
+                        Double tmpDouble = pair.getValue() + Integer.parseInt(comment.getInstructorActions());
+                        sortTraineeVector.set(counter, new Pair<>(pair.getKey(), tmpDouble));
+                        break;
+
+                    }
+                }
+                counter++;
+            }
+        }
+
         sortTraineeVector.sort(Comparator.comparing(p -> -p.getValue()));
         ObservableList<String> placingStringList = FXCollections.observableArrayList();
         counter = 1;
@@ -222,13 +254,239 @@ public class OverviewView {
         eventListView.setItems(FXCollections.observableArrayList(displayEvents));
 
 
-        ObservableList<TableData> hoursTableData = FXCollections.observableArrayList();
-        for(Trainee trainee: controller.getCurrentTrainees())
-            hoursTableData.add(new TableData(trainee.getFullName(), "10"));
+        if(controller.getCurrentSession().getCurrentDay() > 8){
 
-        enterHoursTableView.setItems(hoursTableData);
+            enterHoursTableView.setPlaceholder(new Label("All Done!"));
+            attendanceDayLabel.setText("Attendance is Complete");
 
-        attendanceDayLabel.setText("Add Day " + controller.getCurrentSession().getCurrentDay() + " Attendance");
+        }else{
+
+            ObservableList<TableData> hoursTableData = FXCollections.observableArrayList();
+            for(Trainee trainee: controller.getCurrentTrainees())
+                hoursTableData.add(new TableData(trainee.getFullName(), "10"));
+
+            enterHoursTableView.setItems(hoursTableData);
+            attendanceDayLabel.setText("Add Day " + controller.getCurrentSession().getCurrentDay() + " Attendance");
+
+        }
+
+        if(controller.getCurrentSession().getCurrentDay() == 10)
+            finalEvalButton.setVisible(false);
+
+    }
+
+    /**
+     * If ready, the user will be prompted to enter final comments, as well as a final score adjustment, for each
+     * active trainee.
+     */
+    public void onFinalEvaluationsClicked(){
+
+        if(controller.getCurrentSession().getCurrentDay() < 9) {
+            finalEvalErrorLabel.setVisible(true);
+            return;
+        }
+
+        for(Trainee ignored : controller.getCurrentTrainees())
+            finalEvals.add(new Pair<>("", 0));
+        System.out.print("HERE");
+        if(finalEvals.size() == 0)
+            return;
+
+        System.out.print("HERE");
+
+        final Stage dialog = new Stage();
+        dialog.setTitle("Final Evaluations");
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.initOwner(LifeguardTrainingApplication.getCoordinator().getStage());
+        VBox dialogVBox = new VBox();
+        dialogVBox.setStyle("-fx-background: #3476f7;");
+        dialogVBox.setAlignment(Pos.CENTER);
+        dialogVBox.setSpacing(10);
+
+        Label commentLabel = new Label(controller.getCurrentTrainees().get(0).getFullName() + "'s");
+        commentLabel.setStyle("-fx-text-fill: #efb748; -fx-font-size: 16; -fx-font-weight: bold;");
+        commentLabel.setAlignment(Pos.CENTER);
+        Label message = new Label("Final Evaluation Comment:");
+        message.setStyle("-fx-text-fill: #efb748; -fx-font-size: 16; -fx-font-weight: bold;");
+        message.setAlignment(Pos.CENTER);
+
+        TextArea evalComment = new TextArea();
+        evalComment.setMaxSize(300, 200);
+        evalComment.setWrapText(true);
+
+        Label pointsLabel = new Label("Final Point Adjustment (negative number to subtract)");
+        pointsLabel.setStyle("-fx-text-fill: #efb748; -fx-font-size: 14; -fx-font-weight: bold;");
+
+        TextField pointValueTextField = new TextField();
+        pointValueTextField.setPromptText(String.valueOf(finalEvals.get(0).getValue()));
+        pointValueTextField.setMaxWidth(50);
+        pointValueTextField.setAlignment(Pos.CENTER);
+
+        Label errorLabel = new Label("*Error - Enter Valid Data*");
+        errorLabel.setStyle("-fx-text-fill: #57ff8c; -fx-font-size: 12;");
+        errorLabel.setVisible(false);
+
+        Button backButton = new Button("<- Back");
+        Button forwardButton = new Button("Next ->");
+        if(finalEvals.size() == 1)
+            forwardButton.setText("*SAVE ALL*");
+
+        forwardButton.setOnMouseClicked(e -> forwardButtonClicked(commentLabel, evalComment, pointValueTextField,
+                                                                  forwardButton, errorLabel, dialog));
+        backButton.setOnMouseClicked(e -> backButtonClicked(commentLabel, evalComment, pointValueTextField,
+                                                            forwardButton, errorLabel));
+
+        HBox buttonHBox = new HBox(backButton, forwardButton);
+        buttonHBox.setAlignment(Pos.CENTER);
+        buttonHBox.setSpacing(50);
+
+        dialogVBox.getChildren().addAll(commentLabel, message, evalComment, pointsLabel, pointValueTextField, errorLabel,
+                                        buttonHBox);
+        Scene dialogScene = new Scene(dialogVBox, 400, 400);
+        dialog.setScene(dialogScene);
+        dialog.show();
+
+    }
+
+    /**
+     * Used in final evaluations to move to the next trainee's eval. If they are done, this will act as the save button
+     * (see the first if statement for this).
+     * @param commentLabel
+     * @param evalComment
+     * @param pointValueTextField
+     * @param forwardButton
+     * @param errorLabel
+     * @param dialogWindow
+     */
+    public void forwardButtonClicked(Label commentLabel, TextArea evalComment, TextField pointValueTextField,
+                                     Button forwardButton, Label errorLabel, Stage dialogWindow){
+
+        //Save Evaluations
+        if(evalIndex + 1 == controller.getCurrentTrainees().size()){
+
+            //Verify entered data
+            if(!evalComment.getText().isEmpty()){
+
+                String tmp;
+                if(pointValueTextField.getText().isEmpty())
+                    tmp = pointValueTextField.getPromptText();
+                else{
+
+                    if(!isNotInteger(pointValueTextField.getText()))
+                        tmp = pointValueTextField.getText();
+                    else{
+                        errorLabel.setVisible(true);
+                        return;
+                    }
+
+                }
+
+                finalEvals.set(evalIndex, new Pair<>(evalComment.getText(), Integer.parseInt(tmp)));
+
+            }else{
+                errorLabel.setVisible(true);
+                return;
+            }
+
+            //Save the evaluations
+            Session currentSes = new Session(controller.getCurrentSession());
+            int counter = 0;
+            for(Trainee trainee : controller.getCurrentTrainees()){
+
+                Pair<String, Integer> currentEval = finalEvals.get(counter);
+
+
+                //Makes a special type of comment, see Comment.java for constructor details
+                DBManager.addComment(new Comment(trainee.getId(), currentSes.getEndDate(),
+                                                 trainee.getFullName(), currentEval.getKey(),
+                                                 String.valueOf(currentEval.getValue()), currentSes.getYear(),
+                                                 currentSes.getSession()));
+
+                counter++;
+
+            }
+
+            currentSes.setCurrentDay(currentSes.getCurrentDay() + 1);
+            dialogWindow.close();
+            DBManager.updateSessionDay(currentSes);
+            controller.updateCurrentSession(currentSes);
+            refresh();
+
+            return;
+
+
+            //Prep Button for Save Label
+        }else if(evalIndex + 2 == controller.getCurrentTrainees().size())
+            forwardButton.setText("*SAVE ALL*");
+
+        //Verify entered data
+        if(!evalComment.getText().isEmpty()){
+
+            String tmp;
+            if(pointValueTextField.getText().isEmpty())
+                tmp = pointValueTextField.getPromptText();
+            else{
+                if(!isNotInteger(pointValueTextField.getText()))
+                    tmp = pointValueTextField.getText();
+                else{
+                    errorLabel.setVisible(true);
+                    return;
+                }
+            }
+
+            finalEvals.set(evalIndex, new Pair<>(evalComment.getText(), Integer.parseInt(tmp)));
+
+        }else{
+            errorLabel.setVisible(true);
+            return;
+        }
+
+        evalIndex++;
+        commentLabel.setText(controller.getCurrentTrainees().get(evalIndex).getFullName() + "'s");
+        evalComment.setText(finalEvals.get(evalIndex).getKey());
+        pointValueTextField.setPromptText(String.valueOf(finalEvals.get(evalIndex).getValue()));
+        pointValueTextField.clear();
+        errorLabel.setVisible(false);
+
+    }
+
+    /**
+     * Used in final evaluations to move to the previous trainee's eval.
+     */
+    public void backButtonClicked(Label commentLabel, TextArea evalComment, TextField pointValueTextField,
+                                  Button forwardButton, Label errorLabel){
+
+        if(evalIndex < 1)
+            return;
+
+        if(evalIndex + 1 == controller.getCurrentTrainees().size())
+            forwardButton.setText("Next ->");
+
+        //Verify entered data
+        if(!evalComment.getText().isEmpty() || !pointValueTextField.getPromptText().equals("0")){
+
+            String tmp;
+            if(pointValueTextField.getText().isEmpty())
+                tmp = pointValueTextField.getPromptText();
+            else{
+                if(!isNotInteger(pointValueTextField.getText()))
+                    tmp = pointValueTextField.getText();
+                else {
+                    errorLabel.setVisible(true);
+                    return;
+                }
+            }
+
+            finalEvals.set(evalIndex, new Pair<>(evalComment.getText(), Integer.parseInt(tmp)));
+
+        }
+
+        evalIndex--;
+        commentLabel.setText(controller.getCurrentTrainees().get(evalIndex).getFullName() + "'s");
+        evalComment.setText(finalEvals.get(evalIndex).getKey());
+        pointValueTextField.setPromptText(String.valueOf(finalEvals.get(evalIndex).getValue()));
+        pointValueTextField.clear();
+        errorLabel.setVisible(false);
 
     }
 
