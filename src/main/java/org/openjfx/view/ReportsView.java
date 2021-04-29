@@ -1,5 +1,10 @@
 package org.openjfx.view;
 
+import java.io.IOException;
+
+import java.util.Comparator;
+import java.util.Vector;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -8,26 +13,22 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-
 import javafx.scene.control.ListView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.util.Pair;
+
 import org.openjfx.controller.Controller;
 import org.openjfx.controller.DBManager;
+import org.openjfx.controller.DocumentGenerator;
 import org.openjfx.controller.LifeguardTrainingApplication;
 import org.openjfx.model.Session;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Vector;
-
 public class ReportsView {
 
-    Controller controller;
+    private Controller controller;
+    private DocumentGenerator documentGenerator;
 
     @FXML
     private Label yearLabel;
@@ -40,6 +41,7 @@ public class ReportsView {
     protected void initialize(){
 
         controller = LifeguardTrainingApplication.getController();
+        documentGenerator = new DocumentGenerator();
         refresh();
 
     }
@@ -52,6 +54,7 @@ public class ReportsView {
         yearLabel.setText(String.valueOf(controller.getCurrentSession().getYear()));
         sessionLabel.setText("Session " + controller.getCurrentSession().getSession());
         datesLabel.setText(controller.getCurrentSession().getStartDate() + " - " + controller.getCurrentSession().getEndDate());
+        documentGenerator.createDirectoriesIfNeeded();
 
     }
 

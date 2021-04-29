@@ -3,6 +3,8 @@ target
 out
 externalResources
 Save_Files
+Reports
+Templates
 pom.xml
 *.iml
 *.ldb
