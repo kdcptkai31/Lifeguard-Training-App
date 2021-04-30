@@ -7,7 +7,6 @@ module org.openjfx {
     requires commons.csv;
     requires commons.logging;
     requires sqlite.jdbc;
-    requires xstream;
     requires org.apache.poi.poi;
     requires org.apache.poi.ooxml;
 
