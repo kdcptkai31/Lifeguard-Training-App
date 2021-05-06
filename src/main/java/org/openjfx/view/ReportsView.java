@@ -44,8 +44,7 @@ public class ReportsView {
         documentGenerator = new DocumentGenerator();
         refresh();
 
-        documentGenerator.generateUniformForm();
-
+        documentGenerator.generateTraineeProfiles();
 
     }
 

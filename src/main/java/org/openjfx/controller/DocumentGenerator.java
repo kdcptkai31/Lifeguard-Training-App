@@ -1,20 +1,21 @@
 package org.openjfx.controller;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
+import javafx.embed.swing.SwingFXUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.openjfx.model.Trainee;
+
+import javax.imageio.ImageIO;
 
 /**
  * This class creates Word documents or Excel documents, which are needed for operational or report purposes.
@@ -60,6 +61,128 @@ public class DocumentGenerator {
                 if(!currentSession.mkdir())
                     System.exit(1);
             }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Creates an excel doc that prints out each trainee's profile picture, name, and district. 4 profiles per page
+     */
+    public void generateTraineeProfiles(){
+
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet();
+
+        //Styling
+        XSSFFont nameFont = workbook.createFont();
+        nameFont.setBold(true);
+        nameFont.setFontHeightInPoints((short)18);
+        nameFont.setFontName("Arial");
+        XSSFFont districtFont = workbook.createFont();
+        districtFont.setBold(true);
+        districtFont.setFontHeightInPoints((short)14);
+        districtFont.setFontName("Arial");
+
+        CellStyle nameStyle = workbook.createCellStyle();
+        nameStyle.setFont(nameFont);
+        CellStyle districtStyle = workbook.createCellStyle();
+        districtStyle.setFont(districtFont);
+
+        try{
+
+            //Used to correctly offset the excel rows to fit 4 profiles per printable page.
+            int alternator = 0;
+
+            for(int i = 0; i < controller.getCurrentTrainees().size(); i+=2){
+
+                ByteArrayOutputStream byteIn = new ByteArrayOutputStream();
+                ImageIO.write(Objects.requireNonNull(SwingFXUtils.fromFXImage(controller.getCurrentTrainees().get(i).getActualImage(), null)), "png", byteIn);
+                int pictureIndex = workbook.addPicture(byteIn.toByteArray(), Workbook.PICTURE_TYPE_PNG);
+                byteIn.close();
+                CreationHelper helper = workbook.getCreationHelper();
+                Drawing drawing = sheet.createDrawingPatriarch();
+                ClientAnchor anchor = helper.createClientAnchor();
+                anchor.setCol1(0);
+                anchor.setRow1((i * 11) + alternator + i / 4);
+                anchor.setCol2(4);
+                anchor.setRow2(16 + (i * 11) + alternator + i / 4);
+                Picture pic = drawing.createPicture(anchor, pictureIndex);
+
+                if(i + 1 < controller.getCurrentTrainees().size()){
+
+                    ByteArrayOutputStream byteIn1 = new ByteArrayOutputStream();
+                    ImageIO.write(Objects.requireNonNull(SwingFXUtils.fromFXImage(controller.getCurrentTrainees().get(i + 1).getActualImage(), null)), "png", byteIn1);
+                    int pictureIndex1 = workbook.addPicture(byteIn1.toByteArray(), Workbook.PICTURE_TYPE_PNG);
+                    byteIn1.close();
+                    CreationHelper helper1 = workbook.getCreationHelper();
+                    Drawing drawing1 = sheet.createDrawingPatriarch();
+                    ClientAnchor anchor1 = helper1.createClientAnchor();
+                    anchor1.setCol1(5);
+                    anchor1.setRow1((i * 11) + alternator + i / 4);
+                    anchor1.setCol2(9);
+                    anchor1.setRow2(16 + (i * 11) + alternator + i / 4);
+                    Picture pic1 = drawing1.createPicture(anchor1, pictureIndex1);
+
+                }
+
+                Row row = sheet.createRow(17 + (i * 11) + alternator + i / 4);
+                Cell cell;
+                String nameText = controller.getCurrentTrainees().get(i).getFirstName() + " " +
+                        controller.getCurrentTrainees().get(i).getLastName();
+                if(nameText.length() < 14)
+                    cell = row.createCell(1);
+                else
+                    cell = row.createCell(0);
+
+                cell.setCellValue(nameText);
+                cell.setCellStyle(nameStyle);
+
+                if(i + 1 < controller.getCurrentTrainees().size()){
+
+                    nameText = controller.getCurrentTrainees().get(i + 1).getFirstName() + " " +
+                                      controller.getCurrentTrainees().get(i + 1).getLastName();
+                    if(nameText.length() < 14)
+                        cell = row.createCell(6);
+                    else
+                        cell = row.createCell(5);
+                    cell.setCellValue(nameText);
+                    cell.setCellStyle(nameStyle);
+
+                }
+
+                Row row1 = sheet.createRow(19 + (i * 11) + alternator + i / 4);
+                String districtText = controller.getCurrentTrainees().get(i).getDistrictChoice();
+                if(districtText.length() < 13)
+                    cell = row1.createCell(1);
+                else
+                    cell = row1.createCell(0);
+                cell.setCellValue(districtText);
+                cell.setCellStyle(districtStyle);
+
+                if(i + 1 < controller.getCurrentTrainees().size()){
+
+                    districtText = controller.getCurrentTrainees().get(i + 1).getDistrictChoice();
+                    if(districtText.length() < 13)
+                        cell = row1.createCell(6);
+                    else
+                        cell = row1.createCell(5);
+                    cell.setCellValue(districtText);
+                    cell.setCellStyle(districtStyle);
+
+                }
+
+                alternator = (alternator + 1) % 2;
+
+            }
+
+            FileOutputStream fileOut = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Session_" +
+                    controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
+                    "\\Trainee_Profiles.xlsx");
+            workbook.write(fileOut);
+            fileOut.close();
 
         }catch (Exception e){
             e.printStackTrace();
