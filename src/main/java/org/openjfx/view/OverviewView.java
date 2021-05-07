@@ -820,7 +820,7 @@ public class OverviewView {
         }
     }
 
-    class SortByAveragePlacement implements Comparator<Pair<Integer, Double>>{
+    public static class SortByAveragePlacement implements Comparator<Pair<Integer, Double>>{
         @Override
         public int compare(Pair<Integer, Double> o1, Pair<Integer, Double> o2) {
 

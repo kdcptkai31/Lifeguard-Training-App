@@ -1,21 +1,25 @@
 package org.openjfx.controller;
 
 import java.io.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 import javafx.embed.swing.SwingFXUtils;
+import javafx.util.Pair;
+
+import javax.imageio.ImageIO;
+
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFFont;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.*;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
-import org.openjfx.model.Trainee;
-
-import javax.imageio.ImageIO;
+import org.openjfx.model.*;
+import org.openjfx.model.Comment;
+import org.openjfx.view.OverviewView;
 
 /**
  * This class creates Word documents or Excel documents, which are needed for operational or report purposes.
@@ -229,6 +233,233 @@ public class DocumentGenerator {
             FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Session_" +
                     controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
                     "\\Avery_NameTent_NameTag_List.xlsx");
+            workbook.write(tmp);
+            tmp.close();
+            workbook.close();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Generates a list displaying the trainees in order of ranking, with their total scores and total percentage.
+     */
+    public void generateCurrentRankings(){
+
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet();
+
+        //Gather data from trainees to create the correct placement/////////////////////////////////////////////////////////
+        Vector<Trainee> traineeVector = DBManager.getAllTraineesFromSession(controller.getCurrentSession().getYear(),
+                controller.getCurrentSession().getSession());
+
+        Vector<Double> traineeTotalScores = new Vector<>();
+        Vector<Pair<Integer, Double>> averagePlacement = new Vector<>();
+        int counter = 0;
+        for(Trainee trainee : Objects.requireNonNull(traineeVector)){
+
+            double totalScore = 0;
+            Vector<TestScore> traineeTestScores = DBManager.getAllTestScoresFromTraineeID(trainee.getId());
+            Vector<EventScore> traineeEventScores = DBManager.getAllEventScoresFromTraineeID(trainee.getId());
+            if(!traineeTestScores.isEmpty()) {
+                for (TestScore score : traineeTestScores)
+                    totalScore += score.getScore();
+
+            }
+            traineeTotalScores.add(totalScore);
+            int totalPlace = 0;
+            if(!traineeEventScores.isEmpty()) {
+                for (EventScore score : traineeEventScores)
+                    totalPlace += score.getPlace();
+
+            }
+            if(traineeEventScores.size() != 0){
+                averagePlacement.add(new Pair<>(counter, totalPlace * 1.0 / traineeEventScores.size()));
+            }
+            counter++;
+
+        }
+
+        averagePlacement.sort(new OverviewView.SortByAveragePlacement());
+        Collections.reverse(averagePlacement);
+
+        int num = 100;
+        for(Pair<Integer, Double> pair : averagePlacement) {
+
+            traineeTotalScores.setElementAt(traineeTotalScores.get(pair.getKey()) + num, pair.getKey());
+            num--;
+
+        }
+
+        Vector<Pair<Trainee, Double>> sortTraineeVector = new Vector<>();
+        for(int i = 0; i < traineeVector.size(); i++)
+            sortTraineeVector.add(new Pair<>(traineeVector.get(i), traineeTotalScores.get(i)));
+
+        sortTraineeVector.removeIf(b -> !b.getKey().isActive());
+
+        //Take into account the final evaluation score modifications, if applicable
+        if(controller.getCurrentSession().getCurrentDay() == 10){
+
+            counter = 0;
+            for(Pair<Trainee, Double> pair : sortTraineeVector){
+
+                Vector<org.openjfx.model.Comment> traineeComments = new Vector<>(controller.getCurrentComments());
+                traineeComments.removeIf(comment -> !comment.getIncidentType().equals("Final Evaluation"));
+                for(Comment comment : traineeComments){
+
+                    if(comment.getTraineeID() == pair.getKey().getId()){
+
+                        Double tmpDouble = pair.getValue() + Integer.parseInt(comment.getInstructorActions());
+                        sortTraineeVector.set(counter, new Pair<>(pair.getKey(), tmpDouble));
+                        break;
+
+                    }
+                }
+                counter++;
+            }
+        }
+
+        sortTraineeVector.sort(Comparator.comparing(p -> -p.getValue()));
+        //END correct placement calculation/////////////////////////////////////////////////////////////////////////////////
+
+        double totalScorePossible = 100;
+        for(Test test : Objects.requireNonNull(DBManager.getAllTestsFromSession(controller.getCurrentSession().getYear(),
+                controller.getCurrentSession().getSession()))) {
+            if (test.isScored())
+                totalScorePossible += test.getPoints();
+        }
+
+        //sortTraineeVector holds the order of placement, as well as the score
+        //totalScorePossible holds the total possible points at this point in the session
+
+        //Styling
+        CellStyle centerStyleOdd = workbook.createCellStyle();
+        centerStyleOdd.setAlignment(HorizontalAlignment.CENTER);
+        centerStyleOdd.setBorderLeft(BorderStyle.THIN);
+        centerStyleOdd.setBorderRight(BorderStyle.THIN);
+        centerStyleOdd.setBorderBottom(BorderStyle.DASHED);
+        centerStyleOdd.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.index);
+        centerStyleOdd.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+        CellStyle centerStyleEven = workbook.createCellStyle();
+        centerStyleEven.setAlignment(HorizontalAlignment.CENTER);
+        centerStyleEven.setBorderLeft(BorderStyle.THIN);
+        centerStyleEven.setBorderRight(BorderStyle.THIN);
+        centerStyleEven.setBorderBottom(BorderStyle.DASHED);
+
+        CellStyle placeStyleOdd = workbook.createCellStyle();
+        placeStyleOdd.setAlignment(HorizontalAlignment.CENTER);
+        placeStyleOdd.setBorderLeft(BorderStyle.THIN);
+        placeStyleOdd.setBorderBottom(BorderStyle.DASHED);
+        placeStyleOdd.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.index);
+        placeStyleOdd.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+        CellStyle placeStyleEven = workbook.createCellStyle();
+        placeStyleEven.setAlignment(HorizontalAlignment.CENTER);
+        placeStyleEven.setBorderLeft(BorderStyle.THIN);
+        placeStyleEven.setBorderBottom(BorderStyle.DASHED);
+
+        CellStyle percentageStyleOdd = workbook.createCellStyle();
+        percentageStyleOdd.setAlignment(HorizontalAlignment.CENTER);
+        percentageStyleOdd.setBorderRight(BorderStyle.THIN);
+        percentageStyleOdd.setBorderBottom(BorderStyle.DASHED);
+        XSSFDataFormat df = workbook.createDataFormat();
+        percentageStyleOdd.setDataFormat(df.getFormat("0.00%"));
+        percentageStyleOdd.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.index);
+        percentageStyleOdd.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+        CellStyle percentageStyleEven = workbook.createCellStyle();
+        percentageStyleEven.setAlignment(HorizontalAlignment.CENTER);
+        percentageStyleEven.setBorderRight(BorderStyle.THIN);
+        percentageStyleEven.setBorderBottom(BorderStyle.DASHED);
+        percentageStyleEven.setDataFormat(df.getFormat("0.00%"));
+
+        CellStyle headerStyle = workbook.createCellStyle();
+        headerStyle.setAlignment(HorizontalAlignment.CENTER);
+        headerStyle.setBorderRight(BorderStyle.THIN);
+        headerStyle.setBorderTop(BorderStyle.THIN);
+        headerStyle.setBorderLeft(BorderStyle.THIN);
+        headerStyle.setBorderBottom(BorderStyle.THIN);
+
+        XSSFFont nameFont = workbook.createFont();
+        nameFont.setBold(true);
+        nameFont.setFontHeightInPoints((short)20);
+        nameFont.setFontName("Arial");
+
+        CellStyle titleStyle = workbook.createCellStyle();
+        titleStyle.setFont(nameFont);
+
+        try{
+
+            int rowCount = 2;
+            int columnCount = 2;
+
+            Row headerRow = sheet.createRow(rowCount++);
+            Cell cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Place");
+            cell.setCellStyle(headerStyle);
+            cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Trainee");
+            cell.setCellStyle(headerStyle);
+            cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Points");
+            cell.setCellStyle(headerStyle);
+            cell = headerRow.createCell(columnCount, CellType.STRING);
+            cell.setCellValue("Percentage");
+            cell.setCellStyle(headerStyle);
+
+            //Table
+            boolean swapper = false;
+            for(int i = 0; i < sortTraineeVector.size(); i++){
+
+                columnCount = 2;
+                XSSFRow row = sheet.createRow(rowCount++);
+                cell = row.createCell(columnCount++, CellType.NUMERIC);
+                cell.setCellValue(i + 1);
+                if(swapper)
+                    cell.setCellStyle(placeStyleEven);
+                else
+                    cell.setCellStyle(placeStyleOdd);
+                cell = row.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue(sortTraineeVector.get(i).getKey().getFirstName() + " " +
+                                  sortTraineeVector.get(i).getKey().getLastName());
+                if(swapper)
+                    cell.setCellStyle(centerStyleEven);
+                else
+                    cell.setCellStyle(centerStyleOdd);
+                cell = row.createCell(columnCount++, CellType.NUMERIC);
+                cell.setCellValue(sortTraineeVector.get(i).getValue());
+                if(swapper)
+                    cell.setCellStyle(centerStyleEven);
+                else
+                    cell.setCellStyle(centerStyleOdd);
+                cell = row.createCell(columnCount);
+                cell.setCellValue(Double.valueOf(BigDecimal.valueOf(sortTraineeVector.get(i).getValue() / totalScorePossible)
+                                            .setScale(4, RoundingMode.HALF_UP).toString()));
+                if(swapper)
+                    cell.setCellStyle(percentageStyleEven);
+                else
+                    cell.setCellStyle(percentageStyleOdd);
+
+                swapper ^= true;
+
+            }
+
+            for(int i = 2; i < 6; i++)
+                sheet.autoSizeColumn(i);
+
+            //Makes Header
+            Row titleRow = sheet.createRow(1);
+            cell = titleRow.createCell(3, CellType.STRING);
+            cell.setCellValue("Current Rankings");
+            cell.setCellStyle(titleStyle);
+
+            //Saves the file
+            FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Session_" +
+                    controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
+                    "\\Current_Rankings.xlsx");
             workbook.write(tmp);
             tmp.close();
             workbook.close();
