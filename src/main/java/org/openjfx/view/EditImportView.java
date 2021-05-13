@@ -3324,6 +3324,8 @@ public class EditImportView {
 
                 }
 
+                sessionButton.setDisable(true);
+
                 //Verified, save data now
                 //Adds the session if it is not found
                 Vector<Session> existingSessions = DBManager.getAllSessions();

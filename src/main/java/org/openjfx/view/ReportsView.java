@@ -44,7 +44,7 @@ public class ReportsView {
         documentGenerator = new DocumentGenerator();
         refresh();
 
-        documentGenerator.generateCurrentRankings();
+        documentGenerator.generateTraineeProfiles();
 
     }
 

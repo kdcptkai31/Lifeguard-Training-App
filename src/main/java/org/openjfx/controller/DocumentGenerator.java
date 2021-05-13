@@ -204,15 +204,29 @@ public class DocumentGenerator {
             XSSFWorkbook workbook = new XSSFWorkbook();
             XSSFSheet sheet = workbook.createSheet("AveryList");
 
+            //Style
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+
+            CellStyle normalStyle = workbook.createCellStyle();
+            normalStyle.setAlignment(HorizontalAlignment.CENTER);
+
             //Makes header row
             int rowCount = 0;
             int columnCount = 0;
             Row headerRow = sheet.createRow(rowCount);
             Cell cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellStyle(headerStyle);
             cell.setCellValue("FIRST NAME");
             cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellStyle(headerStyle);
             cell.setCellValue("LAST NAME");
             cell = headerRow.createCell(columnCount, CellType.STRING);
+            cell.setCellStyle(headerStyle);
             cell.setCellValue("DISTRICT/SECTOR");
 
             //Makes the data entry rows
@@ -221,18 +235,141 @@ public class DocumentGenerator {
                 Row row = sheet.createRow(++rowCount);
                 columnCount = 0;
                 cell = row.createCell(columnCount++, CellType.STRING);
+                cell.setCellStyle(normalStyle);
                 cell.setCellValue(trainee.getFirstName());
                 cell = row.createCell(columnCount++, CellType.STRING);
+                cell.setCellStyle(normalStyle);
                 cell.setCellValue(trainee.getLastName());
                 cell = row.createCell(columnCount, CellType.STRING);
+                cell.setCellStyle(normalStyle);
                 cell.setCellValue(trainee.getDistrictChoice());
 
             }
+
+            for(int i = 0; i < 3; i++)
+                sheet.autoSizeColumn(i);
 
             //Saves the file
             FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Session_" +
                     controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
                     "\\Avery_NameTent_NameTag_List.xlsx");
+            workbook.write(tmp);
+            tmp.close();
+            workbook.close();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Generates and saves an excel sheet with all trainee names, as well as their attendance hours.
+     */
+    public void generateAttendanceList(){
+
+        try{
+
+            XSSFWorkbook workbook = new XSSFWorkbook();
+            XSSFSheet sheet = workbook.createSheet("Attendance Sheet");
+
+            //Style
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+
+            CellStyle fnStyleOdd = workbook.createCellStyle();
+            fnStyleOdd.setAlignment(HorizontalAlignment.CENTER);
+            fnStyleOdd.setBorderLeft(BorderStyle.THIN);
+            fnStyleOdd.setBorderRight(BorderStyle.THIN);
+            fnStyleOdd.setBorderBottom(BorderStyle.DASHED);
+
+            CellStyle fnStyleEven = workbook.createCellStyle();
+            fnStyleEven.setAlignment(HorizontalAlignment.CENTER);
+            fnStyleEven.setBorderLeft(BorderStyle.THIN);
+            fnStyleEven.setBorderRight(BorderStyle.THIN);
+            fnStyleEven.setBorderBottom(BorderStyle.DASHED);
+            fnStyleEven.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.index);
+            fnStyleEven.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            CellStyle lnStyleOdd = workbook.createCellStyle();
+            lnStyleOdd.setAlignment(HorizontalAlignment.CENTER);
+            lnStyleOdd.setBorderBottom(BorderStyle.DASHED);
+
+            CellStyle lnStyleEven = workbook.createCellStyle();
+            lnStyleEven.setAlignment(HorizontalAlignment.CENTER);
+            lnStyleEven.setBorderBottom(BorderStyle.DASHED);
+            lnStyleEven.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.index);
+            lnStyleEven.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            CellStyle hoursOdd = workbook.createCellStyle();
+            hoursOdd.setAlignment(HorizontalAlignment.CENTER);
+            hoursOdd.setBorderLeft(BorderStyle.THIN);
+            hoursOdd.setBorderRight(BorderStyle.THIN);
+            hoursOdd.setBorderBottom(BorderStyle.DASHED);
+
+            CellStyle hoursEven = workbook.createCellStyle();
+            hoursEven.setAlignment(HorizontalAlignment.CENTER);
+            hoursEven.setBorderLeft(BorderStyle.THIN);
+            hoursEven.setBorderRight(BorderStyle.THIN);
+            hoursEven.setBorderBottom(BorderStyle.DASHED);
+            hoursEven.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.index);
+            hoursEven.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+
+            //Makes header row
+            int rowCount = 1;
+            int columnCount = 2;
+            Row headerRow = sheet.createRow(rowCount);
+            Cell cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("FIRST NAME");
+            cell.setCellStyle(headerStyle);
+            cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("LAST NAME");
+            cell.setCellStyle(headerStyle);
+            cell = headerRow.createCell(columnCount, CellType.NUMERIC);
+            cell.setCellValue("HOURS");
+            cell.setCellStyle(headerStyle);
+
+            //Makes the data entry rows
+            boolean swapper = false;
+            for(Trainee trainee : controller.getCurrentTrainees()){
+
+                Row row = sheet.createRow(++rowCount);
+                columnCount = 2;
+                cell = row.createCell(columnCount++, CellType.STRING);
+                if(swapper)
+                    cell.setCellStyle(fnStyleOdd);
+                else
+                    cell.setCellStyle(fnStyleEven);
+                cell.setCellValue(trainee.getFirstName());
+                cell = row.createCell(columnCount++, CellType.STRING);
+                if(swapper)
+                    cell.setCellStyle(lnStyleOdd);
+                else
+                    cell.setCellStyle(lnStyleEven);
+                cell.setCellValue(trainee.getLastName());
+                cell = row.createCell(columnCount, CellType.NUMERIC);
+                if(swapper)
+                    cell.setCellStyle(hoursOdd);
+                else
+                    cell.setCellStyle(hoursEven);
+                cell.setCellValue(trainee.getHoursAttended());
+
+                swapper ^= true;
+
+            }
+
+            for(int i = 2; i < 5; i++)
+                sheet.autoSizeColumn(i);
+
+            //Saves the file
+            FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Session_" +
+                    controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
+                    "\\Attendance_List.xlsx");
             workbook.write(tmp);
             tmp.close();
             workbook.close();
