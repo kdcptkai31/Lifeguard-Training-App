@@ -587,7 +587,7 @@ public class EditImportView {
     public void onAddSectorClicked(){
 
         int selectedIndex = editSectorsListView.getSelectionModel().getSelectedIndex();
-        if(selectedIndex == -1 && !newSectorCheckBox.isSelected())
+        if(selectedIndex == -1 && newSectorCheckBox.isSelected() && editSectorNameTextField.getText().isEmpty())
             return;
 
         Sector tmp = new Sector();
@@ -610,8 +610,9 @@ public class EditImportView {
             tmp.setName(editSectorNameTextField.getText());
 
             if(DBManager.addSector(tmp)){
-                int sectorID = DBManager.getSectorFromSectorNameAndSession(tmp.getName(), controller.getCurrentSession().getYear(),
-                                                                           controller.getCurrentSession().getSession()).getSectorID();
+                int sectorID = Objects.requireNonNull(DBManager.getSectorFromSectorNameAndSession(tmp.getName(),
+                        controller.getCurrentSession().getYear(),
+                        controller.getCurrentSession().getSession())).getSectorID();
                 for(District district : sectorDistrictsVector){
 
                     district.setSectorID(sectorID);
@@ -1908,12 +1909,12 @@ public class EditImportView {
      * Validates and saves the added or updated comment for the selected trainee.
      */
     public void onSaveCommentClicked(){
-
+    System.out.println("START");
         int traineeIndex = traineeListView.getSelectionModel().getSelectedIndex();
         int tCommentIndex = traineeCommentsListView.getSelectionModel().getSelectedIndex();
-        if(traineeIndex == -1 || tCommentIndex == -1)
+        if(traineeIndex == -1 || (tCommentIndex == -1 && !tCNewCheckBox.isSelected()))
             return;
-
+        System.out.println("HERE");
         Trainee tmpTrainee = controller.getCurrentTrainees().get(traineeIndex);
         Comment tmpComment = new Comment();
         tmpComment.setYear(tmpTrainee.getYear());
@@ -1957,9 +1958,9 @@ public class EditImportView {
             tmpComment.setRotation(tCRotationComboBox.getSelectionModel().getSelectedItem());
             tmpComment.setNextSteps(tCNextStepsComboBox.getSelectionModel().getSelectedItem());
             tmpComment.setDate(tCDateTextField.getText());
+            tmpComment.setCurrentDay(controller.getCurrentSession().getCurrentDay());
 
             DBManager.addComment(tmpComment);
-
 
             //Perform Update
         }else{

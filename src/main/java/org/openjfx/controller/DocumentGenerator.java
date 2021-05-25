@@ -2,8 +2,12 @@ package org.openjfx.controller;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.util.Pair;
@@ -85,6 +89,10 @@ public class DocumentGenerator {
         nameFont.setBold(true);
         nameFont.setFontHeightInPoints((short)18);
         nameFont.setFontName("Arial");
+        XSSFFont smallNameFont = workbook.createFont();
+        smallNameFont.setBold(true);
+        smallNameFont.setFontHeightInPoints((short)14);
+        smallNameFont.setFontName("Arial");
         XSSFFont districtFont = workbook.createFont();
         districtFont.setBold(true);
         districtFont.setFontHeightInPoints((short)14);
@@ -92,6 +100,8 @@ public class DocumentGenerator {
 
         CellStyle nameStyle = workbook.createCellStyle();
         nameStyle.setFont(nameFont);
+        CellStyle smallNameStyle = workbook.createCellStyle();
+        smallNameStyle.setFont(smallNameFont);
         CellStyle districtStyle = workbook.createCellStyle();
         districtStyle.setFont(districtFont);
 
@@ -136,46 +146,86 @@ public class DocumentGenerator {
                 Cell cell;
                 String nameText = controller.getCurrentTrainees().get(i).getFirstName() + " " +
                         controller.getCurrentTrainees().get(i).getLastName();
-                if(nameText.length() < 14)
+                if(nameText.length() < 14) {
                     cell = row.createCell(1);
-                else
+                    cell.setCellStyle(nameStyle);
+                }else {
                     cell = row.createCell(0);
-
+                    if(nameText.length() < 19)
+                        cell.setCellStyle(nameStyle);
+                    else
+                        cell.setCellStyle(smallNameStyle);
+                }
                 cell.setCellValue(nameText);
-                cell.setCellStyle(nameStyle);
 
                 if(i + 1 < controller.getCurrentTrainees().size()){
 
                     nameText = controller.getCurrentTrainees().get(i + 1).getFirstName() + " " +
                                       controller.getCurrentTrainees().get(i + 1).getLastName();
-                    if(nameText.length() < 14)
+                    if(nameText.length() < 14) {
                         cell = row.createCell(6);
-                    else
+                        cell.setCellStyle(nameStyle);
+                    }else {
                         cell = row.createCell(5);
+                        if(nameText.length() < 19)
+                            cell.setCellStyle(nameStyle);
+                        else
+                            cell.setCellStyle(smallNameStyle);
+                    }
                     cell.setCellValue(nameText);
-                    cell.setCellStyle(nameStyle);
 
                 }
 
                 Row row1 = sheet.createRow(19 + (i * 11) + alternator + i / 4);
+                Row row2 = sheet.createRow(20 + (i * 11) + alternator + i / 4);
                 String districtText = controller.getCurrentTrainees().get(i).getDistrictChoice();
-                if(districtText.length() < 13)
-                    cell = row1.createCell(1);
-                else
+
+                if(districtText.length() > 25 && districtText.contains("-")){
+
+                    String[] districtInfo = districtText.split(" - ");
                     cell = row1.createCell(0);
-                cell.setCellValue(districtText);
-                cell.setCellStyle(districtStyle);
+                    cell.setCellValue(districtInfo[0]);
+                    cell.setCellStyle(districtStyle);
+
+                    cell = row2.createCell(0);
+                    cell.setCellValue(districtInfo[1]);
+                    cell.setCellStyle(districtStyle);
+
+                }else{
+
+                    if(districtText.length() < 13)
+                        cell = row1.createCell(1);
+                    else
+                        cell = row1.createCell(0);
+                    cell.setCellValue(districtText);
+                    cell.setCellStyle(districtStyle);
+
+                }
 
                 if(i + 1 < controller.getCurrentTrainees().size()){
 
                     districtText = controller.getCurrentTrainees().get(i + 1).getDistrictChoice();
-                    if(districtText.length() < 13)
-                        cell = row1.createCell(6);
-                    else
-                        cell = row1.createCell(5);
-                    cell.setCellValue(districtText);
-                    cell.setCellStyle(districtStyle);
 
+                    if(districtText.length() > 25 && districtText.contains("-")){
+
+                        String[] districtInfoAlso = districtText.split(" - ");
+                        cell = row1.createCell(5);
+                        cell.setCellValue(districtInfoAlso[0]);
+                        cell.setCellStyle(districtStyle);
+                        cell = row2.createCell(5);
+                        cell.setCellValue(districtInfoAlso[1]);
+                        cell.setCellStyle(districtStyle);
+
+                    }else{
+
+                        if(districtText.length() < 13)
+                            cell = row1.createCell(6);
+                        else
+                            cell = row1.createCell(5);
+                        cell.setCellValue(districtText);
+                        cell.setCellStyle(districtStyle);
+
+                    }
                 }
 
                 alternator = (alternator + 1) % 2;
@@ -185,6 +235,489 @@ public class DocumentGenerator {
             FileOutputStream fileOut = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Session_" +
                     controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
                     "\\Trainee_Profiles.xlsx");
+            workbook.write(fileOut);
+            fileOut.close();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Handles the Individual Summary process. To reduce execution time, this function will run first always, and then
+     * will either generate the selected trainee's individual summary, or it will create the individual summary for
+     * every trainee. This function will find the overall rankings, as well as percent of course complete, and
+     * @param selectedTrainee
+     */
+    public void preProcessIndividualSummaries(Trainee selectedTrainee){
+
+        //Gather data from trainees to create the correct placement/////////////////////////////////////////////////////////
+        Vector<Trainee> traineeVector = DBManager.getAllTraineesFromSession(controller.getCurrentSession().getYear(),
+                                                                            controller.getCurrentSession().getSession());
+
+        Vector<Double> traineeTotalScores = new Vector<>();
+        Vector<Pair<Integer, Double>> averagePlacement = new Vector<>();
+        int counter = 0;
+        for(Trainee trainee : Objects.requireNonNull(traineeVector)){
+
+            double totalScore = 0;
+            Vector<TestScore> traineeTestScores = DBManager.getAllTestScoresFromTraineeID(trainee.getId());
+            Vector<EventScore> traineeEventScores = DBManager.getAllEventScoresFromTraineeID(trainee.getId());
+            if(!traineeTestScores.isEmpty()) {
+                for (TestScore score : traineeTestScores)
+                    totalScore += score.getScore();
+
+            }
+            traineeTotalScores.add(totalScore);
+            int totalPlace = 0;
+            if(!traineeEventScores.isEmpty()) {
+                for (EventScore score : traineeEventScores)
+                    totalPlace += score.getPlace();
+
+            }
+            if(traineeEventScores.size() != 0){
+                averagePlacement.add(new Pair<>(counter, totalPlace * 1.0 / traineeEventScores.size()));
+            }
+            counter++;
+
+        }
+
+        averagePlacement.sort(new OverviewView.SortByAveragePlacement());
+        Collections.reverse(averagePlacement);
+        //Put inactive trainees at the back of the list here
+        List<Pair<Integer, Double>> tmpList = averagePlacement.stream()
+                                                .filter(b -> !traineeVector.get(b.getKey()).isActive())
+                                                .collect(Collectors.toList());
+        averagePlacement.removeAll(tmpList);
+        averagePlacement.addAll(tmpList);
+
+        int num = 100;
+        //Holds the trainee ID and the physical events' point value for later use
+        Vector<Pair<Integer, Integer>> physicalEventsPoints = new Vector<>();
+        for(Pair<Integer, Double> pair : averagePlacement) {
+
+            physicalEventsPoints.add(new Pair<>(traineeVector.get(pair.getKey()).getId(), num));
+            traineeTotalScores.setElementAt(traineeTotalScores.get(pair.getKey()) + num, pair.getKey());
+            num--;
+
+        }
+
+        Vector<Pair<Trainee, Double>> sortTraineeVector = new Vector<>();
+        for(int i = 0; i < traineeVector.size(); i++)
+            sortTraineeVector.add(new Pair<>(traineeVector.get(i), traineeTotalScores.get(i)));
+
+        //Take into account the final evaluation score modifications, if applicable
+        if(controller.getCurrentSession().getCurrentDay() == 10){
+
+            counter = 0;
+            for(Pair<Trainee, Double> pair : sortTraineeVector){
+
+                //Skips this step for inactive trainees
+                if(!pair.getKey().isActive())
+                    continue;
+
+                Vector<Comment> traineeComments = new Vector<>(controller.getCurrentComments());
+                traineeComments.removeIf(comment -> !comment.getIncidentType().equals("Final Evaluation"));
+                for(Comment comment : traineeComments){
+
+                    if(comment.getTraineeID() == pair.getKey().getId()){
+
+                        Double tmpDouble = pair.getValue() + Integer.parseInt(comment.getInstructorActions());
+                        sortTraineeVector.set(counter, new Pair<>(pair.getKey(), tmpDouble));
+                        break;
+
+                    }
+                }
+                counter++;
+            }
+        }
+
+        sortTraineeVector.sort(Comparator.comparing(p -> -p.getValue()));
+
+        //Moves the inactive trainees to the back of the ranking
+        List<Pair<Trainee, Double>> inactiveTrainees = sortTraineeVector.stream()
+                                                        .filter(b -> !b.getKey().isActive())
+                                                        .collect(Collectors.toList());
+        sortTraineeVector.removeAll(inactiveTrainees);
+        sortTraineeVector.addAll(inactiveTrainees);
+
+        //END correct placement calculation/////////////////////////////////////////////////////////////////////////////////
+
+        //Generate All Trainee Summaries
+        double physPointValue = 0;
+        if(selectedTrainee == null){
+
+            for(int i = 0; i < sortTraineeVector.size(); i++){
+
+                for(Pair<Integer, Integer> pair : physicalEventsPoints){
+                    if(pair.getKey() == sortTraineeVector.get(i).getKey().getId()){
+                        physPointValue = pair.getValue();
+                        break;
+                    }
+                }
+
+                int tmpRank = -1;
+                if(sortTraineeVector.get(i).getKey().isActive())
+                    tmpRank = i + 1;
+
+                generateIndividualSummary(sortTraineeVector.get(i).getKey(), physPointValue, tmpRank, .99);
+
+            }
+
+            //Generate the selected Trainee Summary
+        }else{
+
+            for(Pair<Integer, Integer> pair : physicalEventsPoints){
+                if(pair.getKey() == selectedTrainee.getId()){
+                    physPointValue = pair.getValue();
+                    break;
+                }
+            }
+
+            int tmpRank = -1;
+            if(selectedTrainee.isActive()) {
+                for (int i = 0; i < sortTraineeVector.size(); i++) {
+                    if (sortTraineeVector.get(i).getKey().getId() == selectedTrainee.getId()){
+                        tmpRank = i + 1;
+                        break;
+                    }
+                }
+            }
+
+            generateIndividualSummary(selectedTrainee, physPointValue, tmpRank, .99);
+
+        }
+
+    }
+
+    /**
+     * Generates a individual summary of the selected trainee, with scores, comments, and overall performance.
+     * @param
+     */
+    public void generateIndividualSummary(Trainee trainee, double physicalEventPoints, int classRank,
+                                          double percentComplete){
+
+        Session currentSession = controller.getCurrentSession();
+        Vector<Test> tests = DBManager.getAllTestsFromSession(currentSession.getYear(), currentSession.getSession());
+        Vector<Event> events = DBManager.getAllEventsFromSession(currentSession.getYear(), currentSession.getSession());
+        Vector<TestScore> testScores = DBManager.getAllTestScoresFromTraineeID(trainee.getId());
+        Vector<EventScore> eventScores = DBManager.getAllEventScoresFromTraineeID(trainee.getId());
+        Vector<Comment> comments = DBManager.getAllCommentsFromTID(trainee.getId());
+
+        File checkCertDir = new File(System.getProperty("user.dir") + "\\Reports\\Session_" +
+                controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
+                "\\IndividualSummaries\\");
+        if(!checkCertDir.exists()){
+            if(!checkCertDir.mkdir())
+                System.exit(1);
+        }
+
+        try{
+
+            XSSFWorkbook workbook = new XSSFWorkbook();
+            XSSFSheet sheet = workbook.createSheet(trainee.getFirstName() + "_" + trainee.getLastName() +
+                                                              "_Report");
+
+            //Styling
+            XSSFFont nameFont = workbook.createFont();
+            nameFont.setBold(true);
+            nameFont.setFontHeightInPoints((short)20);
+            nameFont.setFontName("Calibri");
+
+            XSSFFont headerFont = workbook.createFont();
+            headerFont.setFontName("Calibri");
+            headerFont.setBold(true);
+
+            XSSFFont commentTitleFont = workbook.createFont();
+            commentTitleFont.setBold(true);
+            commentTitleFont.setFontHeightInPoints((short)14);
+            commentTitleFont.setFontName("Calibri");
+
+            CellStyle nameStyle = workbook.createCellStyle();
+            nameStyle.setFont(nameFont);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(headerFont);
+            headerStyle.setAlignment(HorizontalAlignment.LEFT);
+
+            CellStyle notesStyleEven = workbook.createCellStyle();
+            notesStyleEven.setWrapText(true);
+            notesStyleEven.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle notesStyleOdd = workbook.createCellStyle();
+            notesStyleOdd.setWrapText(true);
+            notesStyleOdd.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            notesStyleOdd.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            notesStyleOdd.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle boldCenterStyle = workbook.createCellStyle();
+            boldCenterStyle.setFont(headerFont);
+            boldCenterStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle boldCenterPercentStyle = workbook.createCellStyle();
+            boldCenterPercentStyle.setFont(headerFont);
+            boldCenterPercentStyle.setAlignment(HorizontalAlignment.CENTER);
+            XSSFDataFormat df = workbook.createDataFormat();
+            boldCenterPercentStyle.setDataFormat(df.getFormat("0.00%"));
+
+            CellStyle centerStyleEven = workbook.createCellStyle();
+            centerStyleEven.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle centerStyleOdd = workbook.createCellStyle();
+            centerStyleOdd.setAlignment(HorizontalAlignment.CENTER);
+            centerStyleOdd.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            centerStyleOdd.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            CellStyle tableHeaderStyle = workbook.createCellStyle();
+            tableHeaderStyle.setFillForegroundColor(IndexedColors.YELLOW1.getIndex());
+            tableHeaderStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            tableHeaderStyle.setAlignment(HorizontalAlignment.CENTER);
+            tableHeaderStyle.setFont(headerFont);
+
+            CellStyle commentTitleStyle = workbook.createCellStyle();
+            commentTitleStyle.setFont(commentTitleFont);
+
+            CellStyle commentStyle = workbook.createCellStyle();
+            commentStyle.setWrapText(true);
+            commentStyle.setBorderBottom(BorderStyle.DASHED);
+
+            CellStyle commentCenterStyle = workbook.createCellStyle();
+            commentCenterStyle.setAlignment(HorizontalAlignment.CENTER);
+            commentCenterStyle.setBorderBottom(BorderStyle.DASHED);
+
+            CellStyle totalsStyle = workbook.createCellStyle();
+            totalsStyle.setAlignment(HorizontalAlignment.RIGHT);
+            totalsStyle.setFont(headerFont);
+
+
+            //Start Document Construction
+            int rowCount = 0;
+            int columnCount = 0;
+
+            //Output Trainee Info
+            Row row = sheet.createRow(rowCount++);
+            Cell cell = row.createCell(0, CellType.STRING);
+            cell.setCellValue(trainee.getFullName());
+            cell.setCellStyle(nameStyle);
+            row = sheet.createRow(rowCount++);
+            cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("District: " + trainee.getDistrictChoice());
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell(columnCount++, CellType.STRING);
+            String[] dates = trainee.getBirthDate().split("/");
+            cell.setCellValue("Age: " + Period.between(LocalDate.of(Integer.parseInt(dates[2]), Integer.parseInt(dates[0]),
+                                                        Integer.parseInt(dates[1])), LocalDate.now()).getYears());
+            cell.setCellStyle(headerStyle);
+
+            //Output Trainee Physical Event Placements
+            rowCount++;
+            row = sheet.createRow(rowCount++);
+            columnCount = 0;
+            cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Physical Event");
+            cell.setCellStyle(tableHeaderStyle);
+            cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Place");
+            cell.setCellStyle(tableHeaderStyle);
+            cell = row.createCell(columnCount, CellType.STRING);
+            cell.setCellValue("Notes");
+            cell.setCellStyle(tableHeaderStyle);
+
+            double averageScore = 0;
+            int counter = 0;
+            int currentIndex = 0;
+            for(Event event : events){
+
+                columnCount = 0;
+                row = sheet.createRow(rowCount++);
+                cell = row.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue(event.getName());
+                cell.setCellStyle(currentIndex % 2 == 0 ? centerStyleEven : centerStyleOdd);
+                cell = row.createCell(columnCount++);
+                cell.setCellStyle(currentIndex % 2 == 0 ? centerStyleEven : centerStyleOdd);
+                boolean isFound = false;
+                for(EventScore score : eventScores){
+                    if(score.getEventID() == event.getEventID()){
+                        cell.setCellValue(score.getPlace());
+                        averageScore += score.getPlace();
+                        counter++;
+                        isFound = true;
+                        break;
+                    }
+                }
+                if(!isFound)
+                    cell.setCellValue("N/A");
+
+                cell = row.createCell(columnCount, CellType.STRING);
+                cell.setCellValue(event.getNotes());
+                cell.setCellStyle(currentIndex % 2 == 0 ? notesStyleEven : notesStyleOdd);
+
+                currentIndex++;
+
+            }
+            row = sheet.createRow(rowCount++);
+            columnCount = 0;
+            cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Average Place:");
+            cell.setCellStyle(totalsStyle);
+            cell = row.createCell(columnCount, CellType.NUMERIC);
+            cell.setCellValue(new BigDecimal(averageScore / counter * 1.0).round(new MathContext(4))
+                                                                                .doubleValue());
+            cell.setCellStyle(boldCenterStyle);
+
+            row = sheet.createRow(rowCount++);
+            columnCount = 0;
+            cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Physical Events Points:");
+            cell.setCellStyle(totalsStyle);
+            cell = row.createCell(columnCount, CellType.NUMERIC);
+            cell.setCellValue(physicalEventPoints);
+            cell.setCellStyle(boldCenterStyle);
+
+            rowCount++;
+            columnCount = 0;
+
+            //Output Trainee Total Points
+            row = sheet.createRow(rowCount++);
+            cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Course Section");
+            cell.setCellStyle(tableHeaderStyle);
+            cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Points");
+            cell.setCellStyle(tableHeaderStyle);
+            cell = row.createCell(columnCount, CellType.STRING);
+            cell.setCellValue("Points Possible");
+            cell.setCellStyle(tableHeaderStyle);
+
+            columnCount = 0;
+            row = sheet.createRow(rowCount++);
+            cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Physical Events Points");
+            cell.setCellStyle(centerStyleEven);
+            cell = row.createCell(columnCount++, CellType.NUMERIC);
+            cell.setCellValue(physicalEventPoints);
+            cell.setCellStyle(boldCenterStyle);
+            double totalPoints = physicalEventPoints;
+            cell = row.createCell(columnCount, CellType.NUMERIC);
+            double totalPossiblePoints = 100;
+            cell.setCellValue(totalPossiblePoints);
+            cell.setCellStyle(centerStyleEven);
+
+            currentIndex = 0;
+            for(Test test : tests){
+
+                columnCount = 0;
+                row = sheet.createRow(rowCount++);
+                cell = row.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue(test.getName());
+                cell.setCellStyle(currentIndex % 2 == 0 ? centerStyleOdd : centerStyleEven);
+
+                boolean testScoreFound = false;
+                for(TestScore score : testScores){
+                    if(score.getTestID() == test.getTestID()){
+                        cell = row.createCell(columnCount++, CellType.NUMERIC);
+                        cell.setCellValue(score.getScore());
+                        cell.setCellStyle(currentIndex % 2 == 0 ? centerStyleOdd : centerStyleEven);
+                        totalPoints += score.getScore();
+                        testScoreFound = true;
+                        break;
+                    }
+                }
+                if(!testScoreFound){
+
+                    cell = row.createCell(columnCount++, CellType.STRING);
+                    cell.setCellValue("N/A");
+                    cell.setCellStyle(currentIndex % 2 == 0 ? centerStyleOdd : centerStyleEven);
+
+                }
+
+                totalPossiblePoints += test.getPoints();
+                cell = row.createCell(columnCount, CellType.NUMERIC);
+                cell.setCellValue(test.getPoints());
+                cell.setCellStyle(currentIndex % 2 == 0 ? centerStyleOdd : centerStyleEven);
+
+                currentIndex++;
+
+            }
+
+            columnCount = 0;
+            row = sheet.createRow(rowCount++);
+            cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Total Points:");
+            cell.setCellStyle(totalsStyle);
+            cell = row.createCell(columnCount++, CellType.NUMERIC);
+            cell.setCellValue(totalPoints);
+            cell.setCellStyle(boldCenterStyle);
+            cell = row.createCell(columnCount, CellType.NUMERIC);
+            cell.setCellValue(totalPossiblePoints);
+            cell.setCellStyle(boldCenterStyle);
+            row = sheet.createRow(rowCount++);
+            columnCount = 0;
+            cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Class Rank:");
+            cell.setCellStyle(totalsStyle);
+            cell = row.createCell(columnCount);
+            if(classRank == -1)
+                cell.setCellValue("INACTIVATED");
+            else
+                cell.setCellValue(classRank);
+            cell.setCellStyle(boldCenterStyle);
+            row = sheet.createRow(rowCount++);
+            columnCount = 0;
+            cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("% of Course Completed:");
+            cell.setCellStyle(totalsStyle);
+            cell = row.createCell(columnCount);
+            cell.setCellValue(Double.valueOf(BigDecimal.valueOf(percentComplete)
+                                                            .setScale(4, RoundingMode.HALF_UP).toString()));
+            cell.setCellStyle(boldCenterPercentStyle);
+
+            rowCount++;
+
+            //Sizes the columns to fit the data
+            for(int i = 0; i < 2; i++)
+                sheet.autoSizeColumn(i);
+            sheet.setColumnWidth(2, 7500);
+
+            //Output Trainee's Comments
+            row = sheet.createRow(rowCount++);
+            columnCount = 0;
+            cell = row.createCell(columnCount, CellType.STRING);
+            cell.setCellValue("Instructor Comments");
+            cell.setCellStyle(commentTitleStyle);
+            row = sheet.createRow(rowCount++);
+            cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Comment");
+            cell.setCellStyle(tableHeaderStyle);
+            cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Date");
+            cell.setCellStyle(tableHeaderStyle);
+            cell = row.createCell(columnCount, CellType.STRING);
+            cell.setCellValue("Instructor");
+            cell.setCellStyle(tableHeaderStyle);
+
+            for(Comment comment : comments){
+
+                columnCount = 0;
+                row = sheet.createRow(rowCount++);
+                cell = row.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue("Day " + comment.getCurrentDay() + ": " + comment.getIncidentType() + "\n" +
+                                  comment.getIncidentDescription() + "\n" + comment.getInstructorActions() + "\n" +
+                                  comment.getNextSteps());
+                cell.setCellStyle(commentStyle);
+                cell = row.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue(comment.getDate());
+                cell.setCellStyle(commentCenterStyle);
+                cell = row.createCell(columnCount, CellType.STRING);
+                cell.setCellValue(comment.getInstructorName());
+                cell.setCellStyle(commentCenterStyle);
+
+            }
+
+            FileOutputStream fileOut = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Session_" +
+                    controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
+                    "\\IndividualSummaries\\" + trainee.getLastName() + "_" + trainee.getFirstName() + "_Report.xlsx");
             workbook.write(fileOut);
             fileOut.close();
 
@@ -421,6 +954,11 @@ public class DocumentGenerator {
 
         averagePlacement.sort(new OverviewView.SortByAveragePlacement());
         Collections.reverse(averagePlacement);
+        List<Pair<Integer, Double>> tmpList = averagePlacement.stream()
+                                                .filter(b -> !traineeVector.get(b.getKey()).isActive())
+                                                .collect(Collectors.toList());
+        averagePlacement.removeAll(tmpList);
+        averagePlacement.addAll(tmpList);
 
         int num = 100;
         for(Pair<Integer, Double> pair : averagePlacement) {
@@ -656,12 +1194,12 @@ public class DocumentGenerator {
             //Styling
             CellStyle style = workbook.createCellStyle();
             style.setFillForegroundColor(IndexedColors.YELLOW1.getIndex());
-            style.setFillPattern(FillPatternType.BIG_SPOTS);
+            style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
             CellStyle centerStyle = workbook.createCellStyle();
             centerStyle.setAlignment(HorizontalAlignment.CENTER);
             CellStyle bothStyle = workbook.createCellStyle();
             bothStyle.setFillForegroundColor(IndexedColors.YELLOW1.getIndex());
-            bothStyle.setFillPattern(FillPatternType.BIG_SPOTS);
+            bothStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
             bothStyle.setAlignment(HorizontalAlignment.CENTER);
 
             //Make header row
@@ -807,6 +1345,7 @@ public class DocumentGenerator {
                 sheet.autoSizeColumn(i);
             sheet.autoSizeColumn(6);
             sheet.autoSizeColumn(7);
+            sheet.autoSizeColumn(9);
 
             //Saves the file
             FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Session_" +

@@ -24,6 +24,7 @@ import org.openjfx.model.*;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class OverviewView {
 
@@ -94,6 +95,8 @@ public class OverviewView {
         traineeColumn.setCellValueFactory(new PropertyValueFactory<>("traineeName"));
         scoreColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         scoreColumn.setCellValueFactory(new PropertyValueFactory<>("score"));
+        scoreColumn.setMaxWidth(50);
+        scoreColumn.setMinWidth(50);
 
         testListView.setCellFactory(stringListView -> new CenteredTestListViewCell());
         eventListView.setCellFactory(stringListView -> new CenteredEventListViewCell());
@@ -103,6 +106,8 @@ public class OverviewView {
         traineeHoursColumn.setCellValueFactory(new PropertyValueFactory<>("traineeName"));
         hoursColumn.setCellValueFactory(new PropertyValueFactory<>("score"));
         hoursColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        hoursColumn.setMinWidth(40);
+        hoursColumn.setMaxWidth(40);
 
         //Action event where the user presses enter to enter that row's score/place, and it increments the edit focus
         //until the end of the list.
@@ -195,6 +200,12 @@ public class OverviewView {
 
         averagePlacement.sort(new SortByAveragePlacement());
         Collections.reverse(averagePlacement);
+
+        List<Pair<Integer, Double>> tmpList = averagePlacement.stream()
+                .filter(b -> !traineeVector.get(b.getKey()).isActive())
+                .collect(Collectors.toList());
+        averagePlacement.removeAll(tmpList);
+        averagePlacement.addAll(tmpList);
 
         int num = 100;
         for(Pair<Integer, Double> pair : averagePlacement) {
