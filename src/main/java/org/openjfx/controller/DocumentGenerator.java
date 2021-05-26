@@ -258,28 +258,36 @@ public class DocumentGenerator {
 
         Vector<Double> traineeTotalScores = new Vector<>();
         Vector<Pair<Integer, Double>> averagePlacement = new Vector<>();
+        Vector<Pair<Integer, Double>> courseCompletedCount = new Vector<>(); //Holds the count of completed events and tests for each trainee
         int counter = 0;
         for(Trainee trainee : Objects.requireNonNull(traineeVector)){
+
+            int completedEventsTests = 0;
 
             double totalScore = 0;
             Vector<TestScore> traineeTestScores = DBManager.getAllTestScoresFromTraineeID(trainee.getId());
             Vector<EventScore> traineeEventScores = DBManager.getAllEventScoresFromTraineeID(trainee.getId());
             if(!traineeTestScores.isEmpty()) {
-                for (TestScore score : traineeTestScores)
+                for (TestScore score : traineeTestScores) {
                     totalScore += score.getScore();
+                    completedEventsTests++;
+                }
 
             }
             traineeTotalScores.add(totalScore);
             int totalPlace = 0;
             if(!traineeEventScores.isEmpty()) {
-                for (EventScore score : traineeEventScores)
+                for (EventScore score : traineeEventScores) {
                     totalPlace += score.getPlace();
+                    completedEventsTests++;
+                }
 
             }
             if(traineeEventScores.size() != 0){
                 averagePlacement.add(new Pair<>(counter, totalPlace * 1.0 / traineeEventScores.size()));
             }
             counter++;
+            courseCompletedCount.add(new Pair<>(trainee.getId(), completedEventsTests * 1.0));
 
         }
 
@@ -344,6 +352,23 @@ public class DocumentGenerator {
 
         //END correct placement calculation/////////////////////////////////////////////////////////////////////////////////
 
+        //Process Course Completed Percentage for each trainee
+        int eventCount = DBManager.getAllTestsFromSession(controller.getCurrentSession().getYear(),
+                                                          controller.getCurrentSession().getSession()).size();
+        int testCount = DBManager.getAllEventsFromSession(controller.getCurrentSession().getYear(),
+                                                          controller.getCurrentSession().getSession()).size();
+        if(eventCount > 0 && testCount > 0){
+
+            int counter1 = 0;
+            for(Pair<Integer, Double> pair : courseCompletedCount){
+
+                courseCompletedCount.set(counter1, new Pair<>(pair.getKey(), pair.getValue() / (eventCount + testCount)));
+                counter1++;
+
+            }
+
+        }
+
         //Generate All Trainee Summaries
         double physPointValue = 0;
         if(selectedTrainee == null){
@@ -356,12 +381,19 @@ public class DocumentGenerator {
                         break;
                     }
                 }
+                double percentComplete = 0;
+                for(Pair<Integer, Double> pair : courseCompletedCount){
+                    if(pair.getKey() == sortTraineeVector.get(i).getKey().getId()){
+                        percentComplete = pair.getValue();
+                        break;
+                    }
+                }
 
                 int tmpRank = -1;
                 if(sortTraineeVector.get(i).getKey().isActive())
                     tmpRank = i + 1;
 
-                generateIndividualSummary(sortTraineeVector.get(i).getKey(), physPointValue, tmpRank, .99);
+                generateIndividualSummary(sortTraineeVector.get(i).getKey(), physPointValue, tmpRank, percentComplete);
 
             }
 
@@ -385,7 +417,15 @@ public class DocumentGenerator {
                 }
             }
 
-            generateIndividualSummary(selectedTrainee, physPointValue, tmpRank, .99);
+            double percentComplete = 0;
+            for(Pair<Integer, Double> pair : courseCompletedCount){
+                if(pair.getKey() == selectedTrainee.getId()){
+                    percentComplete = pair.getValue();
+                    break;
+                }
+            }
+
+            generateIndividualSummary(selectedTrainee, physPointValue, tmpRank, percentComplete);
 
         }
 
@@ -597,7 +637,7 @@ public class DocumentGenerator {
             cell.setCellStyle(centerStyleEven);
             cell = row.createCell(columnCount++, CellType.NUMERIC);
             cell.setCellValue(physicalEventPoints);
-            cell.setCellStyle(boldCenterStyle);
+            cell.setCellStyle(centerStyleEven);
             double totalPoints = physicalEventPoints;
             cell = row.createCell(columnCount, CellType.NUMERIC);
             double totalPossiblePoints = 100;
@@ -714,6 +754,8 @@ public class DocumentGenerator {
                 cell.setCellStyle(commentCenterStyle);
 
             }
+
+            sheet.autoSizeColumn(1);
 
             FileOutputStream fileOut = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Session_" +
                     controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
