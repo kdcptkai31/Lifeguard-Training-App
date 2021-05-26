@@ -918,7 +918,7 @@ public class EditImportView {
             return;
 
         DBManager.deleteDistrict(tmp);
-        eventInstructorTestTabRefresh();
+        allOtherTabRefresh();
 
     }
 
@@ -3332,10 +3332,19 @@ public class EditImportView {
                 Vector<Session> existingSessions = DBManager.getAllSessions();
                 for(Session newSes : pendingSessions){
 
+                    Set<District> foundDistricts = new HashSet<>();
+                    for(Trainee trainee : tmpTrainees){
+                        if(trainee.getSession() == newSes.getSession())
+                            foundDistricts.add(new District(newSes.getYear(), newSes.getSession(),
+                                                    trainee.getDistrictChoice().split(" - ")[0], "", 1));
+                    }
+
                     boolean isFound = false;
                     for(Session oldSes : Objects.requireNonNull(existingSessions))
                         if (oldSes.getYear() == newSes.getYear() && oldSes.getSession() == newSes.getSession()) {
                             isFound = true;
+                            for(District district : Objects.requireNonNull(foundDistricts))
+                                DBManager.addDistrict(district);
                             break;
                         }
 
@@ -3351,10 +3360,8 @@ public class EditImportView {
                             DBManager.addTest(new Test(copyTest.getName(), copyTest.getPoints(), false,
                                                        newSes.getYear(), newSes.getSession()));
 
-                        for(District district : Objects.requireNonNull(DBManager.getAllDistrictsFromSession(controller.getCurrentSession().getYear(),
-                                controller.getCurrentSession().getSession())))
-                            DBManager.addDistrict(new District(newSes.getYear(), newSes.getSession(), district.getName(),
-                                                            "", 1));
+                        for(District district : Objects.requireNonNull(foundDistricts))
+                            DBManager.addDistrict(district);
 
                         for(Sector sector : Objects.requireNonNull(DBManager.getAllSectorsFromSession(controller.getCurrentSession().getYear(),
                                                                                                       controller.getCurrentSession().getSession())))
@@ -3386,6 +3393,7 @@ public class EditImportView {
                 }
 
                 controller.updateCurrentTrainees();
+                sessionButton.setDisable(false);
                 dialog.close();
                 traineeTabRefresh();
 
