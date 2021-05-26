@@ -435,7 +435,7 @@ public class DocumentGenerator {
      * Generates a individual summary of the selected trainee, with scores, comments, and overall performance.
      * @param
      */
-    public void generateIndividualSummary(Trainee trainee, double physicalEventPoints, int classRank,
+    private void generateIndividualSummary(Trainee trainee, double physicalEventPoints, int classRank,
                                           double percentComplete){
 
         Session currentSession = controller.getCurrentSession();
@@ -544,7 +544,7 @@ public class DocumentGenerator {
             cell = row.createCell(columnCount++, CellType.STRING);
             cell.setCellValue("District: " + trainee.getDistrictChoice());
             cell.setCellStyle(headerStyle);
-            cell = row.createCell(columnCount++, CellType.STRING);
+            cell = row.createCell(columnCount, CellType.STRING);
             String[] dates = trainee.getBirthDate().split("/");
             cell.setCellValue("Age: " + Period.between(LocalDate.of(Integer.parseInt(dates[2]), Integer.parseInt(dates[0]),
                                                         Integer.parseInt(dates[1])), LocalDate.now()).getYears());
@@ -567,7 +567,7 @@ public class DocumentGenerator {
             double averageScore = 0;
             int counter = 0;
             int currentIndex = 0;
-            for(Event event : events){
+            for(Event event : Objects.requireNonNull(events)){
 
                 columnCount = 0;
                 row = sheet.createRow(rowCount++);
@@ -645,7 +645,7 @@ public class DocumentGenerator {
             cell.setCellStyle(centerStyleEven);
 
             currentIndex = 0;
-            for(Test test : tests){
+            for(Test test : Objects.requireNonNull(tests)){
 
                 columnCount = 0;
                 row = sheet.createRow(rowCount++);
@@ -737,7 +737,7 @@ public class DocumentGenerator {
             cell.setCellValue("Instructor");
             cell.setCellStyle(tableHeaderStyle);
 
-            for(Comment comment : comments){
+            for(Comment comment : Objects.requireNonNull(comments)){
 
                 columnCount = 0;
                 row = sheet.createRow(rowCount++);
@@ -839,6 +839,16 @@ public class DocumentGenerator {
     }
 
     /**
+     * Generates a district summary for the given district. If the given district is null, generate all summaries.
+     * @param selectedDistrict
+     */
+    public void generateDistrictSummaries(District selectedDistrict){
+
+
+
+    }
+
+    /**
      * Generates and saves an excel sheet with all trainee names, as well as their attendance hours.
      */
     public void generateAttendanceList(){
@@ -873,10 +883,12 @@ public class DocumentGenerator {
             CellStyle lnStyleOdd = workbook.createCellStyle();
             lnStyleOdd.setAlignment(HorizontalAlignment.CENTER);
             lnStyleOdd.setBorderBottom(BorderStyle.DASHED);
+            lnStyleOdd.setBorderRight(BorderStyle.THIN);
 
             CellStyle lnStyleEven = workbook.createCellStyle();
             lnStyleEven.setAlignment(HorizontalAlignment.CENTER);
             lnStyleEven.setBorderBottom(BorderStyle.DASHED);
+            lnStyleEven.setBorderRight(BorderStyle.THIN);
             lnStyleEven.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.index);
             lnStyleEven.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
@@ -897,7 +909,7 @@ public class DocumentGenerator {
 
             //Makes header row
             int rowCount = 1;
-            int columnCount = 2;
+            int columnCount = 1;
             Row headerRow = sheet.createRow(rowCount);
             Cell cell = headerRow.createCell(columnCount++, CellType.STRING);
             cell.setCellValue("FIRST NAME");
@@ -905,7 +917,10 @@ public class DocumentGenerator {
             cell = headerRow.createCell(columnCount++, CellType.STRING);
             cell.setCellValue("LAST NAME");
             cell.setCellStyle(headerStyle);
-            cell = headerRow.createCell(columnCount, CellType.NUMERIC);
+            cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("DISTRICT");
+            cell.setCellStyle(headerStyle);
+            cell = headerRow.createCell(columnCount, CellType.STRING);
             cell.setCellValue("HOURS");
             cell.setCellStyle(headerStyle);
 
@@ -914,19 +929,28 @@ public class DocumentGenerator {
             for(Trainee trainee : controller.getCurrentTrainees()){
 
                 Row row = sheet.createRow(++rowCount);
-                columnCount = 2;
+                columnCount = 1;
                 cell = row.createCell(columnCount++, CellType.STRING);
                 if(swapper)
                     cell.setCellStyle(fnStyleOdd);
                 else
                     cell.setCellStyle(fnStyleEven);
                 cell.setCellValue(trainee.getFirstName());
+
                 cell = row.createCell(columnCount++, CellType.STRING);
                 if(swapper)
                     cell.setCellStyle(lnStyleOdd);
                 else
                     cell.setCellStyle(lnStyleEven);
                 cell.setCellValue(trainee.getLastName());
+
+                cell = row.createCell(columnCount++, CellType.STRING);
+                if(swapper)
+                    cell.setCellStyle(lnStyleOdd);
+                else
+                    cell.setCellStyle(lnStyleEven);
+                cell.setCellValue(trainee.getDistrictChoice().split(" - ")[0]);
+
                 cell = row.createCell(columnCount, CellType.NUMERIC);
                 if(swapper)
                     cell.setCellStyle(hoursOdd);
@@ -938,7 +962,7 @@ public class DocumentGenerator {
 
             }
 
-            for(int i = 2; i < 5; i++)
+            for(int i = 1; i < 5; i++)
                 sheet.autoSizeColumn(i);
 
             //Saves the file
