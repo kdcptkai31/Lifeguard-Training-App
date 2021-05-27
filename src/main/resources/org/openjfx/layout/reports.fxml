@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="900.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openjfx.view.ReportsView">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="900.0" prefWidth="1200.0" style="-fx-background-color: #3476f7;" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openjfx.view.ReportsView">
     <top>
         <HBox alignment="TOP_CENTER" spacing="10.0" style="-fx-background-color: FCE2AF;">
             <children>
@@ -107,10 +107,69 @@
             </effect>
         </HBox>
     </top>
-    <center>
-        <VBox prefHeight="200.0" prefWidth="100.0" style="-fx-background-color: #3476f7;" BorderPane.alignment="CENTER">
-            <effect>
-                <InnerShadow blurType="GAUSSIAN" />
-            </effect></VBox>
-    </center>
+   <center>
+      <HBox alignment="TOP_CENTER" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+         <children>
+            <VBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="400.0" spacing="15.0">
+               <children>
+                  <Label text="Printouts" textFill="#efb748" underline="true">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets top="50.0" />
+                     </VBox.margin>
+                  </Label>
+                  <Button fx:id="profilesButton" mnemonicParsing="false" onMouseClicked="#onProfilesClicked" text="Profiles" />
+                  <Button fx:id="averyListButton" mnemonicParsing="false" onMouseClicked="#onAveryListClicked" text="Avery List" />
+                  <Button fx:id="uniformInfoButton" mnemonicParsing="false" onMouseClicked="#onUniformClicked" text="Uniform Information" />
+                  <Button fx:id="currentRankingsButton" mnemonicParsing="false" onMouseClicked="#onCurrentRankingsClicked" text="Current Rankings" />
+                  <Button fx:id="certificatesButton" mnemonicParsing="false" onMouseClicked="#onCertificatesClicked" text="Certificates" />
+               </children></VBox>
+            <VBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="230.0">
+               <children>
+                  <Label alignment="CENTER" text="All reports will be saved to the folder &quot;Reports,&quot; inside this session's folder." textAlignment="CENTER" textFill="#efb748" wrapText="true">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font></Label>
+                  <Label fx:id="loadingLabel" text="L O A D I N G . . ." textFill="#efb748" visible="false">
+                     <font>
+                        <Font name="System Bold" size="24.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets top="75.0" />
+                     </VBox.margin>
+                  </Label>
+                  <ImageView fx:id="loadingGif" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" visible="false">
+                     <image>
+                        <Image url="@../images/Loading-Gif-Transparent-1.gif" />
+                     </image>
+                  </ImageView>
+                  <Label fx:id="extraTimeLabel" text="This may take some time..." textFill="#efb748" visible="false">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                  </Label>
+               </children>
+               <HBox.margin>
+                  <Insets top="10.0" />
+               </HBox.margin></VBox>
+            <VBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="400.0" spacing="15.0">
+               <children>
+                  <Label text="Deliverables" textFill="#efb748" underline="true">
+                     <VBox.margin>
+                        <Insets top="50.0" />
+                     </VBox.margin>
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                  </Label>
+                  <Button fx:id="individualSumButton" mnemonicParsing="false" onMouseClicked="#onIndividualSumClicked" text="Individual Summaries" />
+                  <Button fx:id="districtSumButton" mnemonicParsing="false" onMouseClicked="#onDistrictSumClicked" text="District Summaries" />
+                  <Button fx:id="testAnalysisButton" mnemonicParsing="false" onMouseClicked="#onTestAnalysisClicked" text="Test Analysis" />
+                  <Button fx:id="attendanceButton" mnemonicParsing="false" onMouseClicked="#onAttendanceClicked" text="Attendance Hours" />
+               </children></VBox>
+         </children>
+      </HBox>
+   </center>
 </BorderPane>

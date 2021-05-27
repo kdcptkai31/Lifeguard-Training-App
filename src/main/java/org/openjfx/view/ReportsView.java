@@ -1,10 +1,12 @@
 package org.openjfx.view;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import java.util.Comparator;
 import java.util.Vector;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -15,6 +17,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
@@ -38,13 +41,44 @@ public class ReportsView {
     @FXML
     private Label datesLabel;
 
+    //Middle VBox Loading Objects
+    @FXML
+    private Label loadingLabel;
+    @FXML
+    private ImageView loadingGif;
+    @FXML
+    private Label extraTimeLabel;
+
+    //Printouts
+    @FXML
+    private Button profilesButton;
+    @FXML
+    private Button averyListButton;
+    @FXML
+    private Button uniformInfoButton;
+    @FXML
+    private Button currentRankingsButton;
+    @FXML
+    private Button certificatesButton;
+
+    //Deliverables
+    @FXML
+    private Button individualSumButton;
+    @FXML
+    private Button districtSumButton;
+    @FXML
+    private Button testAnalysisButton;
+    @FXML
+    private Button attendanceButton;
+
+
     @FXML
     protected void initialize(){
 
         controller = LifeguardTrainingApplication.getController();
         documentGenerator = new DocumentGenerator();
         refresh();
-        
+
     }
 
     /**
@@ -56,8 +90,232 @@ public class ReportsView {
         sessionLabel.setText("Session " + controller.getCurrentSession().getSession());
         datesLabel.setText(controller.getCurrentSession().getStartDate() + " - " + controller.getCurrentSession().getEndDate());
         documentGenerator.createDirectoriesIfNeeded();
+        enableButtons();
 
     }
+
+    public void onProfilesClicked(){
+
+        disableButtons();
+        loadingLabel.setVisible(true);
+        loadingGif.setVisible(true);
+        extraTimeLabel.setVisible(true);
+
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        Runnable task = () -> {
+            documentGenerator.generateTraineeProfiles();
+            ScheduledExecutorService executor1 = Executors.newSingleThreadScheduledExecutor();
+            Runnable task1 = () -> {
+                enableButtons();
+                loadingLabel.setVisible(false);
+                loadingGif.setVisible(false);
+                extraTimeLabel.setVisible(false);
+            };
+            executor1.schedule(task1, 1, TimeUnit.MILLISECONDS);
+            executor1.shutdown();
+
+        };
+        executor.schedule(task, 1, TimeUnit.MILLISECONDS);
+        executor.shutdown();
+
+    }
+
+    public void onAveryListClicked(){
+
+        disableButtons();
+        loadingLabel.setVisible(true);
+        loadingGif.setVisible(true);
+
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        Runnable task = () -> {
+            documentGenerator.generateAveryList();
+            ScheduledExecutorService executor1 = Executors.newSingleThreadScheduledExecutor();
+            Runnable task1 = () -> {
+                enableButtons();
+                loadingLabel.setVisible(false);
+                loadingGif.setVisible(false);
+            };
+            executor1.schedule(task1, 1, TimeUnit.MILLISECONDS);
+            executor1.shutdown();
+
+        };
+        executor.schedule(task, 1, TimeUnit.MILLISECONDS);
+        executor.shutdown();
+
+    }
+
+    public void onUniformClicked(){
+
+        disableButtons();
+        loadingLabel.setVisible(true);
+        loadingGif.setVisible(true);
+
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        Runnable task = () -> {
+            documentGenerator.generateUniformForm();
+            ScheduledExecutorService executor1 = Executors.newSingleThreadScheduledExecutor();
+            Runnable task1 = () -> {
+                enableButtons();
+                loadingLabel.setVisible(false);
+                loadingGif.setVisible(false);
+            };
+            executor1.schedule(task1, 1, TimeUnit.MILLISECONDS);
+            executor1.shutdown();
+
+        };
+        executor.schedule(task, 1, TimeUnit.MILLISECONDS);
+        executor.shutdown();
+
+    }
+
+    public void onCurrentRankingsClicked(){
+
+        disableButtons();
+        loadingLabel.setVisible(true);
+        loadingGif.setVisible(true);
+
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        Runnable task = () -> {
+            documentGenerator.generateCurrentRankings();
+            ScheduledExecutorService executor1 = Executors.newSingleThreadScheduledExecutor();
+            Runnable task1 = () -> {
+                enableButtons();
+                loadingLabel.setVisible(false);
+                loadingGif.setVisible(false);
+            };
+            executor1.schedule(task1, 1, TimeUnit.MILLISECONDS);
+            executor1.shutdown();
+
+        };
+        executor.schedule(task, 1, TimeUnit.MILLISECONDS);
+        executor.shutdown();
+
+    }
+
+    public void onCertificatesClicked(){
+
+        disableButtons();
+        loadingLabel.setVisible(true);
+        loadingGif.setVisible(true);
+
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        Runnable task = () -> {
+            documentGenerator.generateCertificates();
+            ScheduledExecutorService executor1 = Executors.newSingleThreadScheduledExecutor();
+            Runnable task1 = () -> {
+                enableButtons();
+                loadingLabel.setVisible(false);
+                loadingGif.setVisible(false);
+            };
+            executor1.schedule(task1, 1, TimeUnit.MILLISECONDS);
+            executor1.shutdown();
+
+        };
+        executor.schedule(task, 1, TimeUnit.MILLISECONDS);
+        executor.shutdown();
+
+    }
+
+    public void onIndividualSumClicked(){
+
+        disableButtons();
+        loadingLabel.setVisible(true);
+        loadingGif.setVisible(true);
+
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        Runnable task = () -> {
+            //Makes them all with the given null value
+            documentGenerator.preProcessIndividualSummaries(null);
+            ScheduledExecutorService executor1 = Executors.newSingleThreadScheduledExecutor();
+            Runnable task1 = () -> {
+                enableButtons();
+                loadingLabel.setVisible(false);
+                loadingGif.setVisible(false);
+            };
+            executor1.schedule(task1, 1, TimeUnit.MILLISECONDS);
+            executor1.shutdown();
+
+        };
+        executor.schedule(task, 1, TimeUnit.MILLISECONDS);
+        executor.shutdown();
+
+    }
+
+    public void onDistrictSumClicked(){
+
+        disableButtons();
+        loadingLabel.setVisible(true);
+        loadingGif.setVisible(true);
+
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        Runnable task = () -> {
+            //Makes them all with the given null value
+            documentGenerator.preProcessDistrictSummaries(null);
+            ScheduledExecutorService executor1 = Executors.newSingleThreadScheduledExecutor();
+            Runnable task1 = () -> {
+                enableButtons();
+                loadingLabel.setVisible(false);
+                loadingGif.setVisible(false);
+            };
+            executor1.schedule(task1, 1, TimeUnit.MILLISECONDS);
+            executor1.shutdown();
+
+        };
+        executor.schedule(task, 1, TimeUnit.MILLISECONDS);
+        executor.shutdown();
+
+    }
+
+    public void onTestAnalysisClicked(){
+
+        disableButtons();
+        loadingLabel.setVisible(true);
+        loadingGif.setVisible(true);
+
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        Runnable task = () -> {
+            //Makes them all with the given null value
+            documentGenerator.generateTestAnalysis();
+            ScheduledExecutorService executor1 = Executors.newSingleThreadScheduledExecutor();
+            Runnable task1 = () -> {
+                enableButtons();
+                loadingLabel.setVisible(false);
+                loadingGif.setVisible(false);
+            };
+            executor1.schedule(task1, 1, TimeUnit.MILLISECONDS);
+            executor1.shutdown();
+
+        };
+        executor.schedule(task, 1, TimeUnit.MILLISECONDS);
+        executor.shutdown();
+
+    }
+
+    public void onAttendanceClicked(){
+
+        disableButtons();
+        loadingLabel.setVisible(true);
+        loadingGif.setVisible(true);
+
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        Runnable task = () -> {
+            //Makes them all with the given null value
+            documentGenerator.generateAttendanceList();
+            ScheduledExecutorService executor1 = Executors.newSingleThreadScheduledExecutor();
+            Runnable task1 = () -> {
+                enableButtons();
+                loadingLabel.setVisible(false);
+                loadingGif.setVisible(false);
+            };
+            executor1.schedule(task1, 1, TimeUnit.MILLISECONDS);
+            executor1.shutdown();
+
+        };
+        executor.schedule(task, 1, TimeUnit.MILLISECONDS);
+        executor.shutdown();
+
+    }
+
 
     /**
      * Navigates to the Overview page.
@@ -185,6 +443,40 @@ public class ReportsView {
         yearLabel.setScaleY(1);
         sessionLabel.setScaleX(1);
         sessionLabel.setScaleY(1);
+
+    }
+
+    /**
+     * Disables all report buttons
+     */
+    private void disableButtons(){
+
+        attendanceButton.setDisable(true);
+        testAnalysisButton.setDisable(true);
+        districtSumButton.setDisable(true);
+        individualSumButton.setDisable(true);
+        certificatesButton.setDisable(true);
+        currentRankingsButton.setDisable(true);
+        uniformInfoButton.setDisable(true);
+        averyListButton.setDisable(true);
+        profilesButton.setDisable(true);
+
+    }
+
+    /**
+     * Enables all report buttons
+     */
+    private void enableButtons(){
+
+        attendanceButton.setDisable(false);
+        testAnalysisButton.setDisable(false);
+        districtSumButton.setDisable(false);
+        individualSumButton.setDisable(false);
+        certificatesButton.setDisable(false);
+        currentRankingsButton.setDisable(false);
+        uniformInfoButton.setDisable(false);
+        averyListButton.setDisable(false);
+        profilesButton.setDisable(false);
 
     }
 

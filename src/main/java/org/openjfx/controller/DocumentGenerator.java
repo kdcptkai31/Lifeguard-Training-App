@@ -2157,7 +2157,7 @@ public class DocumentGenerator {
     /**
      * Generates the Certificates for all trainees in the session.
      */
-    public void generateCertificates() throws FileNotFoundException {
+    public void generateCertificates() {
 
         try{
 
