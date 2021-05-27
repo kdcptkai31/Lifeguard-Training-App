@@ -1,5 +1,6 @@
 package org.openjfx.view;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import java.util.Comparator;
@@ -43,9 +44,7 @@ public class ReportsView {
         controller = LifeguardTrainingApplication.getController();
         documentGenerator = new DocumentGenerator();
         refresh();
-
-        documentGenerator.preProcessDistrictSummaries(DBManager.getAllDistrictsFromSession(controller.getCurrentSession().getYear(), controller.getCurrentSession().getSession()).get(0));
-
+        
     }
 
     /**

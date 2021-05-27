@@ -63,8 +63,8 @@ public class DocumentGenerator {
             }
 
             //Checks for and creates the PrintOuts folder contains the current session's output folder, if needed
-            File currentSession = new File(System.getProperty("user.dir") + "\\Reports\\Session_" +
-                    controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear());
+            File currentSession = new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession());
             if(!currentSession.exists()){
                 if(!currentSession.mkdir())
                     System.exit(1);
@@ -232,8 +232,8 @@ public class DocumentGenerator {
 
             }
 
-            FileOutputStream fileOut = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Session_" +
-                    controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
+            FileOutputStream fileOut = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
                     "\\Trainee_Profiles.xlsx");
             workbook.write(fileOut);
             fileOut.close();
@@ -445,8 +445,8 @@ public class DocumentGenerator {
         Vector<EventScore> eventScores = DBManager.getAllEventScoresFromTraineeID(trainee.getId());
         Vector<Comment> comments = DBManager.getAllCommentsFromTID(trainee.getId());
 
-        File checkCertDir = new File(System.getProperty("user.dir") + "\\Reports\\Session_" +
-                controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
+        File checkCertDir = new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
                 "\\IndividualSummaries\\");
         if(!checkCertDir.exists()){
             if(!checkCertDir.mkdir())
@@ -757,8 +757,8 @@ public class DocumentGenerator {
 
             sheet.autoSizeColumn(1);
 
-            FileOutputStream fileOut = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Session_" +
-                    controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
+            FileOutputStream fileOut = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
                     "\\IndividualSummaries\\" + trainee.getLastName() + "_" + trainee.getFirstName() + "_Report.xlsx");
             workbook.write(fileOut);
             fileOut.close();
@@ -825,8 +825,8 @@ public class DocumentGenerator {
                 sheet.autoSizeColumn(i);
 
             //Saves the file
-            FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Session_" +
-                    controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
+            FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
                     "\\Avery_NameTent_NameTag_List.xlsx");
             workbook.write(tmp);
             tmp.close();
@@ -844,8 +844,8 @@ public class DocumentGenerator {
      */
     public void preProcessDistrictSummaries(District selectedDistrict){
 
-        File checkCertDir = new File(System.getProperty("user.dir") + "\\Reports\\Session_" +
-                controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
+        File checkCertDir = new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
                 "\\District_Summaries\\");
         if(!checkCertDir.exists()){
             if(!checkCertDir.mkdir())
@@ -1113,6 +1113,11 @@ public class DocumentGenerator {
             headerFont.setBold(true);
             headerFont.setFontName("Calibri");
 
+            XSSFFont eventStyleFont = workbook.createFont();
+            eventStyleFont.setBold(true);
+            eventStyleFont.setFontName("Calibri");
+            eventStyleFont.setColor(IndexedColors.WHITE.getIndex());
+
             CellStyle titleStyle = workbook.createCellStyle();
             titleStyle.setFont(titleFont);
 
@@ -1154,6 +1159,7 @@ public class DocumentGenerator {
             eventStyle.setFont(headerFont);
             eventStyle.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.index);
             eventStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            eventStyle.setFont(eventStyleFont);
 
             CellStyle pointsHeader = workbook.createCellStyle();
             pointsHeader.setRotation((short)90);
@@ -1184,29 +1190,29 @@ public class DocumentGenerator {
             for(Event event : Objects.requireNonNull(events)){
 
                 cell = headerRow.createCell(columnCount++, CellType.STRING);
-                cell.setCellValue(event.getName() + " Place");
+                cell.setCellValue(" " + event.getName() + " Place");
                 cell.setCellStyle(eventStyle);
 
             }
 
             cell = headerRow.createCell(columnCount++, CellType.STRING);
-            cell.setCellValue("Average Event Place");
+            cell.setCellValue(" Average Event Place");
             cell.setCellStyle(eventStyle);
 
             cell = headerRow.createCell(columnCount++, CellType.STRING);
-            cell.setCellValue("Physical Event Points");
+            cell.setCellValue(" Physical Event Points");
             cell.setCellStyle(pointsHeader);
 
             for(Test test : Objects.requireNonNull(tests)){
 
                 cell = headerRow.createCell(columnCount++, CellType.STRING);
-                cell.setCellValue(test.getName());
+                cell.setCellValue(" " + test.getName());
                 cell.setCellStyle(pointsHeader);
 
             }
 
             cell = headerRow.createCell(columnCount++, CellType.STRING);
-            cell.setCellValue("Instructor Final Eval");
+            cell.setCellValue(" Instructor Final Eval");
             cell.setCellStyle(pointsHeader);
 
             cell = headerRow.createCell(columnCount++, CellType.STRING);
@@ -1373,9 +1379,182 @@ public class DocumentGenerator {
             cell.setCellStyle(titleStyle);
 
             //Save
-            FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Session_" +
-                    controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
+            FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
                     "\\District_Summaries\\" + districtNameNoSpace + "_Summary.xlsx");
+
+            workbook.write(tmp);
+            tmp.close();
+            workbook.close();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Creates a sheet that displays statistics about each taken test.
+     */
+    public void generateTestAnalysis(){
+
+        Session currentSession = controller.getCurrentSession();
+
+        try{
+
+            XSSFWorkbook workbook = new XSSFWorkbook();
+            XSSFSheet sheet = workbook.createSheet( "Test Analysis");
+
+            //Style
+            XSSFFont titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short)20);
+            titleFont.setFontName("Calibri");
+
+            XSSFFont headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setColor(IndexedColors.WHITE.getIndex());
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(titleFont);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setFillForegroundColor(IndexedColors.GREY_50_PERCENT.index);
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setFont(headerFont);
+
+            CellStyle centerStyleOdd = workbook.createCellStyle();
+            centerStyleOdd.setAlignment(HorizontalAlignment.CENTER);
+            centerStyleOdd.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.index);
+            centerStyleOdd.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            CellStyle centerStyleEven = workbook.createCellStyle();
+            centerStyleEven.setAlignment(HorizontalAlignment.CENTER);
+
+            int rowCount = 3;
+            int columnCount = 1;
+
+            //Table header row
+            Row headerRow = sheet.createRow(rowCount++);
+            Cell cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Test Name");
+            cell.setCellStyle(headerStyle);
+
+            cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Points Possible");
+            cell.setCellStyle(headerStyle);
+
+            cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Lowest");
+            cell.setCellStyle(headerStyle);
+
+            cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Highest");
+            cell.setCellStyle(headerStyle);
+
+            cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Average");
+            cell.setCellStyle(headerStyle);
+
+            cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Median");
+            cell.setCellStyle(headerStyle);
+
+            cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Standard Deviation");
+            cell.setCellStyle(headerStyle);
+
+            cell = headerRow.createCell(columnCount, CellType.STRING);
+            cell.setCellValue("Interquartile Range");
+            cell.setCellStyle(headerStyle);
+
+            //Calculate and print out each test's statistics
+            Row row;
+            Vector<Test> tests = Objects.requireNonNull(DBManager.getAllTestsFromSession(currentSession.getYear(),
+                    currentSession.getSession()));
+            tests.removeIf(b -> !b.isScored());
+
+            int counter = 0;
+            for(Test test : tests){
+
+                //Calculate Statistics
+                Vector<TestScore> scores = DBManager.getAllTestScoresFromTestID(test.getTestID());
+                double minScore = 1000;
+                double maxScore = -1;
+                double averageScore = 0;
+                double standardDeviation = 0;
+                double sum = 0;
+                for(TestScore score : Objects.requireNonNull(scores)){
+
+                    sum += score.getScore();
+                    if(score.getScore() < minScore)
+                        minScore = score.getScore();
+                    if(score.getScore() > maxScore)
+                        maxScore = score.getScore();
+
+                }
+
+                averageScore = sum / scores.size();
+                for(TestScore score : Objects.requireNonNull(scores))
+                    standardDeviation += Math.pow((score.getScore() - averageScore), 2);
+                standardDeviation = Math.sqrt(standardDeviation / scores.size());
+
+                Objects.requireNonNull(scores).sort(Comparator.comparing(TestScore::getScore));
+                double median = median(scores);
+                double iqr = IQR(scores);
+
+                //Print to the table
+                columnCount = 1;
+                row = sheet.createRow(rowCount++);
+                cell = row.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue(test.getName());
+                cell.setCellStyle(counter % 2 == 0 ? centerStyleEven : centerStyleOdd);
+
+                cell = row.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue(test.getPoints());
+                cell.setCellStyle(counter % 2 == 0 ? centerStyleEven : centerStyleOdd);
+
+                cell = row.createCell(columnCount++, CellType.NUMERIC);
+                cell.setCellValue(minScore);
+                cell.setCellStyle(counter % 2 == 0 ? centerStyleEven : centerStyleOdd);
+
+                cell = row.createCell(columnCount++, CellType.NUMERIC);
+                cell.setCellValue(maxScore);
+                cell.setCellStyle(counter % 2 == 0 ? centerStyleEven : centerStyleOdd);
+
+                cell = row.createCell(columnCount++, CellType.NUMERIC);
+                cell.setCellValue(new BigDecimal(averageScore).round(new MathContext(4)).doubleValue());
+                cell.setCellStyle(counter % 2 == 0 ? centerStyleEven : centerStyleOdd);
+
+                cell = row.createCell(columnCount++, CellType.NUMERIC);
+                cell.setCellValue(new BigDecimal(median).round(new MathContext(4)).doubleValue());
+                cell.setCellStyle(counter % 2 == 0 ? centerStyleEven : centerStyleOdd);
+
+                cell = row.createCell(columnCount++, CellType.NUMERIC);
+                cell.setCellValue(new BigDecimal(standardDeviation).round(new MathContext(4)).doubleValue());
+                cell.setCellStyle(counter % 2 == 0 ? centerStyleEven : centerStyleOdd);
+
+                cell = row.createCell(columnCount, CellType.NUMERIC);
+                cell.setCellValue(new BigDecimal(iqr).round(new MathContext(4)).doubleValue());
+                cell.setCellStyle(counter % 2 == 0 ? centerStyleEven : centerStyleOdd);
+
+                counter++;
+
+            }
+
+            for(int i = 0; i < 9; i++)
+                sheet.autoSizeColumn(i);
+
+            Row titleRow = sheet.createRow(1);
+            cell = titleRow.createCell(1, CellType.STRING);
+            cell.setCellValue(currentSession.getYear() + " Session " + currentSession.getSession() +
+                    " Scored Test Score Analysis");
+            cell.setCellStyle(titleStyle);
+
+            //Save
+            FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    currentSession.getYear() + "_Session_" + currentSession.getSession() +  "\\Test_Analysis.xlsx");
 
             workbook.write(tmp);
             tmp.close();
@@ -1505,8 +1684,8 @@ public class DocumentGenerator {
                 sheet.autoSizeColumn(i);
 
             //Saves the file
-            FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Session_" +
-                    controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
+            FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
                     "\\Attendance_List.xlsx");
             workbook.write(tmp);
             tmp.close();
@@ -1737,8 +1916,8 @@ public class DocumentGenerator {
             cell.setCellStyle(titleStyle);
 
             //Saves the file
-            FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Session_" +
-                    controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
+            FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
                     "\\Current_Rankings.xlsx");
             workbook.write(tmp);
             tmp.close();
@@ -1797,15 +1976,22 @@ public class DocumentGenerator {
             }
 
             //Styling
+            XSSFFont font = workbook.createFont();
+            font.setColor(IndexedColors.WHITE.getIndex());
+
             CellStyle style = workbook.createCellStyle();
-            style.setFillForegroundColor(IndexedColors.YELLOW1.getIndex());
+            style.setFillForegroundColor(IndexedColors.GREY_50_PERCENT.getIndex());
             style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            style.setFont(font);
+
             CellStyle centerStyle = workbook.createCellStyle();
             centerStyle.setAlignment(HorizontalAlignment.CENTER);
+
             CellStyle bothStyle = workbook.createCellStyle();
-            bothStyle.setFillForegroundColor(IndexedColors.YELLOW1.getIndex());
+            bothStyle.setFillForegroundColor(IndexedColors.GREY_50_PERCENT.getIndex());
             bothStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
             bothStyle.setAlignment(HorizontalAlignment.CENTER);
+            bothStyle.setFont(font);
 
             //Make header row
             int rowCount = 0;
@@ -1953,8 +2139,8 @@ public class DocumentGenerator {
             sheet.autoSizeColumn(9);
 
             //Saves the file
-            FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Session_" +
-                    controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
+            FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
                     "\\Uniform_Orders.xlsx");
 
             workbook.write(tmp);
@@ -1975,8 +2161,8 @@ public class DocumentGenerator {
 
         try{
 
-            File checkCertDir = new File(System.getProperty("user.dir") + "\\Reports\\Session_" +
-                    controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
+            File checkCertDir = new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
                     "\\Certificates\\");
             if(!checkCertDir.exists()){
                 if(!checkCertDir.mkdir())
@@ -2006,10 +2192,10 @@ public class DocumentGenerator {
 
                 names.add(currentTrainees.get(i).getFirstName() + " " + currentTrainees.get(i).getLastName());
 
-                FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Session_" +
-                        controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
-                        "\\Certificates\\" + currentTrainees.get(i).getFirstName() + currentTrainees.get(i).getLastName()
-                        + "Cert.docx");
+                FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                        controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
+                        "\\Certificates\\" + currentTrainees.get(i).getFirstName() + "_" + currentTrainees.get(i).getLastName()
+                        + "_Cert.docx");
 
                 doc.write(tmp);
                 tmp.close();
@@ -2019,6 +2205,51 @@ public class DocumentGenerator {
         }catch (IOException | InvalidFormatException e){
             e.printStackTrace();
         }
+
+    }
+
+    /**
+     * Returns the index of the given TestScore vector's median.
+     * @param array
+     * @param l
+     * @param r
+     * @return
+     */
+    private int medianIndex(Vector<TestScore> array, int l, int r){
+
+        int n = r - l + 1;
+        n = ((n + 1) / 2) - 1;
+        return n + 1;
+
+    }
+
+    /**
+     * Calculates the Interquartile Range of the given TestScore vector.
+     * @param array
+     * @return
+     */
+    private double IQR(Vector<TestScore> array){
+
+        int middleIndex = medianIndex(array, 0, array.size());
+
+        double q1 = array.get(medianIndex(array, 0, middleIndex)).getScore();
+        double q3 = array.get(middleIndex + medianIndex(array, middleIndex + 1, array.size())).getScore();
+
+        return q3 - q1;
+
+    }
+
+    /**
+     * Returns the median of the given TestScore vector
+     * @param array
+     * @return
+     */
+    private double median(Vector<TestScore> array){
+
+        if(array.size() % 2 != 0)
+            return (double)array.get(array.size() / 2).getScore();
+
+        return (double)(array.get((array.size() - 1) / 2).getScore() + array.get(array.size() / 2).getScore()) / 2.0;
 
     }
 
