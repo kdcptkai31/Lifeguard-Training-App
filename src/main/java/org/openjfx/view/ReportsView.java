@@ -44,9 +44,7 @@ public class ReportsView {
         documentGenerator = new DocumentGenerator();
         refresh();
 
-//        documentGenerator.generateDistrictSummaries(null);
-        documentGenerator.generateAttendanceList();
-
+        documentGenerator.preProcessDistrictSummaries(DBManager.getAllDistrictsFromSession(controller.getCurrentSession().getYear(), controller.getCurrentSession().getSession()).get(0));
 
     }
 

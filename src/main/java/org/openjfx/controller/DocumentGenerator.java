@@ -839,12 +839,551 @@ public class DocumentGenerator {
     }
 
     /**
-     * Generates a district summary for the given district. If the given district is null, generate all summaries.
+     * Handles sorting the trainees into their district or all districts before generating the summaries.
      * @param selectedDistrict
      */
-    public void generateDistrictSummaries(District selectedDistrict){
+    public void preProcessDistrictSummaries(District selectedDistrict){
+
+        File checkCertDir = new File(System.getProperty("user.dir") + "\\Reports\\Session_" +
+                controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
+                "\\District_Summaries\\");
+        if(!checkCertDir.exists()){
+            if(!checkCertDir.mkdir())
+                System.exit(1);
+        }
+
+        //Gather data from trainees to create the correct placement/////////////////////////////////////////////////////////
+        Vector<Trainee> traineeVector = DBManager.getAllTraineesFromSession(controller.getCurrentSession().getYear(),
+                controller.getCurrentSession().getSession());
+
+        Vector<Double> traineeTotalScores = new Vector<>();
+        Vector<Pair<Integer, Double>> averagePlacement = new Vector<>();
+        Vector<Pair<Integer, Double>> courseCompletedCount = new Vector<>(); //Holds the count of completed events and tests for each trainee
+        int counter = 0;
+        for(Trainee trainee : Objects.requireNonNull(traineeVector)){
+
+            int completedEventsTests = 0;
+
+            double totalScore = 0;
+            Vector<TestScore> traineeTestScores = DBManager.getAllTestScoresFromTraineeID(trainee.getId());
+            Vector<EventScore> traineeEventScores = DBManager.getAllEventScoresFromTraineeID(trainee.getId());
+            if(!traineeTestScores.isEmpty()) {
+                for (TestScore score : traineeTestScores) {
+                    totalScore += score.getScore();
+                    completedEventsTests++;
+                }
+
+            }
+            traineeTotalScores.add(totalScore);
+            int totalPlace = 0;
+            if(!traineeEventScores.isEmpty()) {
+                for (EventScore score : traineeEventScores) {
+                    totalPlace += score.getPlace();
+                    completedEventsTests++;
+                }
+
+            }
+            if(traineeEventScores.size() != 0){
+                averagePlacement.add(new Pair<>(counter, totalPlace * 1.0 / traineeEventScores.size()));
+            }
+            counter++;
+            courseCompletedCount.add(new Pair<>(trainee.getId(), completedEventsTests * 1.0));
+
+        }
+
+        averagePlacement.sort(new OverviewView.SortByAveragePlacement());
+        Collections.reverse(averagePlacement);
+        //Put inactive trainees at the back of the list here
+        List<Pair<Integer, Double>> tmpList = averagePlacement.stream()
+                .filter(b -> !traineeVector.get(b.getKey()).isActive())
+                .collect(Collectors.toList());
+        averagePlacement.removeAll(tmpList);
+        averagePlacement.addAll(tmpList);
+
+        int num = 100;
+        //Holds the trainee ID and the physical events' point value for later use
+        Vector<Pair<Integer, Integer>> physicalEventsPoints = new Vector<>();
+        for(Pair<Integer, Double> pair : averagePlacement) {
+
+            physicalEventsPoints.add(new Pair<>(traineeVector.get(pair.getKey()).getId(), num));
+            traineeTotalScores.setElementAt(traineeTotalScores.get(pair.getKey()) + num, pair.getKey());
+            num--;
+
+        }
+
+        Vector<Pair<Trainee, Double>> sortTraineeVector = new Vector<>();
+        for(int i = 0; i < traineeVector.size(); i++)
+            sortTraineeVector.add(new Pair<>(traineeVector.get(i), traineeTotalScores.get(i)));
+
+        Vector<Pair<Integer, Integer>> finalEvalPoints = new Vector<>();
+        //Take into account the final evaluation score modifications, if applicable
+        if(controller.getCurrentSession().getCurrentDay() == 10){
+
+            counter = 0;
+            for(Pair<Trainee, Double> pair : sortTraineeVector){
+
+                //Skips this step for inactive trainees
+                if(!pair.getKey().isActive())
+                    continue;
+
+                Vector<Comment> traineeComments = new Vector<>(controller.getCurrentComments());
+                traineeComments.removeIf(comment -> !comment.getIncidentType().equals("Final Evaluation"));
+                for(Comment comment : traineeComments){
+
+                    if(comment.getTraineeID() == pair.getKey().getId()){
+
+                        finalEvalPoints.add(new Pair<>(pair.getKey().getId(), Integer.parseInt(comment.getInstructorActions())));
+                        Double tmpDouble = pair.getValue() + Integer.parseInt(comment.getInstructorActions());
+                        sortTraineeVector.set(counter, new Pair<>(pair.getKey(), tmpDouble));
+                        break;
+
+                    }
+                }
+                counter++;
+            }
+        }
+
+        sortTraineeVector.sort(Comparator.comparing(p -> -p.getValue()));
+
+        //Moves the inactive trainees to the back of the ranking
+        List<Pair<Trainee, Double>> inactiveTrainees = sortTraineeVector.stream()
+                .filter(b -> !b.getKey().isActive())
+                .collect(Collectors.toList());
+        sortTraineeVector.removeAll(inactiveTrainees);
+        sortTraineeVector.addAll(inactiveTrainees);
+        //END correct placement calculation/////////////////////////////////////////////////////////////////////////////////
+
+        //Records the class ranks
+        Vector<Pair<Integer, Integer>> classRanks = new Vector<>(); //Holds the traineeID and their rank
+        for(int i = 0; i < sortTraineeVector.size(); i++)
+            classRanks.add(new Pair<>(sortTraineeVector.get(i).getKey().getId(), i + 1));
+
+        //Make All District Summaries and exit method at end of this if statement.
+        if(selectedDistrict == null){
+
+            Vector<District> districts = DBManager.getAllDistrictsFromSession(controller.getCurrentSession().getYear(),
+                    controller.getCurrentSession().getSession());
+
+            for(District district : Objects.requireNonNull(districts)){
+
+                Vector<Trainee> districtTrainees = new Vector<>();
+                Vector<Integer> districtPhysPointValues = new Vector<>();
+                Vector<Double>  districtPercentCompletes = new Vector<>();
+                Vector<Integer> districtClassRanks = new Vector<>();
+                Vector<Integer> districtFinalEvalPoints = new Vector<>();
+                for(Pair<Trainee, Double> pair : Objects.requireNonNull(sortTraineeVector))
+                    if(pair.getKey().getDistrictChoice().split(" - ")[0].equals(district.getName())){
+
+                        districtTrainees.add(pair.getKey());
+
+                        for(Pair<Integer, Integer> pair1 : physicalEventsPoints){
+                            if(pair1.getKey() == pair.getKey().getId()){
+                                districtPhysPointValues.add(pair1.getValue());
+                                break;
+                            }
+                        }
+
+                        boolean found = false;
+                        for(Pair<Integer, Double> pair1 : courseCompletedCount){
+                            if(pair1.getKey() == pair.getKey().getId()){
+                                districtPercentCompletes.add(pair1.getValue());
+                                found = true;
+                                break;
+                            }
+                        }
+                        if(!found)
+                            districtPercentCompletes.add(0.0);
+
+                        for(Pair<Integer, Integer> pair1 : classRanks){
+                            if(pair1.getKey().equals(pair.getKey().getId())){
+                                districtClassRanks.add(pair1.getValue());
+                                break;
+                            }
+                        }
+
+                        found = false;
+                        for(Pair<Integer, Integer> pair1 : finalEvalPoints)
+                            if(pair1.getKey().equals(pair.getKey().getId())){
+                                districtFinalEvalPoints.add(pair1.getValue());
+                                found = true;
+                                break;
+                            }
+                        if(!found)
+                            districtFinalEvalPoints.add(0);
+
+                    }
+
+                if(districtTrainees.size() > 0)
+                    generateDistrictSummaries(districtTrainees, districtPhysPointValues, districtPercentCompletes,
+                                                districtClassRanks, districtFinalEvalPoints);
+
+            }
+
+            return;
+
+        }
+
+        //Make the specific district's summary
+        Vector<Trainee> districtTrainees = new Vector<>();
+        Vector<Integer> districtPhysPointValues = new Vector<>();
+        Vector<Double>  districtPercentCompletes = new Vector<>();
+        Vector<Integer> districtClassRanks = new Vector<>();
+        Vector<Integer> districtFinalEvalPoints = new Vector<>();
+        for(Pair<Trainee, Double> traineePair : Objects.requireNonNull(sortTraineeVector))
+            if(traineePair.getKey().getDistrictChoice().split(" - ")[0].equals(selectedDistrict.getName())) {
+
+                districtTrainees.add(traineePair.getKey());
+
+                for(Pair<Integer, Integer> pair1 : physicalEventsPoints){
+                    if(pair1.getKey() == traineePair.getKey().getId()){
+                        districtPhysPointValues.add(pair1.getValue());
+                        break;
+                    }
+                }
+
+                boolean found = false;
+                for(Pair<Integer, Double> pair1 : courseCompletedCount){
+                    if(pair1.getKey() == traineePair.getKey().getId()){
+                        districtPercentCompletes.add(pair1.getValue());
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found)
+                    districtPercentCompletes.add(0.0);
+
+                for(Pair<Integer, Integer> pair1 : classRanks){
+                    if(pair1.getKey().equals(traineePair.getKey().getId())){
+                        districtClassRanks.add(pair1.getValue());
+                        break;
+                    }
+                }
+
+                found = false;
+                for(Pair<Integer, Integer> pair1 : finalEvalPoints)
+                    if(pair1.getKey().equals(traineePair.getKey().getId())){
+                        districtFinalEvalPoints.add(pair1.getValue());
+                        found = true;
+                        break;
+                    }
+                if(!found)
+                    districtFinalEvalPoints.add(0);
+
+            }
+
+        if(districtTrainees.size() > 0)
+            generateDistrictSummaries(districtTrainees, districtPhysPointValues, districtPercentCompletes,
+                                        districtClassRanks, districtFinalEvalPoints);
 
 
+    }
+
+    /**
+     * Generates a district summary for the given district. If the given district is null, generate all summaries.
+     * Trainee Listings are in order of rank.
+     * @param trainees
+     * @param physPointValues
+     * @param percentCompletes
+     * @param classRanks
+     */
+    private void generateDistrictSummaries(Vector<Trainee> trainees, Vector<Integer> physPointValues,
+                                           Vector<Double> percentCompletes, Vector<Integer> classRanks,
+                                           Vector<Integer> finalEvalPoints){
+
+        String districtName = trainees.get(0).getDistrictChoice().split(" - ")[0];
+        Vector<Event> events = DBManager.getAllEventsFromSession(controller.getCurrentSession().getYear(),
+                                                                 controller.getCurrentSession().getSession());
+        Vector<Test> tests = DBManager.getAllTestsFromSession(controller.getCurrentSession().getYear(),
+                                                              controller.getCurrentSession().getSession());
+
+        try{
+
+            XSSFWorkbook workbook = new XSSFWorkbook();
+            XSSFSheet sheet = workbook.createSheet(districtName + " Summary");
+
+            String districtNameNoSpace = districtName.replaceAll("\\s", "_");
+
+            //Style
+            XSSFFont titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short)20);
+            titleFont.setFontName("Calibri");
+
+            XSSFFont headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setFontName("Calibri");
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(titleFont);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setFont(headerFont);
+
+            CellStyle percentStyleOdd = workbook.createCellStyle();
+            percentStyleOdd.setAlignment(HorizontalAlignment.CENTER);
+            XSSFDataFormat df = workbook.createDataFormat();
+            percentStyleOdd.setDataFormat(df.getFormat("0.00%"));
+            percentStyleOdd.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.index);
+            percentStyleOdd.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            CellStyle percentStyleEven = workbook.createCellStyle();
+            percentStyleEven.setDataFormat(df.getFormat("0.00%"));
+            percentStyleEven.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle centerStyleOdd = workbook.createCellStyle();
+            centerStyleOdd.setAlignment(HorizontalAlignment.CENTER);
+            centerStyleOdd.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.index);
+            centerStyleOdd.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            CellStyle centerStyleEven = workbook.createCellStyle();
+            centerStyleEven.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle boldCenterStyleOdd = workbook.createCellStyle();
+            boldCenterStyleOdd.setAlignment(HorizontalAlignment.CENTER);
+            boldCenterStyleOdd.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.index);
+            boldCenterStyleOdd.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            boldCenterStyleOdd.setFont(headerFont);
+
+            CellStyle boldCenterStyleEven = workbook.createCellStyle();
+            boldCenterStyleEven.setAlignment(HorizontalAlignment.CENTER);
+            boldCenterStyleEven.setFont(headerFont);
+
+            CellStyle eventStyle = workbook.createCellStyle();
+            eventStyle.setRotation((short)90);
+            eventStyle.setFont(headerFont);
+            eventStyle.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.index);
+            eventStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            CellStyle pointsHeader = workbook.createCellStyle();
+            pointsHeader.setRotation((short)90);
+            pointsHeader.setFont(headerFont);
+
+            XSSFFont pointsPossibleFont = workbook.createFont();
+            pointsPossibleFont.setColor(IndexedColors.WHITE.index);
+            pointsPossibleFont.setFontName("Calibri");
+
+            CellStyle pointsPossibleStyle = workbook.createCellStyle();
+            pointsPossibleStyle.setAlignment(HorizontalAlignment.CENTER);
+            pointsPossibleStyle.setFillForegroundColor(IndexedColors.GREY_50_PERCENT.index);
+            pointsPossibleStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            pointsPossibleStyle.setFont(pointsPossibleFont);
+
+            int rowCount = 2;
+            int columnCount = 1;
+
+            //Makes header row
+            Row headerRow = sheet.createRow(rowCount++);
+            Cell cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("First");
+            cell.setCellStyle(headerStyle);
+            cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Last");
+            cell.setCellStyle(headerStyle);
+
+            for(Event event : Objects.requireNonNull(events)){
+
+                cell = headerRow.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue(event.getName() + " Place");
+                cell.setCellStyle(eventStyle);
+
+            }
+
+            cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Average Event Place");
+            cell.setCellStyle(eventStyle);
+
+            cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Physical Event Points");
+            cell.setCellStyle(pointsHeader);
+
+            for(Test test : Objects.requireNonNull(tests)){
+
+                cell = headerRow.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue(test.getName());
+                cell.setCellStyle(pointsHeader);
+
+            }
+
+            cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Instructor Final Eval");
+            cell.setCellStyle(pointsHeader);
+
+            cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Total");
+            cell.setCellStyle(headerStyle);
+
+            cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Rank");
+            cell.setCellStyle(headerStyle);
+
+            cell = headerRow.createCell(columnCount, CellType.STRING);
+            cell.setCellValue("% of Course Completed");
+            cell.setCellStyle(headerStyle);
+
+            //Make points possible row
+            Row row = sheet.createRow(rowCount++);
+            columnCount = 1;
+            cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Points Possible");
+            cell.setCellStyle(pointsPossibleStyle);
+
+            cell = row.createCell(columnCount++);
+            cell.setCellStyle(pointsPossibleStyle);
+
+            for(int i = 0; i < tests.size(); i++){
+
+                cell = row.createCell(columnCount++);
+                cell.setCellStyle(pointsPossibleStyle);
+
+            }
+
+            cell = row.createCell(columnCount++);
+            cell.setCellStyle(pointsPossibleStyle);
+
+            cell = row.createCell(columnCount++, CellType.NUMERIC);
+            cell.setCellValue(100);
+            cell.setCellStyle(pointsPossibleStyle);
+
+            int totalPossiblePoints = 100;
+            for(Test test : Objects.requireNonNull(tests)){
+
+                cell = row.createCell(columnCount++, CellType.NUMERIC);
+                cell.setCellValue(test.getPoints());
+                cell.setCellStyle(pointsPossibleStyle);
+                totalPossiblePoints += test.getPoints();
+
+            }
+
+            cell = row.createCell(columnCount++, CellType.NUMERIC);
+            cell.setCellValue(0);
+            cell.setCellStyle(pointsPossibleStyle);
+
+            cell = row.createCell(columnCount++, CellType.NUMERIC);
+            cell.setCellValue(totalPossiblePoints);
+            cell.setCellStyle(pointsPossibleStyle);
+
+            cell = row.createCell(columnCount++);
+            cell.setCellStyle(pointsPossibleStyle);
+            cell = row.createCell(columnCount);
+            cell.setCellStyle(pointsPossibleStyle);
+
+            //Fill columns with each trainee's data
+            for(int i = 0; i < trainees.size(); i++){
+
+                columnCount = 1;
+                row = sheet.createRow(rowCount++);
+                cell = row.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue(trainees.get(i).getFirstName());
+                cell.setCellStyle(i % 2 == 0 ? centerStyleEven : centerStyleOdd);
+
+                cell = row.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue(trainees.get(i).getLastName());
+                cell.setCellStyle(i % 2 == 0 ? centerStyleEven : centerStyleOdd);
+
+                //Fills with Event Values
+                Vector<EventScore> eventScores = DBManager.getAllEventScoresFromTraineeID(trainees.get(i).getId());
+                double eventSum = 0;
+                int counter = 0;
+                for(Event event : events){
+
+                    cell = row.createCell(columnCount++);
+                    cell.setCellStyle(i % 2 == 0 ? centerStyleEven : centerStyleOdd);
+
+                    boolean found = false;
+                    for(EventScore score : eventScores)
+                        if(score.getEventID() == event.getEventID()){
+                            cell.setCellValue(score.getPlace());
+                            eventSum += score.getPlace();
+                            counter++;
+                            found = true;
+                            break;
+                        }
+                    if(!found)
+                        cell.setCellValue("N/A");
+
+                }
+
+                cell = row.createCell(columnCount++, CellType.NUMERIC);
+                cell.setCellStyle(i % 2 == 0 ? boldCenterStyleEven : boldCenterStyleOdd);
+                if(counter == 0)
+                    cell.setCellValue(0);
+                else
+                    cell.setCellValue(new BigDecimal(eventSum / counter).round(new MathContext(4)).doubleValue());
+
+                int traineeTotalPoints = physPointValues.get(i);
+                cell = row.createCell(columnCount++, CellType.NUMERIC);
+                cell.setCellValue(physPointValues.get(i));
+                cell.setCellStyle(i % 2 == 0 ? centerStyleEven : centerStyleOdd);
+
+                //Fills with Test Values
+                Vector<TestScore> testScores = DBManager.getAllTestScoresFromTraineeID(trainees.get(i).getId());
+                for(Test test : tests){
+
+                    cell = row.createCell(columnCount++);
+                    cell.setCellStyle(i % 2 == 0 ? centerStyleEven : centerStyleOdd);
+
+                    boolean found = false;
+                    for(TestScore score : testScores)
+                        if(score.getTestID() == test.getTestID()){
+                            cell.setCellValue(score.getScore());
+                            traineeTotalPoints += score.getScore();
+                            found = true;
+                            break;
+                        }
+                    if(!found)
+                        cell.setCellValue("N/A");
+
+                }
+
+                //Fills Instructor Final Eval Points
+                cell = row.createCell(columnCount++, CellType.NUMERIC);
+                cell.setCellValue(finalEvalPoints.get(i));
+                cell.setCellStyle(i % 2 == 0 ? centerStyleEven : centerStyleOdd);
+
+                //Fills Total Points
+                cell = row.createCell(columnCount++, CellType.NUMERIC);
+                cell.setCellValue(traineeTotalPoints);
+                cell.setCellStyle(i % 2 == 0 ? centerStyleEven : centerStyleOdd);
+
+                //Fills Class Rank
+                cell = row.createCell(columnCount++);
+                if(trainees.get(i).isActive())
+                    cell.setCellValue(classRanks.get(i));
+                else
+                    cell.setCellValue("INACTIVATED");
+                cell.setCellStyle(i % 2 == 0 ? boldCenterStyleEven : boldCenterStyleOdd);
+
+                //Fills % of Course Completed
+                cell = row.createCell(columnCount);
+                cell.setCellValue(Double.valueOf(BigDecimal.valueOf(percentCompletes.get(i) / (tests.size() + events.size()))
+                                                            .setScale(4, RoundingMode.HALF_UP).toString()));
+                cell.setCellStyle(i % 2 == 0 ? percentStyleEven : percentStyleOdd);
+
+            }
+
+            for(int i = 1; i < 9 + tests.size() + events.size(); i++)
+                sheet.autoSizeColumn(i);
+
+            //Makes title row
+            Row titleRow = sheet.createRow(0);
+            cell = titleRow.createCell(1, CellType.STRING);
+            cell.setCellValue(districtName + " Session " + controller.getCurrentSession().getSession() +
+                    ", " + controller.getCurrentSession().getYear() + " Summary");
+            cell.setCellStyle(titleStyle);
+
+            //Save
+            FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Session_" +
+                    controller.getCurrentSession().getSession() + "_Year_" + controller.getCurrentSession().getYear() +
+                    "\\District_Summaries\\" + districtNameNoSpace + "_Summary.xlsx");
+
+            workbook.write(tmp);
+            tmp.close();
+            workbook.close();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
     }
 

@@ -842,7 +842,7 @@ public class OverviewView {
             else if(o1.getValue() == 0 && o2.getValue() == 0)
                 return 0;
 
-            return ((int)Math.round(o1.getValue() - o2.getValue()) * -1);
+            return ((int)Math.ceil(o1.getValue() - o2.getValue()) * -1);
 
         }
     }
