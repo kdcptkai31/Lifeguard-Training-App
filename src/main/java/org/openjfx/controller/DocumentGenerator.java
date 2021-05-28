@@ -315,6 +315,7 @@ public class DocumentGenerator {
         for(int i = 0; i < traineeVector.size(); i++)
             sortTraineeVector.add(new Pair<>(traineeVector.get(i), traineeTotalScores.get(i)));
 
+        Vector<Pair<Integer, Integer>> finalEvalPoints = new Vector<>();
         //Take into account the final evaluation score modifications, if applicable
         if(controller.getCurrentSession().getCurrentDay() == 10){
 
@@ -331,6 +332,7 @@ public class DocumentGenerator {
 
                     if(comment.getTraineeID() == pair.getKey().getId()){
 
+                        finalEvalPoints.add(new Pair<>(pair.getKey().getId(), Integer.parseInt(comment.getInstructorActions())));
                         Double tmpDouble = pair.getValue() + Integer.parseInt(comment.getInstructorActions());
                         sortTraineeVector.set(counter, new Pair<>(pair.getKey(), tmpDouble));
                         break;
@@ -371,9 +373,12 @@ public class DocumentGenerator {
 
         //Generate All Trainee Summaries
         double physPointValue = 0;
+        int districtFinalEvalPoints = 0;
         if(selectedTrainee == null){
 
             for(int i = 0; i < sortTraineeVector.size(); i++){
+
+                districtFinalEvalPoints = 0;
 
                 for(Pair<Integer, Integer> pair : physicalEventsPoints){
                     if(pair.getKey() == sortTraineeVector.get(i).getKey().getId()){
@@ -389,11 +394,17 @@ public class DocumentGenerator {
                     }
                 }
 
+                for(Pair<Integer, Integer> pair1 : finalEvalPoints)
+                    if(pair1.getKey().equals(sortTraineeVector.get(i).getKey().getId())){
+                        districtFinalEvalPoints = pair1.getValue();
+                        break;
+                    }
+
                 int tmpRank = -1;
                 if(sortTraineeVector.get(i).getKey().isActive())
                     tmpRank = i + 1;
 
-                generateIndividualSummary(sortTraineeVector.get(i).getKey(), physPointValue, tmpRank, percentComplete);
+                generateIndividualSummary(sortTraineeVector.get(i).getKey(), physPointValue, tmpRank, percentComplete, districtFinalEvalPoints);
 
             }
 
@@ -417,6 +428,12 @@ public class DocumentGenerator {
                 }
             }
 
+            for(Pair<Integer, Integer> pair1 : finalEvalPoints)
+                if(pair1.getKey().equals(selectedTrainee.getId())){
+                    districtFinalEvalPoints = pair1.getValue();
+                    break;
+                }
+
             double percentComplete = 0;
             for(Pair<Integer, Double> pair : courseCompletedCount){
                 if(pair.getKey() == selectedTrainee.getId()){
@@ -425,7 +442,7 @@ public class DocumentGenerator {
                 }
             }
 
-            generateIndividualSummary(selectedTrainee, physPointValue, tmpRank, percentComplete);
+            generateIndividualSummary(selectedTrainee, physPointValue, tmpRank, percentComplete, districtFinalEvalPoints);
 
         }
 
@@ -436,7 +453,7 @@ public class DocumentGenerator {
      * @param
      */
     private void generateIndividualSummary(Trainee trainee, double physicalEventPoints, int classRank,
-                                          double percentComplete){
+                                          double percentComplete, int finalEvalPoints){
 
         Session currentSession = controller.getCurrentSession();
         Vector<Test> tests = DBManager.getAllTestsFromSession(currentSession.getYear(), currentSession.getSession());
@@ -601,8 +618,11 @@ public class DocumentGenerator {
             cell = row.createCell(columnCount++, CellType.STRING);
             cell.setCellValue("Average Place:");
             cell.setCellStyle(totalsStyle);
-            cell = row.createCell(columnCount, CellType.NUMERIC);
-            cell.setCellValue(new BigDecimal(averageScore / counter * 1.0).round(new MathContext(4))
+            cell = row.createCell(columnCount);
+            if(counter == 0)
+                cell.setCellValue("ERROR");
+            else
+                cell.setCellValue(new BigDecimal(averageScore / counter * 1.0).round(new MathContext(4))
                                                                                 .doubleValue());
             cell.setCellStyle(boldCenterStyle);
 
@@ -680,6 +700,18 @@ public class DocumentGenerator {
                 currentIndex++;
 
             }
+
+            columnCount = 0;
+
+            row = sheet.createRow(rowCount++);
+            cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Instructor Final Eval");
+            cell.setCellStyle(totalsStyle);
+
+            cell = row.createCell(columnCount, CellType.NUMERIC);
+            cell.setCellValue(finalEvalPoints);
+            totalPoints += finalEvalPoints;
+            cell.setCellStyle(boldCenterStyle);
 
             columnCount = 0;
             row = sheet.createRow(rowCount++);
@@ -1237,7 +1269,7 @@ public class DocumentGenerator {
             cell = row.createCell(columnCount++);
             cell.setCellStyle(pointsPossibleStyle);
 
-            for(int i = 0; i < tests.size(); i++){
+            for(int i = 0; i < events.size(); i++){
 
                 cell = row.createCell(columnCount++);
                 cell.setCellStyle(pointsPossibleStyle);
@@ -1642,9 +1674,21 @@ public class DocumentGenerator {
             cell.setCellValue("HOURS");
             cell.setCellStyle(headerStyle);
 
+            class SortByLastName implements Comparator<Trainee>{
+                @Override
+                public int compare(Trainee o1, Trainee o2) {
+                    return o1.getLastName().compareTo(o2.getLastName());
+                }
+            }
+
+            Vector<Trainee> trainees = Objects.requireNonNull(DBManager.getAllTraineesFromSession(controller.getCurrentSession().getYear(),
+                    controller.getCurrentSession().getSession()));
+
+            Objects.requireNonNull(trainees).sort(new SortByLastName());
+
             //Makes the data entry rows
             boolean swapper = false;
-            for(Trainee trainee : controller.getCurrentTrainees()){
+            for(Trainee trainee : trainees){
 
                 Row row = sheet.createRow(++rowCount);
                 columnCount = 1;
@@ -1919,6 +1963,81 @@ public class DocumentGenerator {
             FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Year_" +
                     controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
                     "\\Current_Rankings.xlsx");
+            workbook.write(tmp);
+            tmp.close();
+            workbook.close();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Generates an email list for the session.
+     */
+    public void generateEmailList(){
+
+        try{
+
+            XSSFWorkbook workbook = new XSSFWorkbook();
+            XSSFSheet sheet = workbook.createSheet("Email List");
+
+            //Style
+            XSSFFont headerFont = workbook.createFont();
+            headerFont.setBold(true);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(headerFont);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle mainStyle = workbook.createCellStyle();
+            mainStyle.setAlignment(HorizontalAlignment.CENTER);
+
+
+            int rowCount = 1;
+            int columnCount = 1;
+
+            Row row = sheet.createRow(rowCount++);
+            Cell cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("First");
+            cell.setCellStyle(headerStyle);
+
+            cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Last");
+            cell.setCellStyle(headerStyle);
+
+            cell = row.createCell(columnCount, CellType.STRING);
+            cell.setCellValue("Email");
+            cell.setCellStyle(headerStyle);
+
+
+            for(Trainee trainee : controller.getCurrentTrainees()){
+
+                columnCount = 1;
+                row = sheet.createRow(rowCount++);
+                cell = row.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue(trainee.getFirstName());
+                cell.setCellStyle(mainStyle);
+
+                cell = row.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue(trainee.getLastName());
+                cell.setCellStyle(mainStyle);
+
+                cell = row.createCell(columnCount, CellType.STRING);
+                cell.setCellValue(trainee.getEmail() + ";");
+                cell.setCellStyle(mainStyle);
+
+            }
+
+            for(int i = 1; i < 4; i++)
+                sheet.autoSizeColumn(i);
+
+            //Saves the file
+            FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
+                    "\\Email_List.xlsx");
+
             workbook.write(tmp);
             tmp.close();
             workbook.close();

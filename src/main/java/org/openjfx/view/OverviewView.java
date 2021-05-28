@@ -248,7 +248,8 @@ public class OverviewView {
         counter = 1;
         for(Pair<Trainee, Double> pair : sortTraineeVector){
 
-            placingStringList.add(counter + ". " + pair.getKey().getFullName() + " | Points: " + pair.getValue());
+            placingStringList.add(counter + ". " + pair.getKey().getFirstName() + " " + pair.getKey().getLastName()
+                                    + " | Points: " + pair.getValue());
             counter++;
 
         }

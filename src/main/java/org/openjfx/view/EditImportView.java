@@ -1719,7 +1719,7 @@ public class EditImportView {
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "You are about to set " +
                 controller.getCurrentTrainees().get(selectedIndex).getFullName() + " as INACTIVE.\nThis means they will "
-                + "be removed from all rankings and lists, however their info will persist on reports.",
+                + "be removed from all rankings and lists, however their info will persist on reports.\nMAKE SURE TO GIVE TODAY'S ATTENDANCE BEFORE INACTIVATING ANYONE!",
                 ButtonType.APPLY, ButtonType.CANCEL);
 
         alert.showAndWait();

@@ -29,7 +29,7 @@
             </ImageView>
             <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="150.0" prefWidth="200.0" spacing="10.0">
                <children>
-                  <Label text="Insert Program Name">
+                  <Label text="Lifeguard Trainer">
                      <font>
                         <Font name="System Bold" size="18.0" />
                      </font>
@@ -48,6 +48,9 @@
                      <cursor>
                         <Cursor fx:constant="HAND" />
                      </cursor>
+                     <VBox.margin>
+                        <Insets top="-10.0" />
+                     </VBox.margin>
                   </HBox>
                   <Label fx:id="datesLabel" text="insert dates">
                      <font>
@@ -188,9 +191,9 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
                   </TableView>
-                  <Label fx:id="addScoresErrorLabel" text="label" textFill="RED" visible="false">
+                  <Label fx:id="addScoresErrorLabel" text="label" textFill="#57ff8c" visible="false" wrapText="true">
                      <font>
-                        <Font size="14.0" />
+                        <Font name="System Bold" size="14.0" />
                      </font>
                   </Label>
                   <Button fx:id="saveScoresButton" focusTraversable="false" mnemonicParsing="false" onMouseClicked="#onSaveScoresClicked" text="Save Scores" visible="false">

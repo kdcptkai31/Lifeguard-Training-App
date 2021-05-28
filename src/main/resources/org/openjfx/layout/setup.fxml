@@ -31,7 +31,7 @@
                   <Insets />
                </HBox.margin>
                <children>
-                        <Label text="Insert Program Name">
+                        <Label text="Lifeguard Trainer">
                             <font>
                                 <Font name="System Bold" size="18.0" />
                             </font>

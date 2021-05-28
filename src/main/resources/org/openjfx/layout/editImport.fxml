@@ -32,7 +32,7 @@
                 </ImageView>
                 <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="150.0" prefWidth="200.0" spacing="10.0">
                     <children>
-                        <Label text="Insert Program Name">
+                        <Label text="Lifeguard Trainer">
                             <font>
                                 <Font name="System Bold" size="18.0" />
                             </font>
@@ -51,6 +51,9 @@
                      <cursor>
                         <Cursor fx:constant="HAND" />
                      </cursor>
+                     <VBox.margin>
+                        <Insets top="-10.0" />
+                     </VBox.margin>
                         </HBox>
                   <Label fx:id="datesLabel" text="insert dates">
                      <font>
