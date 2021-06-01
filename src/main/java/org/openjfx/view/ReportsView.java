@@ -53,6 +53,8 @@ public class ReportsView {
     @FXML
     private Button emailListButton;
     @FXML
+    private Button lodgingListButton;
+    @FXML
     private Button profilesButton;
     @FXML
     private Button averyListButton;
@@ -276,7 +278,7 @@ public class ReportsView {
 
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         Runnable task = () -> {
-            //Makes them all with the given null value
+
             documentGenerator.generateTestAnalysis();
             ScheduledExecutorService executor1 = Executors.newSingleThreadScheduledExecutor();
             Runnable task1 = () -> {
@@ -301,7 +303,7 @@ public class ReportsView {
 
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         Runnable task = () -> {
-            //Makes them all with the given null value
+
             documentGenerator.generateAttendanceList();
             ScheduledExecutorService executor1 = Executors.newSingleThreadScheduledExecutor();
             Runnable task1 = () -> {
@@ -326,7 +328,7 @@ public class ReportsView {
 
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         Runnable task = () -> {
-            //Makes them all with the given null value
+
             documentGenerator.generateEmailList();
             ScheduledExecutorService executor1 = Executors.newSingleThreadScheduledExecutor();
             Runnable task1 = () -> {
@@ -343,6 +345,29 @@ public class ReportsView {
 
     }
 
+    public void onLodgingListClicked(){
+
+        disableButtons();
+        loadingLabel.setVisible(true);
+        loadingGif.setVisible(true);
+
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        Runnable task = () -> {
+
+            documentGenerator.generateLodgingList();
+            ScheduledExecutorService executor1 = Executors.newSingleThreadScheduledExecutor();
+            Runnable task1 = () -> {
+                enableButtons();
+                loadingLabel.setVisible(false);
+                loadingGif.setVisible(false);
+            };
+            executor1.schedule(task1, 1, TimeUnit.MILLISECONDS);
+            executor1.shutdown();
+
+        };
+        executor.schedule(task, 1, TimeUnit.MILLISECONDS);
+        executor.shutdown();
+    }
 
     /**
      * Navigates to the Overview page.
@@ -479,6 +504,7 @@ public class ReportsView {
     private void disableButtons(){
 
         emailListButton.setDisable(true);
+        lodgingListButton.setDisable(true);
         attendanceButton.setDisable(true);
         testAnalysisButton.setDisable(true);
         districtSumButton.setDisable(true);
@@ -497,6 +523,7 @@ public class ReportsView {
     private void enableButtons(){
 
         emailListButton.setDisable(false);
+        lodgingListButton.setDisable(false);
         attendanceButton.setDisable(false);
         testAnalysisButton.setDisable(false);
         districtSumButton.setDisable(false);

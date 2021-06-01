@@ -133,34 +133,13 @@
                      <font>
                         <Font name="System Bold" size="14.0" />
                      </font></Button>
-                  <Button fx:id="emailListButton" layoutX="168.0" layoutY="102.0" mnemonicParsing="false" onMouseClicked="#onEmailListClicked" style="-fx-background-color: #3476f7; -fx-text-fill: #efb748;" text="Email List">
+                  <Button fx:id="certificatesButton" mnemonicParsing="false" onMouseClicked="#onCertificatesClicked" style="-fx-background-color: #3476f7; -fx-text-fill: #efb748;" text="Certificates">
                      <cursor>
                         <Cursor fx:constant="HAND" />
                      </cursor>
                      <effect>
                         <InnerShadow />
                      </effect>
-                     <font>
-                        <Font name="System Bold" size="14.0" />
-                     </font>
-                  </Button>
-                  <Button fx:id="uniformInfoButton" mnemonicParsing="false" onMouseClicked="#onUniformClicked" style="-fx-background-color: #3476f7; -fx-text-fill: #efb748;" text="Uniform Information">
-                     <effect>
-                        <InnerShadow />
-                     </effect>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                     <font>
-                        <Font name="System Bold" size="14.0" />
-                     </font></Button>
-                  <Button fx:id="profilesButton" mnemonicParsing="false" onMouseClicked="#onProfilesClicked" style="-fx-background-color: #3476f7; -fx-text-fill: #efb748;" text="Profiles">
-                     <effect>
-                        <InnerShadow />
-                     </effect>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
                      <font>
                         <Font name="System Bold" size="14.0" />
                      </font></Button>
@@ -174,13 +153,45 @@
                      <font>
                         <Font name="System Bold" size="14.0" />
                      </font></Button>
-                  <Button fx:id="certificatesButton" mnemonicParsing="false" onMouseClicked="#onCertificatesClicked" style="-fx-background-color: #3476f7; -fx-text-fill: #efb748;" text="Certificates">
+                  <Button fx:id="emailListButton" layoutX="168.0" layoutY="102.0" mnemonicParsing="false" onMouseClicked="#onEmailListClicked" style="-fx-background-color: #3476f7; -fx-text-fill: #efb748;" text="Email List">
                      <cursor>
                         <Cursor fx:constant="HAND" />
                      </cursor>
                      <effect>
                         <InnerShadow />
                      </effect>
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="lodgingListButton" layoutX="169.0" layoutY="147.0" mnemonicParsing="false" onMouseClicked="#onLodgingListClicked" style="-fx-background-color: #3476f7; -fx-text-fill: #efb748;" text="Lodging List">
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                     <effect>
+                        <InnerShadow />
+                     </effect>
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="profilesButton" mnemonicParsing="false" onMouseClicked="#onProfilesClicked" style="-fx-background-color: #3476f7; -fx-text-fill: #efb748;" text="Profiles">
+                     <effect>
+                        <InnerShadow />
+                     </effect>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font></Button>
+                  <Button fx:id="uniformInfoButton" mnemonicParsing="false" onMouseClicked="#onUniformClicked" style="-fx-background-color: #3476f7; -fx-text-fill: #efb748;" text="Uniform Information">
+                     <effect>
+                        <InnerShadow />
+                     </effect>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
                      <font>
                         <Font name="System Bold" size="14.0" />
                      </font></Button>
@@ -223,7 +234,7 @@
                         <Font name="System Bold" size="18.0" />
                      </font>
                   </Label>
-                  <Button fx:id="individualSumButton" mnemonicParsing="false" onMouseClicked="#onIndividualSumClicked" style="-fx-text-fill: #efb748; -fx-background-color: #3476f7;" text="Individual Summaries">
+                  <Button fx:id="attendanceButton" mnemonicParsing="false" onMouseClicked="#onAttendanceClicked" style="-fx-background-color: #3476f7; -fx-text-fill: #efb748;" text="Attendance Hours">
                      <effect>
                         <InnerShadow />
                      </effect>
@@ -243,7 +254,7 @@
                      <font>
                         <Font name="System Bold" size="14.0" />
                      </font></Button>
-                  <Button fx:id="testAnalysisButton" mnemonicParsing="false" onMouseClicked="#onTestAnalysisClicked" style="-fx-text-fill: #efb748; -fx-background-color: #3476f7;" text="Test Analysis">
+                  <Button fx:id="individualSumButton" mnemonicParsing="false" onMouseClicked="#onIndividualSumClicked" style="-fx-text-fill: #efb748; -fx-background-color: #3476f7;" text="Individual Summaries">
                      <effect>
                         <InnerShadow />
                      </effect>
@@ -253,7 +264,7 @@
                      <font>
                         <Font name="System Bold" size="14.0" />
                      </font></Button>
-                  <Button fx:id="attendanceButton" mnemonicParsing="false" onMouseClicked="#onAttendanceClicked" style="-fx-background-color: #3476f7; -fx-text-fill: #efb748;" text="Attendance Hours">
+                  <Button fx:id="testAnalysisButton" mnemonicParsing="false" onMouseClicked="#onTestAnalysisClicked" style="-fx-text-fill: #efb748; -fx-background-color: #3476f7;" text="Test Analysis">
                      <effect>
                         <InnerShadow />
                      </effect>

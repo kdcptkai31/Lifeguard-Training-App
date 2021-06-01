@@ -486,6 +486,11 @@ public class DocumentGenerator {
             headerFont.setFontName("Calibri");
             headerFont.setBold(true);
 
+            XSSFFont otherHeaderFont = workbook.createFont();
+            otherHeaderFont.setFontName("Calibri");
+            otherHeaderFont.setBold(true);
+            otherHeaderFont.setColor(IndexedColors.WHITE.getIndex());
+
             XSSFFont commentTitleFont = workbook.createFont();
             commentTitleFont.setBold(true);
             commentTitleFont.setFontHeightInPoints((short)14);
@@ -527,10 +532,10 @@ public class DocumentGenerator {
             centerStyleOdd.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
             CellStyle tableHeaderStyle = workbook.createCellStyle();
-            tableHeaderStyle.setFillForegroundColor(IndexedColors.YELLOW1.getIndex());
+            tableHeaderStyle.setFillForegroundColor(IndexedColors.GREY_50_PERCENT.getIndex());
             tableHeaderStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
             tableHeaderStyle.setAlignment(HorizontalAlignment.CENTER);
-            tableHeaderStyle.setFont(headerFont);
+            tableHeaderStyle.setFont(otherHeaderFont);
 
             CellStyle commentTitleStyle = workbook.createCellStyle();
             commentTitleStyle.setFont(commentTitleFont);
@@ -557,11 +562,13 @@ public class DocumentGenerator {
             Cell cell = row.createCell(0, CellType.STRING);
             cell.setCellValue(trainee.getFullName());
             cell.setCellStyle(nameStyle);
+
             row = sheet.createRow(rowCount++);
             cell = row.createCell(columnCount++, CellType.STRING);
             cell.setCellValue("District: " + trainee.getDistrictChoice());
             cell.setCellStyle(headerStyle);
-            cell = row.createCell(columnCount, CellType.STRING);
+
+            cell = row.createCell(columnCount++, CellType.STRING);
             String[] dates = trainee.getBirthDate().split("/");
             cell.setCellValue("Age: " + Period.between(LocalDate.of(Integer.parseInt(dates[2]), Integer.parseInt(dates[0]),
                                                         Integer.parseInt(dates[1])), LocalDate.now()).getYears());
@@ -1406,8 +1413,8 @@ public class DocumentGenerator {
             //Makes title row
             Row titleRow = sheet.createRow(0);
             cell = titleRow.createCell(1, CellType.STRING);
-            cell.setCellValue(districtName + " Session " + controller.getCurrentSession().getSession() +
-                    ", " + controller.getCurrentSession().getYear() + " Summary");
+            cell.setCellValue(controller.getCurrentSession().getYear() + " Session " + controller.getCurrentSession().getSession() +
+                    " " + districtName + " Summary");
             cell.setCellStyle(titleStyle);
 
             //Save
@@ -1656,6 +1663,13 @@ public class DocumentGenerator {
             hoursEven.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.index);
             hoursEven.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
+            XSSFFont nameFont = workbook.createFont();
+            nameFont.setBold(true);
+            nameFont.setFontHeightInPoints((short)20);
+            nameFont.setFontName("Arial");
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(nameFont);
 
             //Makes header row
             int rowCount = 1;
@@ -1726,6 +1740,13 @@ public class DocumentGenerator {
 
             for(int i = 1; i < 5; i++)
                 sheet.autoSizeColumn(i);
+
+            //Make title row
+            Row row = sheet.createRow(0);
+            cell = row.createCell(1, CellType.STRING);
+            cell.setCellValue(controller.getCurrentSession().getYear() + " Session " + controller.getCurrentSession().getSession() +
+                    " Attendance List");
+            cell.setCellStyle(titleStyle);
 
             //Saves the file
             FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Year_" +
@@ -1955,8 +1976,9 @@ public class DocumentGenerator {
 
             //Makes Header
             Row titleRow = sheet.createRow(1);
-            cell = titleRow.createCell(3, CellType.STRING);
-            cell.setCellValue("Current Rankings");
+            cell = titleRow.createCell(1, CellType.STRING);
+            cell.setCellValue(controller.getCurrentSession().getYear() + " Session " + controller.getCurrentSession().getSession() +
+                    " Current Rankings");
             cell.setCellStyle(titleStyle);
 
             //Saves the file
@@ -1994,6 +2016,13 @@ public class DocumentGenerator {
             CellStyle mainStyle = workbook.createCellStyle();
             mainStyle.setAlignment(HorizontalAlignment.CENTER);
 
+            XSSFFont nameFont = workbook.createFont();
+            nameFont.setBold(true);
+            nameFont.setFontHeightInPoints((short)20);
+            nameFont.setFontName("Arial");
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(nameFont);
 
             int rowCount = 1;
             int columnCount = 1;
@@ -2033,10 +2062,109 @@ public class DocumentGenerator {
             for(int i = 1; i < 4; i++)
                 sheet.autoSizeColumn(i);
 
+            //Make title row
+            row = sheet.createRow(0);
+            cell = row.createCell(1, CellType.STRING);
+            cell.setCellValue(controller.getCurrentSession().getYear() + " Session " + controller.getCurrentSession().getSession() +
+                    " Email List");
+            cell.setCellStyle(titleStyle);
+
             //Saves the file
             FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Year_" +
                     controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
                     "\\Email_List.xlsx");
+
+            workbook.write(tmp);
+            tmp.close();
+            workbook.close();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Generates list of all trainees who need lodging and their information for the session.
+     */
+    public void generateLodgingList(){
+
+        //Pre-process trainee data
+        Vector<Trainee> trainees = controller.getCurrentTrainees();
+        trainees.removeIf(b -> !b.isLodging());
+
+        try{
+
+            XSSFWorkbook workbook = new XSSFWorkbook();
+            XSSFSheet sheet = workbook.createSheet("Lodging List");
+
+            //Style
+            XSSFFont headerFont = workbook.createFont();
+            headerFont.setBold(true);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(headerFont);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle mainStyle = workbook.createCellStyle();
+            mainStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            XSSFFont nameFont = workbook.createFont();
+            nameFont.setBold(true);
+            nameFont.setFontHeightInPoints((short)20);
+            nameFont.setFontName("Arial");
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(nameFont);
+
+            int rowCount = 1;
+            int columnCount = 1;
+
+            Row row = sheet.createRow(rowCount++);
+            Cell cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Name");
+            cell.setCellStyle(headerStyle);
+
+            cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Email");
+            cell.setCellStyle(headerStyle);
+
+            cell = row.createCell(columnCount, CellType.STRING);
+            cell.setCellValue("District");
+            cell.setCellStyle(headerStyle);
+
+            for(Trainee trainee : trainees){
+
+                columnCount = 1;
+                row = sheet.createRow(rowCount++);
+                cell = row.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue(trainee.getFirstName() + " " + trainee.getLastName());
+                cell.setCellStyle(mainStyle);
+
+                cell = row.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue(trainee.getEmail() + ";");
+                cell.setCellStyle(mainStyle);
+
+                cell = row.createCell(columnCount, CellType.STRING);
+                cell.setCellValue(trainee.getDistrictChoice());
+                cell.setCellStyle(mainStyle);
+
+            }
+
+            for(int i = 1; i < 4; i++)
+                sheet.autoSizeColumn(i);
+
+            //Make title row
+            row = sheet.createRow(0);
+            cell = row.createCell(1, CellType.STRING);
+            cell.setCellValue(controller.getCurrentSession().getYear() + " Session " + controller.getCurrentSession().getSession() +
+                    " Lodging List");
+            cell.setCellStyle(titleStyle);
+
+            //Saves the file
+            FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
+                    "\\Lodging_List.xlsx");
 
             workbook.write(tmp);
             tmp.close();
@@ -2112,8 +2240,16 @@ public class DocumentGenerator {
             bothStyle.setAlignment(HorizontalAlignment.CENTER);
             bothStyle.setFont(font);
 
+            XSSFFont nameFont = workbook.createFont();
+            nameFont.setBold(true);
+            nameFont.setFontHeightInPoints((short)20);
+            nameFont.setFontName("Arial");
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(nameFont);
+
             //Make header row
-            int rowCount = 0;
+            int rowCount = 1;
             int columnCount = 0;
             Row headerRow = sheet.createRow(rowCount++);
             Cell cell = headerRow.createCell(columnCount++, CellType.STRING);
@@ -2256,6 +2392,13 @@ public class DocumentGenerator {
             sheet.autoSizeColumn(6);
             sheet.autoSizeColumn(7);
             sheet.autoSizeColumn(9);
+
+            //Make title row
+            Row row = sheet.createRow(0);
+            cell = row.createCell(1, CellType.STRING);
+            cell.setCellValue(controller.getCurrentSession().getYear() + " Session " + controller.getCurrentSession().getSession() +
+                    " Uniform Orders");
+            cell.setCellStyle(titleStyle);
 
             //Saves the file
             FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Year_" +
