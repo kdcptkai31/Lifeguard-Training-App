@@ -764,7 +764,7 @@ public class EditImportView {
         ObservableList<String> sectorOL = FXCollections.observableArrayList();
 
         for(District district : Objects.requireNonNull(editDistrictVector)){
-            if(district.getSupervisorEmail().isEmpty() || district.getSupervisorEmail().isBlank())
+            if(district.getSupervisorEmail().isEmpty())
                 districtOL.add(district.getName());
             else
                 districtOL.add(district.getName() + " | " + district.getSupervisorEmail());
