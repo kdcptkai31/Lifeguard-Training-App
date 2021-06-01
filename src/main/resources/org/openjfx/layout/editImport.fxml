@@ -312,7 +312,7 @@
                                     </Button>
                                  </children>
                               </VBox>
-                              <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="485.0" prefWidth="188.0">
+                              <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="495.0" prefWidth="188.0">
                                  <children>
                                     <Label text="Emergency Contact" textFill="#efb748">
                                        <font>
@@ -414,7 +414,12 @@
                                        </VBox.margin>
                                     </Label>
                                     <Button mnemonicParsing="false" onMouseClicked="#onSetTraineeInactiveClicked" text="Inactivate Selected Trainee" />
-                                    <Button mnemonicParsing="false" onMouseClicked="#onViewInactiveTraineesClicked" text="View Inactive Trainees">
+                                    <Button mnemonicParsing="false" onMouseClicked="#onViewInactiveTraineesClicked" text="Activate Inactive Trainees">
+                                       <VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                    </Button>
+                                    <Button layoutX="29.0" layoutY="470.0" mnemonicParsing="false" onMouseClicked="#onDeleteSelectedTraineeClicked" text="Delete Selected Trainee">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>

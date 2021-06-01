@@ -757,7 +757,7 @@ public class EditImportView {
     public void allOtherTabRefresh(){
 
         editDistrictVector = DBManager.getAllDistrictsFromSession(controller.getCurrentSession().getYear(),
-                controller.getCurrentSession().getSession());
+                                                                    controller.getCurrentSession().getSession());
         editSectorVector = DBManager.getAllSectorsFromSession(controller.getCurrentSession().getYear(),
                                                               controller.getCurrentSession().getSession());
         ObservableList<String> districtOL = FXCollections.observableArrayList();
@@ -1705,6 +1705,38 @@ public class EditImportView {
         Scene dialogScene = new Scene(dialogVBox, 300, 700);
         dialog.setScene(dialogScene);
         dialog.showAndWait();
+
+    }
+
+    /**
+     * Allows the user to delete a selected trainee. This is only advisable if the session is effectively yet to have
+     * started.
+     */
+    public void onDeleteSelectedTraineeClicked(){
+
+        int selectedIndex = traineeListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1)
+            return;
+
+        Alert alert = new Alert(Alert.AlertType.WARNING, "Please do not delete a trainee once there has been" +
+                " scores and attendance recorded. Unforeseen errors MAY occur after.\n\n" +
+                "ONLY CONTINUE IF THIS IS A PRELIMINARY DELETION. CANNOT BE UNDONE", ButtonType.OK, ButtonType.CANCEL);
+
+        alert.showAndWait();
+
+        if(alert.getResult() == ButtonType.CANCEL)
+            return;
+
+        if(!DBManager.deleteTrainee(controller.getCurrentTrainees().get(selectedIndex))){
+
+            Alert newAlert = new Alert(Alert.AlertType.ERROR, "Something went wrong deleting the trainee!" +
+                    "\nI warned you lmao", ButtonType.OK);
+            newAlert.showAndWait();
+
+        }
+
+        controller.updateCurrentSession(controller.getCurrentSession());
+        traineeTabRefresh();
 
     }
 
