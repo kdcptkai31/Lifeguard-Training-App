@@ -32,7 +32,7 @@
                 </ImageView>
                 <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="150.0" prefWidth="200.0" spacing="10.0">
                     <children>
-                        <Label text="Lifeguard Trainer">
+                        <Label text="Duty Training App">
                             <font>
                                 <Font name="System Bold" size="18.0" />
                             </font>
@@ -312,7 +312,7 @@
                                     </Button>
                                  </children>
                               </VBox>
-                              <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="495.0" prefWidth="188.0">
+                              <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="544.0" prefWidth="188.0">
                                  <children>
                                     <Label text="Emergency Contact" textFill="#efb748">
                                        <font>
@@ -405,7 +405,7 @@
                                           <Insets top="3.0" />
                                        </VBox.margin>
                                     </Label>
-                                    <Label text="Inactive Trainees" textFill="#efb748">
+                                    <Label text="Trainee Operations" textFill="#efb748">
                                        <font>
                                           <Font name="System Bold" size="16.0" />
                                        </font>
@@ -424,9 +424,14 @@
                                           <Insets top="10.0" />
                                        </VBox.margin>
                                     </Button>
+                                    <Button mnemonicParsing="false" onMouseClicked="#onMoveTraineeClicked" text="Move Trainee to Other Session">
+                                       <VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                    </Button>
                                  </children>
                                  <HBox.margin>
-                                    <Insets top="100.0" />
+                                    <Insets top="80.0" />
                                  </HBox.margin>
                               </VBox>
                               <VBox alignment="CENTER" prefHeight="671.0" prefWidth="179.0" spacing="5.0">

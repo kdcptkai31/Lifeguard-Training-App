@@ -29,7 +29,7 @@
             </ImageView>
             <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="150.0" prefWidth="200.0" spacing="10.0">
                <children>
-                  <Label text="Lifeguard Trainer">
+                  <Label text="Duty Training App">
                      <font>
                         <Font name="System Bold" size="18.0" />
                      </font>
@@ -165,7 +165,7 @@
                         <Insets top="15.0" />
                      </VBox.margin>
                   </Label>
-                  <ListView fx:id="testListView" focusTraversable="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#onTestListViewClicked" prefHeight="200.0" prefWidth="200.0" />
+                  <ListView fx:id="testListView" focusTraversable="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#onTestListViewClicked" prefHeight="225.0" prefWidth="265.0" />
                   <Label layoutX="162.0" layoutY="117.0" text="Events" textFill="#efb748">
                      <font>
                         <Font name="System Bold" size="14.0" />
@@ -174,7 +174,7 @@
                         <Insets top="20.0" />
                      </VBox.margin>
                   </Label>
-                  <ListView fx:id="eventListView" focusTraversable="false" layoutX="79.0" layoutY="137.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#onEventListViewClicked" prefHeight="200.0" prefWidth="200.0" />
+                  <ListView fx:id="eventListView" focusTraversable="false" layoutX="79.0" layoutY="137.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#onEventListViewClicked" prefHeight="225.0" prefWidth="265.0" />
                </children>
             </VBox>
             <VBox alignment="TOP_CENTER" prefHeight="750.0" prefWidth="222.0">

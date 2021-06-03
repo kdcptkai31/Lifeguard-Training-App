@@ -3,6 +3,9 @@ package org.openjfx.view;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javafx.application.Platform;
 
@@ -23,6 +26,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -267,8 +271,8 @@ public class EditImportView {
         traineeTabRefresh();
         importComboBox.getItems().addAll("Choose Import Type", "Comments", "Questionnaire 1",
                 "Questionnaire 2", "Year's Trainee Info");
-        tCIncidentComboBox.getItems().addAll("Academics", "Physical Performance", "Safety Violation", "Behavioral",
-                "EMS Skills", "Aquatic Skills");
+        tCIncidentComboBox.getItems().addAll("Academics", "Aquatic Skills", "Behavioral", "EMS Skills",
+                "Injury", "Physical Performance", "Safety Violation");
         tCRotationComboBox.getItems().addAll("PSFA", "AQUATICS");
         tCNextStepsComboBox.getItems().addAll("Meet with Supervisor (Formal)", "Instructor Check-in (Informal)",
                 "No Action Needed");
@@ -3316,7 +3320,11 @@ public class EditImportView {
             Button cancelButton = new Button("Cancel");
             HBox buttonHBox = new HBox(sessionButton, cancelButton);
 
-            dialogVBox.getChildren().addAll(label, yearTextField, newSessionsTableView, addSessionsErrorLabel, buttonHBox);
+            Label loadingLabel = new Label(" If you think it's frozen, it's not! Be patient here.");
+            loadingLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #efb748;");
+
+            dialogVBox.getChildren().addAll(label, yearTextField, newSessionsTableView, addSessionsErrorLabel,
+                                            loadingLabel, buttonHBox);
 
             //Set dialog box style
             buttonHBox.setSpacing(10);
@@ -3330,11 +3338,13 @@ public class EditImportView {
             VBox.setMargin(label, new Insets(10, 0, 0, 10));
             VBox.setMargin(buttonHBox, new Insets(10));
 
-            Scene dialogScene = new Scene(dialogVBox, 300, 500);
+            Scene dialogScene = new Scene(dialogVBox, 300, 550);
             dialog.setScene(dialogScene);
 
             //Button Events
             sessionButton.setOnMouseClicked(event -> {
+                sessionButton.setDisable(true);
+                cancelButton.setDisable(true);
 
                 //Verify needed data entries
                 if(yearTextField.getText().isEmpty() || !isGoodYear(yearTextField.getText())){
@@ -3357,8 +3367,6 @@ public class EditImportView {
 
                 }
 
-                sessionButton.setDisable(true);
-
                 //Verified, save data now
                 //Adds the session if it is not found
                 Vector<Session> existingSessions = DBManager.getAllSessions();
@@ -3368,7 +3376,7 @@ public class EditImportView {
                     for(Trainee trainee : tmpTrainees){
                         if(trainee.getSession() == newSes.getSession())
                             foundDistricts.add(new District(newSes.getYear(), newSes.getSession(),
-                                                    trainee.getDistrictChoice().split(" - ")[0], "", 1));
+                                    trainee.getDistrictChoice().split(" - ")[0], "", 1));
                     }
 
                     boolean isFound = false;
@@ -3386,17 +3394,17 @@ public class EditImportView {
                                 newSes.getEndDate());
                         for(Event copyEvent : controller.getCurrentEvents())
                             DBManager.addEvent(new Event(copyEvent.getName(), "", false, newSes.getYear(),
-                                                         newSes.getSession()));
+                                    newSes.getSession()));
 
                         for(Test copyTest : controller.getCurrentTests())
                             DBManager.addTest(new Test(copyTest.getName(), copyTest.getPoints(), false,
-                                                       newSes.getYear(), newSes.getSession()));
+                                    newSes.getYear(), newSes.getSession()));
 
                         for(District district : Objects.requireNonNull(foundDistricts))
                             DBManager.addDistrict(district);
 
                         for(Sector sector : Objects.requireNonNull(DBManager.getAllSectorsFromSession(controller.getCurrentSession().getYear(),
-                                                                                                      controller.getCurrentSession().getSession())))
+                                controller.getCurrentSession().getSession())))
                             DBManager.addSector(new Sector(newSes.getYear(), newSes.getSession(), sector.getName()));
 
                     }
@@ -3424,8 +3432,11 @@ public class EditImportView {
                     }
                 }
 
+
                 controller.updateCurrentTrainees();
+
                 sessionButton.setDisable(false);
+                cancelButton.setDisable(false);
                 dialog.close();
                 traineeTabRefresh();
 
@@ -3433,7 +3444,7 @@ public class EditImportView {
             cancelButton.setOnMouseClicked(event -> dialog.close());
 
             dialog.showAndWait();
-            traineeTabRefresh();
+
 
         } catch (Exception e) {
 
@@ -3681,6 +3692,138 @@ public class EditImportView {
 
         }
 
+    }
+
+    /**
+     * Attempts to move the selected trainee to a new session.
+     */
+    public void onMoveTraineeClicked(){
+
+        int selectedIndex = traineeListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1)
+            return;
+
+
+        //Initialize Dialog box contents
+        final Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.initOwner(LifeguardTrainingApplication.getCoordinator().getStage());
+        VBox dialogVBox = new VBox();
+
+        Label label = new Label(" Select the session to transfer " + controller.getCurrentTrainees().get(selectedIndex).getFirstName()
+                                + " " + controller.getCurrentTrainees().get(selectedIndex).getLastName() + " to.");
+        Label label2 = new Label("NOTICE: All data in this session associated with the");
+        Label label3 = new Label(" trainee will be deleted.");
+
+        label.setTextAlignment(TextAlignment.CENTER);
+        label.setAlignment(Pos.CENTER);
+        label2.setTextAlignment(TextAlignment.CENTER);
+        label2.setAlignment(Pos.CENTER);
+        label3.setTextAlignment(TextAlignment.CENTER);
+        label3.setAlignment(Pos.CENTER);
+        ListView<String> sessionListView = new ListView<>();
+        ObservableList<String> sessionObList = FXCollections.observableArrayList();
+        Button sessionButton = new Button("Transfer Trainee");
+        Button cancelButton = new Button("Cancel");
+        HBox buttonHBox = new HBox(sessionButton, cancelButton);
+
+        //Make and sort session list
+        Vector<Session> sessions = DBManager.getAllSessions();
+        if(sessions == null)
+            return;
+
+        //Removes Current Session From List
+        sessions.removeIf(b -> b.getStartDate().equals(controller.getCurrentSession().getStartDate()) &&
+                                b.getEndDate().equals(controller.getCurrentSession().getEndDate()));
+
+        //Sorts out the sessions which already have tests or events scored.
+        Iterator<Session> it = sessions.iterator();
+        while(it.hasNext()){
+
+            Session tmp = it.next();
+            boolean isRemovable = false;
+            for(Test test : Objects.requireNonNull(DBManager.getAllTestsFromSession(tmp.getYear(), tmp.getSession())))
+                if(test.isScored()){
+                    isRemovable = true;
+                    break;
+                }
+
+            for(Event event : Objects.requireNonNull(DBManager.getAllEventsFromSession(tmp.getYear(), tmp.getSession())))
+                if(event.isScored()){
+                    isRemovable = true;
+                    break;
+                }
+
+            if(isRemovable)
+                it.remove();
+
+        }
+
+        sessions.sort(new SortByNewestSession());
+        for(Session session: sessions)
+            sessionObList.add("Year: " + session.getYear() + " Session: " + session.getSession() + " | " +
+                    session.getStartDate() + " - " + session.getEndDate());
+
+        sessionListView.setItems(sessionObList);
+        sessionListView.getSelectionModel().select(0);
+        dialogVBox.getChildren().addAll(label, label2, label3, sessionListView, buttonHBox);
+
+        //Button Events
+        sessionButton.setOnMouseClicked(event -> {
+
+            if(sessionListView.getSelectionModel().isEmpty())
+                return;
+
+            int index = sessionListView.getSelectionModel().getSelectedIndex();
+            Session destinationSession = sessions.get(index);
+
+            Trainee tmpTrainee = controller.getCurrentTrainees().get(selectedIndex);
+            tmpTrainee.setYear(destinationSession.getYear());
+            tmpTrainee.setSession(destinationSession.getSession());
+
+            DBManager.updateTrainee(tmpTrainee);
+            DBManager.deleteAllTestScoresOfATrainee(tmpTrainee.getId());
+            DBManager.deleteAllEventScoresOfATrainee(tmpTrainee.getId());
+            DBManager.deleteAllOfATraineeComments(tmpTrainee.getId());
+
+            dialog.close();
+            controller.updateCurrentTrainees();
+            controller.updateCurrentComments();
+            traineeTabRefresh();
+
+        });
+        cancelButton.setOnMouseClicked(event -> dialog.close());
+
+        //Style
+        buttonHBox.setSpacing(10);
+        buttonHBox.setAlignment(Pos.CENTER);
+        dialogVBox.setAlignment(Pos.CENTER);
+        dialogVBox.setSpacing(10);
+        VBox.setMargin(label, new Insets(10, 0, 0, 0));
+        VBox.setMargin(label2, new Insets(-5, 0, 0, 0));
+        VBox.setMargin(label3, new Insets(-5, 0, 0, 0));
+        VBox.setMargin(buttonHBox, new Insets(10));
+        VBox.setMargin(sessionListView, new Insets(0, 5, 0, 5));
+
+        Scene dialogScene = new Scene(dialogVBox, 300, 450);
+        dialog.setScene(dialogScene);
+        dialog.showAndWait();
+
+    }
+
+    /**
+     * Used to sort the sessions by the newest session.
+     */
+    class SortByNewestSession implements Comparator<Session> {
+        @Override
+        public int compare(Session o1, Session o2) {
+
+            int yearDiff = o1.getYear() - o2.getYear();
+            if(yearDiff == 0)
+                return -1 * (o1.getSession() - o2.getSession());
+            else
+                return -1 * yearDiff;
+        }
     }
 
     /**

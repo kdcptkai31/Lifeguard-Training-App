@@ -1015,12 +1015,16 @@ public class DocumentGenerator {
 
                         districtTrainees.add(pair.getKey());
 
+                        boolean isFound = false;
                         for(Pair<Integer, Integer> pair1 : physicalEventsPoints){
                             if(pair1.getKey() == pair.getKey().getId()){
                                 districtPhysPointValues.add(pair1.getValue());
+                                isFound = true;
                                 break;
                             }
                         }
+                        if(!isFound)
+                            districtPhysPointValues.add(0);
 
                         boolean found = false;
                         for(Pair<Integer, Double> pair1 : courseCompletedCount){
@@ -1073,12 +1077,16 @@ public class DocumentGenerator {
 
                 districtTrainees.add(traineePair.getKey());
 
+                boolean isFound = false;
                 for(Pair<Integer, Integer> pair1 : physicalEventsPoints){
                     if(pair1.getKey() == traineePair.getKey().getId()){
                         districtPhysPointValues.add(pair1.getValue());
+                        isFound = true;
                         break;
                     }
                 }
+                if(!isFound)
+                    districtPhysPointValues.add(0);
 
                 boolean found = false;
                 for(Pair<Integer, Double> pair1 : courseCompletedCount){
@@ -2436,6 +2444,7 @@ public class DocumentGenerator {
             Vector<String> names = new Vector<>();
             names.add("First Name, Last Name");
             Vector<Trainee> currentTrainees = new Vector<>(controller.getCurrentTrainees());
+//            System.out.println(currentTrainees.size());
             for(int i = 0; i < controller.getCurrentTrainees().size(); i++){
 
                 for (XWPFParagraph p : doc.getParagraphs()) {

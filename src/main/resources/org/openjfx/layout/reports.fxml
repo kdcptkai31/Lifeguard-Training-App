@@ -26,7 +26,7 @@
                 </ImageView>
                 <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="150.0" prefWidth="200.0" spacing="10.0">
                     <children>
-                        <Label text="Lifeguard Trainer">
+                        <Label text="Duty Training App">
                             <font>
                                 <Font name="System Bold" size="18.0" />
                             </font>

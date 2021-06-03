@@ -1424,7 +1424,7 @@ public class DBManager {
     public static boolean updateTrainee(Trainee tToAdd){
 
         String sql = "UPDATE trainees SET firstName = ?, middleName = ?, lastName = ?, birthDate = ?, city = ?, " +
-                " state = ?, phoneNumber = ?, email = ?, districtChoice = ?, isLodging = ? WHERE tid = ?";
+                " state = ?, phoneNumber = ?, email = ?, districtChoice = ?, isLodging = ?, year = ?, session = ? WHERE tid = ?";
 
         try{
 
@@ -1439,7 +1439,9 @@ public class DBManager {
             stmt.setString(8, tToAdd.getEmail());
             stmt.setString(9, tToAdd.getDistrictChoice());
             stmt.setInt(10, tToAdd.isLodging() ? 1 : 0);
-            stmt.setInt(11, tToAdd.getId());
+            stmt.setInt(11, tToAdd.getYear());
+            stmt.setInt(12, tToAdd.getSession());
+            stmt.setInt(13, tToAdd.getId());
             stmt.executeUpdate();
 
             return true;
