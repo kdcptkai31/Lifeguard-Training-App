@@ -2243,7 +2243,7 @@ public class DocumentGenerator {
     public void generateLodgingList(){
 
         //Pre-process trainee data
-        Vector<Trainee> trainees = controller.getCurrentTrainees();
+        Vector<Trainee> trainees = new Vector<>(controller.getCurrentTrainees());
         trainees.removeIf(b -> !b.isLodging());
 
         try{
