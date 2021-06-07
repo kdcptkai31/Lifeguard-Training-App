@@ -1,5 +1,7 @@
 package org.openjfx.view;
 
+import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 
 import java.util.Comparator;
@@ -64,6 +66,10 @@ public class ReportsView {
     private Button currentRankingsButton;
     @FXML
     private Button certificatesButton;
+    @FXML
+    private Button rosterButton;
+    @FXML
+    private Button ecRosterButton;
 
     //Deliverables
     @FXML
@@ -181,6 +187,54 @@ public class ReportsView {
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         Runnable task = () -> {
             documentGenerator.generateCurrentRankings();
+            ScheduledExecutorService executor1 = Executors.newSingleThreadScheduledExecutor();
+            Runnable task1 = () -> {
+                enableButtons();
+                loadingLabel.setVisible(false);
+                loadingGif.setVisible(false);
+            };
+            executor1.schedule(task1, 1, TimeUnit.MILLISECONDS);
+            executor1.shutdown();
+
+        };
+        executor.schedule(task, 1, TimeUnit.MILLISECONDS);
+        executor.shutdown();
+
+    }
+
+    public void onRosterClicked(){
+
+        disableButtons();
+        loadingLabel.setVisible(true);
+        loadingGif.setVisible(true);
+
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        Runnable task = () -> {
+            documentGenerator.generateRoster();
+            ScheduledExecutorService executor1 = Executors.newSingleThreadScheduledExecutor();
+            Runnable task1 = () -> {
+                enableButtons();
+                loadingLabel.setVisible(false);
+                loadingGif.setVisible(false);
+            };
+            executor1.schedule(task1, 1, TimeUnit.MILLISECONDS);
+            executor1.shutdown();
+
+        };
+        executor.schedule(task, 1, TimeUnit.MILLISECONDS);
+        executor.shutdown();
+
+    }
+
+    public void onEmergencyContactRosterClicked(){
+
+        disableButtons();
+        loadingLabel.setVisible(true);
+        loadingGif.setVisible(true);
+
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        Runnable task = () -> {
+            documentGenerator.generateEmergencyContactRoster();
             ScheduledExecutorService executor1 = Executors.newSingleThreadScheduledExecutor();
             Runnable task1 = () -> {
                 enableButtons();
@@ -514,6 +568,8 @@ public class ReportsView {
         uniformInfoButton.setDisable(true);
         averyListButton.setDisable(true);
         profilesButton.setDisable(true);
+        rosterButton.setDisable(true);
+        ecRosterButton.setDisable(true);
 
     }
 
@@ -533,6 +589,8 @@ public class ReportsView {
         uniformInfoButton.setDisable(false);
         averyListButton.setDisable(false);
         profilesButton.setDisable(false);
+        rosterButton.setDisable(false);
+        ecRosterButton.setDisable(false);
 
     }
 

@@ -1,5 +1,6 @@
 package org.openjfx.controller;
 
+import java.awt.*;
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -7,6 +8,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javafx.embed.swing.SwingFXUtils;
@@ -23,6 +25,7 @@ import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.openjfx.model.*;
 import org.openjfx.model.Comment;
+import org.openjfx.model.Event;
 import org.openjfx.view.OverviewView;
 
 /**
@@ -238,6 +241,10 @@ public class DocumentGenerator {
             workbook.write(fileOut);
             fileOut.close();
 
+            Desktop.getDesktop().open(new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
+                    "\\Trainee_Profiles.xlsx"));
+
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -444,6 +451,14 @@ public class DocumentGenerator {
 
             generateIndividualSummary(selectedTrainee, physPointValue, tmpRank, percentComplete, districtFinalEvalPoints);
 
+        }
+
+        try {
+            Desktop.getDesktop().open(new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
+                    "\\IndividualSummaries\\"));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
     }
@@ -871,6 +886,10 @@ public class DocumentGenerator {
             tmp.close();
             workbook.close();
 
+            Desktop.getDesktop().open(new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
+                    "\\Avery_NameTent_NameTag_List.xlsx"));
+
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -1122,6 +1141,13 @@ public class DocumentGenerator {
             generateDistrictSummaries(districtTrainees, districtPhysPointValues, districtPercentCompletes,
                                         districtClassRanks, districtFinalEvalPoints);
 
+        try {
+            Desktop.getDesktop().open(new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
+                    "\\District_Summaries\\"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -1607,6 +1633,10 @@ public class DocumentGenerator {
             tmp.close();
             workbook.close();
 
+            Desktop.getDesktop().open(new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
+                    "\\Test_Analysis.xlsx"));
+
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -1763,6 +1793,10 @@ public class DocumentGenerator {
             workbook.write(tmp);
             tmp.close();
             workbook.close();
+
+            Desktop.getDesktop().open(new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
+                    "\\Attendance_List.xlsx"));
 
         }catch (Exception e){
             e.printStackTrace();
@@ -1997,6 +2031,10 @@ public class DocumentGenerator {
             tmp.close();
             workbook.close();
 
+            Desktop.getDesktop().open(new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
+                    "\\Current_Rankings.xlsx"));
+
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -2085,6 +2123,94 @@ public class DocumentGenerator {
             workbook.write(tmp);
             tmp.close();
             workbook.close();
+
+            Desktop.getDesktop().open(new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
+                    "\\Email_List.xlsx"));
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Generates a list of all trainees.
+     */
+    public void generateRoster(){
+
+        try{
+
+            XSSFWorkbook workbook = new XSSFWorkbook();
+            XSSFSheet sheet = workbook.createSheet("Roster");
+
+            //Style
+            XSSFFont headerFont = workbook.createFont();
+            headerFont.setBold(true);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(headerFont);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle mainStyle = workbook.createCellStyle();
+            mainStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            XSSFFont nameFont = workbook.createFont();
+            nameFont.setBold(true);
+            nameFont.setFontHeightInPoints((short)20);
+            nameFont.setFontName("Arial");
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(nameFont);
+
+            int rowCount = 1;
+            int columnCount = 1;
+
+            Row row = sheet.createRow(rowCount++);
+            Cell cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("First");
+            cell.setCellStyle(headerStyle);
+
+            cell = row.createCell(columnCount, CellType.STRING);
+            cell.setCellValue("Last");
+            cell.setCellStyle(headerStyle);
+
+            for(Trainee trainee : controller.getCurrentTrainees()){
+
+                columnCount = 1;
+                row = sheet.createRow(rowCount++);
+                cell = row.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue(trainee.getFirstName());
+                cell.setCellStyle(mainStyle);
+
+                cell = row.createCell(columnCount, CellType.STRING);
+                cell.setCellValue(trainee.getLastName());
+                cell.setCellStyle(mainStyle);
+
+            }
+
+            for(int i = 1; i < 4; i++)
+                sheet.autoSizeColumn(i);
+
+            //Make title row
+            row = sheet.createRow(0);
+            cell = row.createCell(1, CellType.STRING);
+            cell.setCellValue(controller.getCurrentSession().getYear() + " Session " + controller.getCurrentSession().getSession() +
+                    " Roster");
+            cell.setCellStyle(titleStyle);
+
+            //Saves the file
+            FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
+                    "\\Roster.xlsx");
+
+            workbook.write(tmp);
+            tmp.close();
+            workbook.close();
+
+            Desktop.getDesktop().open(new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
+                    "\\Roster.xlsx"));
 
         }catch (Exception e){
             e.printStackTrace();
@@ -2177,6 +2303,105 @@ public class DocumentGenerator {
             workbook.write(tmp);
             tmp.close();
             workbook.close();
+
+            Desktop.getDesktop().open(new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
+                    "\\Lodging_List.xlsx"));
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Generates a roster of trainees with their emergency contact information next to it.
+     */
+    public void generateEmergencyContactRoster(){
+
+        //Pre-process trainee data
+        Vector<Trainee> trainees = controller.getCurrentTrainees();
+
+        try{
+
+            XSSFWorkbook workbook = new XSSFWorkbook();
+            XSSFSheet sheet = workbook.createSheet("Emergency Contact Roster");
+
+            //Style
+            XSSFFont headerFont = workbook.createFont();
+            headerFont.setBold(true);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(headerFont);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle mainStyle = workbook.createCellStyle();
+            mainStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            XSSFFont nameFont = workbook.createFont();
+            nameFont.setBold(true);
+            nameFont.setFontHeightInPoints((short)20);
+            nameFont.setFontName("Arial");
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(nameFont);
+
+            int rowCount = 1;
+            int columnCount = 1;
+
+            Row row = sheet.createRow(rowCount++);
+            Cell cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Name");
+            cell.setCellStyle(headerStyle);
+
+            cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Email");
+            cell.setCellStyle(headerStyle);
+
+            cell = row.createCell(columnCount, CellType.STRING);
+            cell.setCellValue("District");
+            cell.setCellStyle(headerStyle);
+
+            for(Trainee trainee : trainees){
+
+                columnCount = 1;
+                row = sheet.createRow(rowCount++);
+                cell = row.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue(trainee.getFirstName() + " " + trainee.getLastName());
+                cell.setCellStyle(mainStyle);
+
+                cell = row.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue(trainee.getEmail() + ";");
+                cell.setCellStyle(mainStyle);
+
+                cell = row.createCell(columnCount, CellType.STRING);
+                cell.setCellValue(trainee.getDistrictChoice());
+                cell.setCellStyle(mainStyle);
+
+            }
+
+//            for(int i = 1; i < 4; i++)
+//                sheet.autoSizeColumn(i);
+
+            //Make title row
+            row = sheet.createRow(0);
+            cell = row.createCell(1, CellType.STRING);
+            cell.setCellValue(controller.getCurrentSession().getYear() + " Session " + controller.getCurrentSession().getSession() +
+                    " Emergency Contact Roster");
+            cell.setCellStyle(titleStyle);
+
+            //Saves the file
+            FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
+                    "\\Emergency_Contact_Roster.xlsx");
+
+            workbook.write(tmp);
+            tmp.close();
+            workbook.close();
+
+            Desktop.getDesktop().open(new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
+                    "\\Emergency_Contact_Roster.xlsx"));
 
         }catch (Exception e){
             e.printStackTrace();
@@ -2417,6 +2642,9 @@ public class DocumentGenerator {
             tmp.close();
             workbook.close();
 
+            Desktop.getDesktop().open(new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
+                    "\\Uniform_Orders.xlsx"));
 
         }catch (Exception e){
             e.printStackTrace();
@@ -2444,7 +2672,7 @@ public class DocumentGenerator {
             Vector<String> names = new Vector<>();
             names.add("First Name, Last Name");
             Vector<Trainee> currentTrainees = new Vector<>(controller.getCurrentTrainees());
-//            System.out.println(currentTrainees.size());
+
             for(int i = 0; i < controller.getCurrentTrainees().size(); i++){
 
                 for (XWPFParagraph p : doc.getParagraphs()) {
@@ -2465,13 +2693,17 @@ public class DocumentGenerator {
 
                 FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Year_" +
                         controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
-                        "\\Certificates\\" + currentTrainees.get(i).getFirstName() + "_" + currentTrainees.get(i).getLastName()
+                        "\\Certificates\\" + currentTrainees.get(i).getLastName() + "_" + currentTrainees.get(i).getFirstName()
                         + "_Cert.docx");
 
                 doc.write(tmp);
                 tmp.close();
 
             }
+
+            Desktop.getDesktop().open(new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                    controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
+                    "\\Certificates\\"));
 
         }catch (IOException | InvalidFormatException e){
             e.printStackTrace();

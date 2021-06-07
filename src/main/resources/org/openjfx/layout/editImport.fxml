@@ -1,24 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.Cursor?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.CheckBox?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.effect.InnerShadow?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="900.0" prefWidth="1200.0" style="-fx-background-color: #3476f7;" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openjfx.view.EditImportView">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="900.0" prefWidth="1200.0" style="-fx-background-color: #3476f7;" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openjfx.view.EditImportView">
     <top>
         <HBox alignment="TOP_CENTER" spacing="10.0" style="-fx-background-color: FCE2AF;">
             <children>
@@ -312,7 +302,7 @@
                                     </Button>
                                  </children>
                               </VBox>
-                              <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="544.0" prefWidth="188.0">
+                              <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="544.0" prefWidth="200.0">
                                  <children>
                                     <Label text="Emergency Contact" textFill="#efb748">
                                        <font>
@@ -594,7 +584,7 @@
                      <content>
                         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="15.0">
                            <children>
-                              <VBox alignment="TOP_CENTER" prefHeight="671.0" prefWidth="250.0" spacing="5.0">
+                              <VBox alignment="TOP_CENTER" prefHeight="619.0" prefWidth="300.0" spacing="5.0">
                                  <children>
                                     <Label text="Events" textFill="#efb748">
                                        <font>
@@ -651,7 +641,7 @@
                                     <Insets top="50.0" />
                                  </HBox.margin>
                               </VBox>
-                              <VBox alignment="TOP_CENTER" layoutX="485.0" layoutY="10.0" prefHeight="671.0" prefWidth="250.0" spacing="5.0">
+                              <VBox alignment="TOP_CENTER" layoutX="485.0" layoutY="10.0" prefHeight="619.0" prefWidth="300.0" spacing="5.0">
                                  <children>
                                     <Label text="Tests" textFill="#efb748">
                                        <font>
@@ -718,7 +708,7 @@
                                           <Font name="System Bold" size="18.0" />
                                        </font>
                                     </Label>
-                                    <ListView fx:id="editInstructorListView" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#onEditInstructorListViewClicked" prefHeight="150.0" prefWidth="185.0" />
+                                    <ListView fx:id="editInstructorListView" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#onEditInstructorListViewClicked" prefHeight="150.0" prefWidth="200.0" />
                                     <CheckBox fx:id="newInstructorCheckBox" mnemonicParsing="false" selected="true" text="Make a New Instructor" textFill="#efb748">
                                        <font>
                                           <Font name="System Bold" size="14.0" />

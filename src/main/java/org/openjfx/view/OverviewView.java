@@ -89,25 +89,22 @@ public class OverviewView {
         enterInfoTableView.requestFocus();
         enterInfoTableView.layout();
 
-        enterHoursTableView.requestFocus();
-        enterHoursTableView.layout();
-
         traineeColumn.setCellValueFactory(new PropertyValueFactory<>("traineeName"));
         scoreColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         scoreColumn.setCellValueFactory(new PropertyValueFactory<>("score"));
         scoreColumn.setMaxWidth(50);
         scoreColumn.setMinWidth(50);
 
-        testListView.setCellFactory(stringListView -> new CenteredTestListViewCell());
-        eventListView.setCellFactory(stringListView -> new CenteredEventListViewCell());
+//        testListView.setCellFactory(stringListView -> new CenteredTestListViewCell());
+//        eventListView.setCellFactory(stringListView -> new CenteredEventListViewCell());
 
         enterHoursTableView.requestFocus();
         enterHoursTableView.layout();
         traineeHoursColumn.setCellValueFactory(new PropertyValueFactory<>("traineeName"));
         hoursColumn.setCellValueFactory(new PropertyValueFactory<>("score"));
         hoursColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        hoursColumn.setMinWidth(40);
-        hoursColumn.setMaxWidth(40);
+        hoursColumn.setMinWidth(60);
+        hoursColumn.setMaxWidth(60);
 
         //Action event where the user presses enter to enter that row's score/place, and it increments the edit focus
         //until the end of the list.
@@ -275,7 +272,7 @@ public class OverviewView {
 
             ObservableList<TableData> hoursTableData = FXCollections.observableArrayList();
             for(Trainee trainee: controller.getCurrentTrainees())
-                hoursTableData.add(new TableData(trainee.getFullName(), "10"));
+                hoursTableData.add(new TableData(trainee.getFirstName() + " "+ trainee.getLastName(), "10"));
 
             enterHoursTableView.setItems(hoursTableData);
             attendanceDayLabel.setText("Add Day " + controller.getCurrentSession().getCurrentDay() + " Attendance");
@@ -590,7 +587,7 @@ public class OverviewView {
         saveScoresButton.setText("Save Scores");
         ObservableList<TableData> data = FXCollections.observableArrayList();
         for(Trainee trainee: controller.getCurrentTrainees())
-            data.add(new TableData(trainee.getFullName(), "0"));
+            data.add(new TableData(trainee.getFirstName() + " " + trainee.getLastName(), "0"));
 
         enterInfoTableView.setItems(data);
         saveScoresButton.setVisible(true);
@@ -612,7 +609,7 @@ public class OverviewView {
         saveScoresButton.setText("Save Placements");
         ObservableList<TableData> data = FXCollections.observableArrayList();
         for(Trainee trainee: controller.getCurrentTrainees()){
-            data.add(new TableData(trainee.getFullName(), "0"));
+            data.add(new TableData(trainee.getFirstName() + " " + trainee.getLastName(), "0"));
         }
 
         enterInfoTableView.setItems(data);

@@ -3,12 +3,8 @@ package org.openjfx.view;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import javafx.application.Platform;
-
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -259,11 +255,11 @@ public class EditImportView {
         editSectorVector = new Vector<>();
         sectorDistrictsVector = new Vector<>();
         pendingRemovalsVector = new Vector<>();
-        traineeListView.setCellFactory(stringListView -> new CenteredListViewCell());
+//        traineeListView.setCellFactory(stringListView -> new CenteredListViewCell());
         traineeEventScoresListView.setCellFactory(stringListView -> new CenteredListViewCell());
         traineeTestScoresListView.setCellFactory(stringListView -> new CenteredListViewCell());
-        editEventsListView.setCellFactory(stringListView -> new CenteredListViewCell());
-        editTestsListView.setCellFactory(stringListView -> new CenteredListViewCell());
+//        editEventsListView.setCellFactory(stringListView -> new CenteredListViewCell());
+//        editTestsListView.setCellFactory(stringListView -> new CenteredListViewCell());
         editDistrictsListView.setCellFactory(stringListView -> new CenteredListViewCell());
         editInstructorListView.setCellFactory(stringListView -> new CenteredListViewCell());
         editSectorsListView.setCellFactory(stringListView -> new CenteredListViewCell());
@@ -3127,9 +3123,9 @@ public class EditImportView {
                 for(Comment storedComment : controller.getCurrentComments()){
 
                     if(comment.getDate().equals(storedComment.getDate()) &&
-                        comment.getTraineeName().equals(storedComment.getTraineeName()) &&
-                        comment.getInstructorName().equals(storedComment.getInstructorName()) &&
-                        comment.getIncidentDescription().equals(storedComment.getIncidentDescription())) {
+                        comment.getTraineeName().toLowerCase().equals(storedComment.getTraineeName().toLowerCase()) &&
+                        comment.getInstructorName().toLowerCase().equals(storedComment.getInstructorName().toLowerCase()) &&
+                        comment.getIncidentDescription().toLowerCase().equals(storedComment.getIncidentDescription().toLowerCase())) {
 
                         isFound = true;
                         break;
@@ -3146,7 +3142,6 @@ public class EditImportView {
             controller.updateCurrentComments();
             importComboBox.getSelectionModel().selectFirst();
             traineeTabRefresh();
-
 
         }catch (Exception e){
 
@@ -3187,7 +3182,6 @@ public class EditImportView {
 
         }
 
-
         List<Trainee> tmpTrainees = new ArrayList<>();
 
         //Handle Trainees
@@ -3218,8 +3212,8 @@ public class EditImportView {
             while (it.hasNext()){
                 Trainee tmp = it.next();
                 for(int index = 0; index < currentNames.size(); index++){
-                    if(currentNames.get(index).getKey().toUpperCase().equals(tmp.getFirstName().toUpperCase())
-                            && currentNames.get(index).getValue().toUpperCase().equals(tmp.getLastName().toUpperCase())
+                    if(currentNames.get(index).getKey().toLowerCase().equals(tmp.getFirstName().toLowerCase())
+                            && currentNames.get(index).getValue().toLowerCase().equals(tmp.getLastName().toLowerCase())
                             && !removedIndecies.contains(index)){
 
                         removedIndecies.add(index);
@@ -3232,7 +3226,6 @@ public class EditImportView {
 
             }
             tmpTrainees.removeAll(removeList);
-
 
             List<Integer> sessionChoices = new ArrayList<>();
             for(Trainee trainee : tmpTrainees) {
@@ -3419,7 +3412,7 @@ public class EditImportView {
 
                     boolean found = false;
                     for(Trainee currentTrainees : allRelevantTrainees){
-                        if(trainee.getFullName().equals(currentTrainees.getFullName())){
+                        if(trainee.getFullName().toLowerCase().equals(currentTrainees.getFullName().toLowerCase())){
                             found = true;
                             System.out.println("Duplicate: " + trainee.getFullName());
                             break;
@@ -3432,9 +3425,7 @@ public class EditImportView {
                     }
                 }
 
-
                 controller.updateCurrentTrainees();
-
                 sessionButton.setDisable(false);
                 cancelButton.setDisable(false);
                 dialog.close();
@@ -3444,7 +3435,6 @@ public class EditImportView {
             cancelButton.setOnMouseClicked(event -> dialog.close());
 
             dialog.showAndWait();
-
 
         } catch (Exception e) {
 
@@ -3519,8 +3509,8 @@ public class EditImportView {
             while (it.hasNext()){
                 Trainee tmp = it.next();
                 for(int index = 0; index < currentNames.size(); index++){
-                    if(currentNames.get(index).getKey().toUpperCase().equals(tmp.getFirstName().toUpperCase())
-                            && currentNames.get(index).getValue().toUpperCase().equals(tmp.getLastName().toUpperCase())
+                    if(currentNames.get(index).getKey().toLowerCase().equals(tmp.getFirstName().toLowerCase())
+                            && currentNames.get(index).getValue().toLowerCase().equals(tmp.getLastName().toLowerCase())
                             && !removedIndecies.contains(index)){
 
                         removedIndecies.add(index);
@@ -3543,8 +3533,8 @@ public class EditImportView {
                 boolean isFilled = false;
                 for (int j = 0; j < allTrainees.size() && !isFound; j++) {
 
-                    if (tmpTraineeQ1.get(i).getFirstName().equals(allTrainees.get(j).getFirstName()) &&
-                            tmpTraineeQ1.get(i).getLastName().equals(allTrainees.get(j).getLastName())) {
+                    if (tmpTraineeQ1.get(i).getFirstName().toLowerCase().equals(allTrainees.get(j).getFirstName().toLowerCase()) &&
+                            tmpTraineeQ1.get(i).getLastName().toLowerCase().equals(allTrainees.get(j).getLastName().toLowerCase())) {
 
                         tmpTraineeQ1.get(i).setId(allTrainees.get(j).getId());
                         isFound = true;
@@ -3635,8 +3625,8 @@ public class EditImportView {
             while (it.hasNext()){
                 Trainee tmp = it.next();
                 for(int index = 0; index < currentNames.size(); index++){
-                    if(currentNames.get(index).getKey().toUpperCase().equals(tmp.getFirstName().toUpperCase())
-                            && currentNames.get(index).getValue().toUpperCase().equals(tmp.getLastName().toUpperCase())
+                    if(currentNames.get(index).getKey().toLowerCase().equals(tmp.getFirstName().toLowerCase())
+                            && currentNames.get(index).getValue().toLowerCase().equals(tmp.getLastName().toLowerCase())
                             && !removedIndecies.contains(index)){
 
                         removedIndecies.add(index);
@@ -3658,8 +3648,8 @@ public class EditImportView {
                 boolean isFilled = false;
                 for (int j = 0; j < allTrainees.size() && !isFound; j++) {
 
-                    if (tmpTraineeQ2.get(i).getFirstName().equals(allTrainees.get(j).getFirstName()) &&
-                            tmpTraineeQ2.get(i).getLastName().equals(allTrainees.get(j).getLastName())) {
+                    if (tmpTraineeQ2.get(i).getFirstName().toLowerCase().equals(allTrainees.get(j).getFirstName().toLowerCase()) &&
+                            tmpTraineeQ2.get(i).getLastName().toLowerCase().equals(allTrainees.get(j).getLastName().toLowerCase())) {
 
                         tmpTraineeQ2.get(i).setId(allTrainees.get(j).getId());
                         isFound = true;
