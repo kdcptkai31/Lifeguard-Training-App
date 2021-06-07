@@ -2020,6 +2020,38 @@ public class EditImportView {
     }
 
     /**
+     * Deletes the selected comment if able to.
+     */
+    public void onDeleteCommentClicked(){
+
+        int selectedCommentIndex = traineeCommentsListView.getSelectionModel().getSelectedIndex();
+        if(selectedCommentIndex == -1)
+            return;
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Delete this comment?", ButtonType.YES, ButtonType.CANCEL);
+
+        alert.showAndWait();
+
+        if(alert.getResult() == ButtonType.CANCEL)
+            return;
+
+        if(!DBManager.deleteComment(traineeCommentsListView.getItems().get(selectedCommentIndex))){
+
+            Alert newAlert = new Alert(Alert.AlertType.ERROR, "Something went wrong deleting the comment!", ButtonType.OK);
+            newAlert.showAndWait();
+
+        }
+
+        int selectedTrainee = traineeListView.getSelectionModel().getSelectedIndex();
+
+        controller.updateCurrentSession(controller.getCurrentSession());
+        traineeTabRefresh();
+        traineeListView.getSelectionModel().select(selectedTrainee);
+        onTraineeListViewClicked();
+
+    }
+
+    /**
      * Validates and saves the added or updated emergency contact for the selected trainee.
      */
     public void onAddECClicked(){

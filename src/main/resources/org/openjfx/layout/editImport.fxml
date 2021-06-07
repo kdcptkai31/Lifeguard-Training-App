@@ -571,6 +571,7 @@
                                           <Font name="System Bold" size="12.0" />
                                        </font></Button>
                                     <Label fx:id="tCErrorLabel" text="*Error* Enter Valid Info" textFill="RED" visible="false" />
+                                    <Button layoutX="115.0" layoutY="544.0" mnemonicParsing="false" onMouseClicked="#onDeleteCommentClicked" text="Delete Selected Comment" />
                                  </children>
                                  <HBox.margin>
                                     <Insets left="5.0" />
