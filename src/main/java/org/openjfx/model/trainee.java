@@ -7,6 +7,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 /**
  * Represents a Trainee, should include all personal information, as well as any comments on performance,
@@ -500,10 +501,10 @@ public class Trainee{
 
         try {
 
-            BufferedImage bufferedImage = ImageIO.read(getClass().getClassLoader().getResource("org/openjfx/images/blankpfp.png"));
-            return SwingFXUtils.toFXImage(bufferedImage, null);
+            return new Image(getClass().getClassLoader().getResource("org/openjfx/images/blankpfp.png").toURI().toString(),
+                            0, 187, true, true);
 
-        } catch (IOException e) {
+        } catch (URISyntaxException e) {
             e.printStackTrace();
         }
 

@@ -208,14 +208,9 @@ public class SetUpView {
         }
 
         //If successful, save image
-        try {
-            BufferedImage bufferedImage = ImageIO.read(selectedFile);
-            instructorPFP = SwingFXUtils.toFXImage(bufferedImage, null);
-            chooseImageButton.setText(selectedFile.getName());
-        } catch (IOException e) {
-            e.printStackTrace();
-            instructorPFP = null;
-        }
+        instructorPFP = new Image(selectedFile.toURI().toString(),
+                0, 187, true, true);
+        chooseImageButton.setText(selectedFile.getName());
 
     }
 
