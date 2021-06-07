@@ -111,8 +111,10 @@ public class DocumentGenerator {
         try{
 
             //Used to correctly offset the excel rows to fit 4 profiles per printable page.
-            int alternator = 0;
+//            int alternator = 0;
 
+            //Used to format the page to fit 2 profiles per page
+            int subtractor = 0;
             for(int i = 0; i < controller.getCurrentTrainees().size(); i+=2){
 
                 ByteArrayOutputStream byteIn = new ByteArrayOutputStream();
@@ -123,9 +125,9 @@ public class DocumentGenerator {
                 Drawing drawing = sheet.createDrawingPatriarch();
                 ClientAnchor anchor = helper.createClientAnchor();
                 anchor.setCol1(0);
-                anchor.setRow1((i * 11) + alternator + i / 4);
+                anchor.setRow1((i * 23) - subtractor + i / 4);
                 anchor.setCol2(4);
-                anchor.setRow2(16 + (i * 11) + alternator + i / 4);
+                anchor.setRow2(16 + (i * 23) - subtractor + i / 4);
                 Picture pic = drawing.createPicture(anchor, pictureIndex);
 
                 if(i + 1 < controller.getCurrentTrainees().size()){
@@ -138,14 +140,14 @@ public class DocumentGenerator {
                     Drawing drawing1 = sheet.createDrawingPatriarch();
                     ClientAnchor anchor1 = helper1.createClientAnchor();
                     anchor1.setCol1(5);
-                    anchor1.setRow1((i * 11) + alternator + i / 4);
+                    anchor1.setRow1((i * 23) - subtractor + i / 4);
                     anchor1.setCol2(9);
-                    anchor1.setRow2(16 + (i * 11) + alternator + i / 4);
+                    anchor1.setRow2(16 + (i * 23) - subtractor + i / 4);
                     Picture pic1 = drawing1.createPicture(anchor1, pictureIndex1);
 
                 }
 
-                Row row = sheet.createRow(17 + (i * 11) + alternator + i / 4);
+                Row row = sheet.createRow(17 + (i * 23) - subtractor + i / 4);
                 Cell cell;
                 String nameText = controller.getCurrentTrainees().get(i).getFirstName() + " " +
                         controller.getCurrentTrainees().get(i).getLastName();
@@ -179,8 +181,8 @@ public class DocumentGenerator {
 
                 }
 
-                Row row1 = sheet.createRow(19 + (i * 11) + alternator + i / 4);
-                Row row2 = sheet.createRow(20 + (i * 11) + alternator + i / 4);
+                Row row1 = sheet.createRow(19 + (i * 23) - subtractor + i / 4);
+                Row row2 = sheet.createRow(20 + (i * 23) - subtractor + i / 4);
                 String districtText = controller.getCurrentTrainees().get(i).getDistrictChoice();
 
                 if(districtText.length() > 25 && districtText.contains("-")){
@@ -231,7 +233,19 @@ public class DocumentGenerator {
                     }
                 }
 
-                alternator = (alternator + 1) % 2;
+
+                if(i / 15 == 1 || i / 30 == 1)
+                    subtractor += 5;
+
+                if((i-1) / 15 == 1 || (i-1) / 30 == 1)
+                    subtractor -= 5;
+
+//                if(i != 0 && i % 2 == 0)
+//                    subtractor++;
+
+//                if(i != 0 && i % 3 == 0)
+//                    subtractor--;
+//                alternator = (alternator + 1) % 2;
 
             }
 
