@@ -2155,6 +2155,15 @@ public class DocumentGenerator {
             CellStyle mainStyle = workbook.createCellStyle();
             mainStyle.setAlignment(HorizontalAlignment.CENTER);
 
+            CellStyle centerStyleOdd = workbook.createCellStyle();
+            centerStyleOdd.setAlignment(HorizontalAlignment.CENTER);
+            centerStyleOdd.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.index);
+            centerStyleOdd.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            CellStyle styleOdd = workbook.createCellStyle();
+            styleOdd.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.index);
+            styleOdd.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
             XSSFFont nameFont = workbook.createFont();
             nameFont.setBold(true);
             nameFont.setFontHeightInPoints((short)20);
@@ -2162,6 +2171,8 @@ public class DocumentGenerator {
 
             CellStyle titleStyle = workbook.createCellStyle();
             titleStyle.setFont(nameFont);
+
+            CellStyle nullStyle = workbook.createCellStyle();
 
             int rowCount = 1;
             int columnCount = 1;
@@ -2175,17 +2186,25 @@ public class DocumentGenerator {
             cell.setCellValue("Last");
             cell.setCellStyle(headerStyle);
 
+            int counter = 0;
             for(Trainee trainee : controller.getCurrentTrainees()){
 
-                columnCount = 1;
+                columnCount = 0;
                 row = sheet.createRow(rowCount++);
+
+                cell = row.createCell(columnCount++, CellType.NUMERIC);
+                cell.setCellValue(counter + 1);
+                cell.setCellStyle(counter % 2 == 0 ? styleOdd : nullStyle);
+
                 cell = row.createCell(columnCount++, CellType.STRING);
                 cell.setCellValue(trainee.getFirstName());
-                cell.setCellStyle(mainStyle);
+                cell.setCellStyle(counter % 2 == 0 ? centerStyleOdd : mainStyle);
 
                 cell = row.createCell(columnCount, CellType.STRING);
                 cell.setCellValue(trainee.getLastName());
-                cell.setCellStyle(mainStyle);
+                cell.setCellStyle(counter % 2 == 0 ? centerStyleOdd : mainStyle);
+
+                counter++;
 
             }
 
@@ -2194,7 +2213,7 @@ public class DocumentGenerator {
 
             //Make title row
             row = sheet.createRow(0);
-            cell = row.createCell(1, CellType.STRING);
+            cell = row.createCell(0, CellType.STRING);
             cell.setCellValue(controller.getCurrentSession().getYear() + " Session " + controller.getCurrentSession().getSession() +
                     " Roster");
             cell.setCellStyle(titleStyle);
@@ -2338,6 +2357,17 @@ public class DocumentGenerator {
             CellStyle mainStyle = workbook.createCellStyle();
             mainStyle.setAlignment(HorizontalAlignment.CENTER);
 
+            CellStyle centerStyleOdd = workbook.createCellStyle();
+            centerStyleOdd.setAlignment(HorizontalAlignment.CENTER);
+            centerStyleOdd.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.index);
+            centerStyleOdd.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            CellStyle styleOdd = workbook.createCellStyle();
+            styleOdd.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.index);
+            styleOdd.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            CellStyle nullStyle = workbook.createCellStyle();
+
             XSSFFont nameFont = workbook.createFont();
             nameFont.setBold(true);
             nameFont.setFontHeightInPoints((short)20);
@@ -2355,33 +2385,64 @@ public class DocumentGenerator {
             cell.setCellStyle(headerStyle);
 
             cell = row.createCell(columnCount++, CellType.STRING);
-            cell.setCellValue("Email");
+            cell.setCellValue("Emergency Contact");
+            cell.setCellStyle(headerStyle);
+
+            cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Relation");
+            cell.setCellStyle(headerStyle);
+
+            cell = row.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Phone Number");
             cell.setCellStyle(headerStyle);
 
             cell = row.createCell(columnCount, CellType.STRING);
-            cell.setCellValue("District");
+            cell.setCellValue("Address");
             cell.setCellStyle(headerStyle);
 
+            int counter = 0;
             for(Trainee trainee : trainees){
 
-                columnCount = 1;
+                columnCount = 0;
                 row = sheet.createRow(rowCount++);
+
+                cell = row.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue(counter + 1);
+                cell.setCellStyle(counter % 2 == 0 ? styleOdd : nullStyle);
+
                 cell = row.createCell(columnCount++, CellType.STRING);
                 cell.setCellValue(trainee.getFirstName() + " " + trainee.getLastName());
-                cell.setCellStyle(mainStyle);
+                cell.setCellStyle(counter % 2 == 0 ? centerStyleOdd : mainStyle);
+
+                if(trainee.getEmergencyContact() == null){
+                    counter++;
+                    continue;
+                }
+
 
                 cell = row.createCell(columnCount++, CellType.STRING);
-                cell.setCellValue(trainee.getEmail() + ";");
-                cell.setCellStyle(mainStyle);
+                cell.setCellValue(trainee.getEmergencyContact().getFullName());
+                cell.setCellStyle(counter % 2 == 0 ? centerStyleOdd : mainStyle);
+
+                cell = row.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue(trainee.getEmergencyContact().getRelationship());
+                cell.setCellStyle(counter % 2 == 0 ? centerStyleOdd : mainStyle);
+
+                cell = row.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue(trainee.getEmergencyContact().getPhoneNumber());
+                cell.setCellStyle(counter % 2 == 0 ? centerStyleOdd : mainStyle);
 
                 cell = row.createCell(columnCount, CellType.STRING);
-                cell.setCellValue(trainee.getDistrictChoice());
-                cell.setCellStyle(mainStyle);
+                cell.setCellValue(trainee.getEmergencyContact().getAddress() + ", " + trainee.getEmergencyContact().getCity()
+                + ", " + trainee.getEmergencyContact().getZipcode());
+                cell.setCellStyle(counter % 2 == 0 ? centerStyleOdd : mainStyle);
+
+                counter++;
 
             }
 
-//            for(int i = 1; i < 4; i++)
-//                sheet.autoSizeColumn(i);
+            for(int i = 1; i < 6; i++)
+                sheet.autoSizeColumn(i);
 
             //Make title row
             row = sheet.createRow(0);

@@ -942,7 +942,8 @@ public class EditImportView {
 
         //If successful, save image to memory for later.
         tmpInstructorImage = new Image(selectedFile.toURI().toString(),
-                0, 187, true, true);
+                0, 250, true, true);
+        instructorPFPImageView.setPreserveRatio(true);
         instructorPFPImageView.setImage(tmpInstructorImage);
         VBox.setMargin(instructorPFPImageView, new Insets(0, 0,
                 139 - Math.ceil(instructorPFPImageView.getBoundsInLocal().getHeight()), 0));
@@ -1408,8 +1409,9 @@ public class EditImportView {
         addTraineeButton.setText("Add New Trainee");
         holdsEditQuestionnaireData = new Trainee();
         try {
+            traineePFPImageView.setPreserveRatio(true);
             traineePFPImageView.setImage(new Image(getClass().getClassLoader().getResource("org/openjfx/images/blankpfp.png").toURI().toString(),
-                    0, 187, true, true));
+                    0, 250, true, true));
         } catch (URISyntaxException e) {
             e.printStackTrace();
         };
@@ -2248,11 +2250,8 @@ public class EditImportView {
         if(selectedFile == null)
             return;
 
-        //If successful, save image to memory for later.
-        //            BufferedImage bufferedImage = ImageIO.read(selectedFile);
-//            tmpTraineeImage = SwingFXUtils.toFXImage(bufferedImage, null);
-        traineePFPImageView.setImage(new Image(selectedFile.toURI().toString(),0, 187, true, true));
-//            traineePFPImageView.setImage(tmpTraineeImage);
+        traineePFPImageView.setPreserveRatio(true);
+        traineePFPImageView.setImage(new Image(selectedFile.toURI().toString(),0, 250, true, true));
         VBox.setMargin(traineePFPImageView, new Insets(20, 0,
                 187 - Math.ceil(traineePFPImageView.getBoundsInLocal().getHeight()), 0));
 

@@ -209,7 +209,7 @@ public class SetUpView {
 
         //If successful, save image
         instructorPFP = new Image(selectedFile.toURI().toString(),
-                0, 187, true, true);
+                0, 250, true, true);
         chooseImageButton.setText(selectedFile.getName());
 
     }

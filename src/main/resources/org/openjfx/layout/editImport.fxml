@@ -708,7 +708,7 @@
                                           <Font name="System Bold" size="18.0" />
                                        </font>
                                     </Label>
-                                    <ListView fx:id="editInstructorListView" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#onEditInstructorListViewClicked" prefHeight="150.0" prefWidth="200.0" />
+                                    <ListView fx:id="editInstructorListView" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#onEditInstructorListViewClicked" prefHeight="150.0" prefWidth="185.0" />
                                     <CheckBox fx:id="newInstructorCheckBox" mnemonicParsing="false" selected="true" text="Make a New Instructor" textFill="#efb748">
                                        <font>
                                           <Font name="System Bold" size="14.0" />
