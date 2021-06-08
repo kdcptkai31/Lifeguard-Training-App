@@ -1,6 +1,5 @@
 package org.openjfx.view;
 
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -9,7 +8,6 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -28,8 +26,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Pair;
-
-import javax.imageio.ImageIO;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -65,7 +61,6 @@ public class EditImportView {
     private ListView<String> traineeListView;
     @FXML
     private ImageView traineePFPImageView;
-    private Image tmpTraineeImage;
     @FXML
     private CheckBox newTraineeCheckBox;
     @FXML
@@ -88,6 +83,8 @@ public class EditImportView {
     private TextField tEmailTextField;
     @FXML
     private TextField tDistrictTextField;
+    @FXML
+    private TextField tCapNumTextField;
     @FXML
     private CheckBox tIsLodgingComboBox;
     @FXML
@@ -244,7 +241,6 @@ public class EditImportView {
 
         controller = LifeguardTrainingApplication.getController();
         defaultImage = traineePFPImageView.getImage();
-        tmpTraineeImage = null;
         tmpInstructorImage = null;
         traineeEventScores = new Vector<>();
         traineeTestScores = new Vector<>();
@@ -323,6 +319,8 @@ public class EditImportView {
                 tEmailTextField.setPromptText("");
                 tDistrictTextField.clear();
                 tDistrictTextField.setPromptText("");
+                tCapNumTextField.clear();
+                tCapNumTextField.setPromptText("");
                 tIsLodgingComboBox.setSelected(false);
                 editQuestionnaireButton.setVisible(true);
                 addTraineeButton.setText("Add New Trainee");
@@ -379,6 +377,7 @@ public class EditImportView {
                 tPhoneNumberTextField.clear();
                 tEmailTextField.clear();
                 tDistrictTextField.clear();
+                tCapNumTextField.clear();
 
             }
 
@@ -1438,6 +1437,8 @@ public class EditImportView {
         tEmailTextField.clear();
         tDistrictTextField.setPromptText("");
         tDistrictTextField.clear();
+        tCapNumTextField.setPromptText("");
+        tCapNumTextField.clear();
         traineeListView.getSelectionModel().clearSelection();
 
         tECNameTextField.clear();
@@ -1799,6 +1800,7 @@ public class EditImportView {
         tPhoneNumberTextField.setPromptText(tmp.getPhoneNumber());
         tEmailTextField.setPromptText(tmp.getEmail());
         tDistrictTextField.setPromptText(tmp.getDistrictChoice());
+        tCapNumTextField.setPromptText(String.valueOf(tmp.getCapNumber()));
         tIsLodgingComboBox.setSelected(tmp.isLodging());
         newTraineeCheckBox.setSelected(false);
         addTraineeButton.setText("Update Trainee");
@@ -3009,6 +3011,8 @@ public class EditImportView {
                 tmp.setEmail(tEmailTextField.getText());
             if(!tDistrictTextField.getText().isEmpty())
                 tmp.setDistrictChoice(tDistrictTextField.getText());
+            if(!tCapNumTextField.getText().isEmpty() && isInteger(tCapNumTextField.getText()))
+                tmp.setCapNumber(Integer.parseInt(tCapNumTextField.getText()));
             tmp.setLodging(tIsLodgingComboBox.isSelected());
             holdsEditQuestionnaireData.setId(tmp.getId());
 
@@ -3042,11 +3046,13 @@ public class EditImportView {
                 validator++;
             if(!tDistrictTextField.getText().isEmpty())
                 validator++;
+            if(!tCapNumTextField.getText().isEmpty() && isInteger(tCapNumTextField.getText()))
+                validator++;
 
             if((validator == 0))
                 return;
 
-            if(validator != 8){
+            if(validator != 9){
 
                 tInfoErrorLabel.setVisible(true);
                 return;
@@ -3232,7 +3238,7 @@ public class EditImportView {
                         record.get(12).charAt(0) == 'Y',
                         new EmergencyContact(record.get(13), record.get(14), record.get(15),
                                 record.get(16), record.get(17), record.get(18),
-                                record.get(19)),
+                                record.get(19)), -1,
                         0, false, false, true, 2222, Integer.parseInt(record.get(2))));
 
             parser.close();
@@ -3259,6 +3265,13 @@ public class EditImportView {
 
             }
             tmpTrainees.removeAll(removeList);
+            class SortByLastName implements Comparator<Trainee>{
+                @Override
+                public int compare(Trainee o1, Trainee o2) {
+                    return o1.getLastName().compareTo(o2.getLastName());
+                }
+            }
+            Objects.requireNonNull(tmpTrainees).sort(new SortByLastName());
 
             List<Integer> sessionChoices = new ArrayList<>();
             for(Trainee trainee : tmpTrainees) {

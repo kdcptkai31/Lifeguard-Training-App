@@ -1,12 +1,7 @@
 package org.openjfx.model;
 
-import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-
-import java.io.IOException;
 import java.net.URISyntaxException;
 
 /**
@@ -28,6 +23,7 @@ public class Trainee{
     private boolean          isLodging;
     private EmergencyContact emergencyContact;
 
+    private int capNumber;
     private int hoursAttended;
     private Image image;
 
@@ -104,8 +100,8 @@ public class Trainee{
      * @param session
      */
     public Trainee(int id, String fName, String mName, String lName, String bDay, String city, String state,
-                   String pNumber, String email, String dChoice, boolean isLodge, EmergencyContact ec, int hAttended,
-                   Image imag, boolean isQ1Com, boolean isQ2Com, boolean isA, int year, int session){
+                   String pNumber, String email, String dChoice, boolean isLodge, EmergencyContact ec, int capNum,
+                   int hAttended, Image imag, boolean isQ1Com, boolean isQ2Com, boolean isA, int year, int session){
 
         this.id = id;
         firstName = fName;
@@ -119,6 +115,7 @@ public class Trainee{
         districtChoice = dChoice;
         isLodging = isLodge;
         emergencyContact = ec;
+        this.capNumber = capNum;
         hoursAttended = hAttended;
         image = imag;
         isQuestionnaire1Complete = isQ1Com;
@@ -150,10 +147,10 @@ public class Trainee{
      * @param session
      */
     public Trainee(String fName, String mName, String lName, String bDay, String city, String state,
-                   String pNumber, String email, String dChoice, boolean isLodge, EmergencyContact ec, int hAttended,
+                   String pNumber, String email, String dChoice, boolean isLodge, EmergencyContact ec, int capNum, int hAttended,
                    boolean isQ1Com, boolean isQ2Com, boolean isA, int year, int session){
 
-        this(0, fName, mName, lName, bDay, city, state, pNumber, email, dChoice, isLodge, ec, hAttended, null,
+        this(0, fName, mName, lName, bDay, city, state, pNumber, email, dChoice, isLodge, ec, capNum, hAttended, null,
                 isQ1Com, isQ2Com, isA, year, session);
 
     }
@@ -332,6 +329,8 @@ public class Trainee{
     public EmergencyContact getEmergencyContact() {
         return emergencyContact;
     }
+
+    public int getCapNumber() { return capNumber; }
 
     public int getHoursAttended() {
         return hoursAttended;
@@ -563,6 +562,8 @@ public class Trainee{
     public void setEmergencyContact(EmergencyContact emergencyContact) {
         this.emergencyContact = emergencyContact;
     }
+
+    public void setCapNumber(int num) { this.capNumber = num; }
 
     public void setHoursAttended(int hoursAttended) {
         this.hoursAttended = hoursAttended;

@@ -111,6 +111,7 @@ public class DBManager {
                 + "email TEXT,\n"
                 + "districtChoice TEXT,\n"
                 + "isLodging INTEGER,\n"
+                + "capNum INTEGER,\n"
                 + "hoursAttended INTEGER,\n"
                 + "image BLOB,\n"
                 + "isQuestionnaire1Complete INTEGER,\n"
@@ -288,7 +289,7 @@ public class DBManager {
             if(!rs.next()){
 
                 addInitialTrainee(new Trainee(null, null, null, null, null, null,
-                        null, null, null, false, null, -1,
+                        null, null, null, false, null, -1, -1,
                         false, false, false, -1, -1));
 
             }
@@ -1170,6 +1171,8 @@ public class DBManager {
             else //Does not exist
                 tmp.setEmergencyContact(null);
 
+            tmp.setCapNumber(rs.getInt("capNum"));
+
             tmp.setHoursAttended(rs.getInt("hoursAttended"));
             if(rs.getBinaryStream("image") == null)
                 tmp.setImage(null);
@@ -1359,7 +1362,7 @@ public class DBManager {
 
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT INTO trainees(tid, firstName, middleName, lastName, birthDate, city, state, "
-                + "phoneNumber, email, districtChoice, isLodging, hoursAttended, image, isQuestionnaire1Complete, "
+                + "phoneNumber, email, districtChoice, isLodging, capNum, hoursAttended, image, isQuestionnaire1Complete, "
                 + "isQuestionnaire2Complete, isActive, year, session, shirtSize, shortSize, swimSuitSize, "
                 + "isReturningTrainee, whyReturning, whyBeStateLG, whatWantLearnTraining, isJG, jgInfo, "
                 + "isOpenWaterLG, openWaterLGInfo, isPoolLG, poolLGInfo, isEMT, emtInfo, "
@@ -1367,9 +1370,11 @@ public class DBManager {
                 + "anyExtraInfo, expectedBiggestTrainingChallengeInfo, preparationInfo, medicalConfidence, "
                 + "cprConfidence, physicalConfidence, mentalConfidence, preTrainingSeminarsAttended, "
                 + "organizedSwimPoloFreq, personalSwimFreq, gymFreq, oceanSwimFreq, runningFreq, surfingFreq, "
-                + "isDisabled) VALUES(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, null, ?, ?, ?, ?, ?, null, null, null, null, "
+                + "isDisabled) VALUES(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, null, ?, ?, ?, ?, ?, null, null, null, null, "
                 + "null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "
                 + "null, null, null, null, null, null, null, null, null, null, null, null, null, null)");
+
+        tToAdd.setCapNumber(Objects.requireNonNull(DBManager.getAllTraineesFromSession(tToAdd.getYear(), tToAdd.getSession())).size() + 1);
 
         try{
 
@@ -1384,12 +1389,13 @@ public class DBManager {
             stmt.setString(8, tToAdd.getEmail());
             stmt.setString(9, tToAdd.getDistrictChoice());
             stmt.setInt(10, tToAdd.isLodging() ? 1 : 0);
-            stmt.setInt(11, tToAdd.getHoursAttended());
-            stmt.setInt(12, tToAdd.isQuestionnaire1Complete() ? 1 : 0);
-            stmt.setInt(13, tToAdd.isQuestionnaire2Complete() ? 1 : 0);
-            stmt.setInt(14, tToAdd.isActive() ? 1 : 0);
-            stmt.setInt(15, tToAdd.getYear());
-            stmt.setInt(16, tToAdd.getSession());
+            stmt.setInt(11, tToAdd.getCapNumber());
+            stmt.setInt(12, tToAdd.getHoursAttended());
+            stmt.setInt(13, tToAdd.isQuestionnaire1Complete() ? 1 : 0);
+            stmt.setInt(14, tToAdd.isQuestionnaire2Complete() ? 1 : 0);
+            stmt.setInt(15, tToAdd.isActive() ? 1 : 0);
+            stmt.setInt(16, tToAdd.getYear());
+            stmt.setInt(17, tToAdd.getSession());
             stmt.executeUpdate();
 
             //Skips the EC addition if it doesn't exist
@@ -1424,7 +1430,8 @@ public class DBManager {
     public static boolean updateTrainee(Trainee tToAdd){
 
         String sql = "UPDATE trainees SET firstName = ?, middleName = ?, lastName = ?, birthDate = ?, city = ?, " +
-                " state = ?, phoneNumber = ?, email = ?, districtChoice = ?, isLodging = ?, year = ?, session = ? WHERE tid = ?";
+                " state = ?, phoneNumber = ?, email = ?, districtChoice = ?, isLodging = ?, capNum = ?," +
+                " year = ?, session = ? WHERE tid = ?";
 
         try{
 
@@ -1439,9 +1446,10 @@ public class DBManager {
             stmt.setString(8, tToAdd.getEmail());
             stmt.setString(9, tToAdd.getDistrictChoice());
             stmt.setInt(10, tToAdd.isLodging() ? 1 : 0);
-            stmt.setInt(11, tToAdd.getYear());
-            stmt.setInt(12, tToAdd.getSession());
-            stmt.setInt(13, tToAdd.getId());
+            stmt.setInt(11, tToAdd.getCapNumber());
+            stmt.setInt(12, tToAdd.getYear());
+            stmt.setInt(13, tToAdd.getSession());
+            stmt.setInt(14, tToAdd.getId());
             stmt.executeUpdate();
 
             return true;

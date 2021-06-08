@@ -611,7 +611,8 @@ public class OverviewView {
         saveScoresButton.setText("Save Placements");
         ObservableList<TableData> data = FXCollections.observableArrayList();
         for(Trainee trainee: controller.getCurrentTrainees()){
-            data.add(new TableData(trainee.getFirstName() + " " + trainee.getLastName(), "0"));
+            data.add(new TableData("#" + trainee.getCapNumber() + " " + trainee.getFirstName() + " " +
+                                    trainee.getLastName(), "0"));
         }
 
         enterInfoTableView.setItems(data);
