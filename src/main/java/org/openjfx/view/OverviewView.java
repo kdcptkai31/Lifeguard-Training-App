@@ -185,7 +185,10 @@ public class OverviewView {
             int totalPlace = 0;
             if(!traineeEventScores.isEmpty()) {
                 for (EventScore score : traineeEventScores)
-                    totalPlace += score.getPlace();
+                    if(score.getPlace() == 0)
+                        totalPlace += traineeVector.size();
+                    else
+                        totalPlace += score.getPlace();
 
             }
             if(traineeEventScores.size() != 0){
@@ -592,7 +595,6 @@ public class OverviewView {
         enterInfoTableView.setItems(data);
         saveScoresButton.setVisible(true);
 
-
     }
 
     /**
@@ -668,7 +670,8 @@ public class OverviewView {
             for(int i = 0; i < controller.getCurrentTrainees().size(); i++){
 
                 String tmpCheck = scoreColumn.getCellObservableValue(i).getValue();
-                if(isNotInteger(tmpCheck) || Integer.parseInt(tmpCheck) < 1 || Integer.parseInt(tmpCheck) > maxPlacement){
+
+                if(isNotInteger(tmpCheck) || Integer.parseInt(tmpCheck) < 0 || Integer.parseInt(tmpCheck) > maxPlacement){
 
                     addScoresErrorLabel.setText("*ERROR* Enter valid places less than or equal to " + maxPlacement);
                     addScoresErrorLabel.setVisible(true);

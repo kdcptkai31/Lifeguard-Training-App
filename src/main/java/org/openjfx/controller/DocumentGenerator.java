@@ -299,7 +299,11 @@ public class DocumentGenerator {
             int totalPlace = 0;
             if(!traineeEventScores.isEmpty()) {
                 for (EventScore score : traineeEventScores) {
-                    totalPlace += score.getPlace();
+                    if(score.getPlace() == 0)
+                        totalPlace += traineeVector.size();
+                    else
+                        totalPlace += score.getPlace();
+
                     completedEventsTests++;
                 }
 
@@ -632,8 +636,13 @@ public class DocumentGenerator {
                 boolean isFound = false;
                 for(EventScore score : eventScores){
                     if(score.getEventID() == event.getEventID()){
-                        cell.setCellValue(score.getPlace());
-                        averageScore += score.getPlace();
+                        if(score.getPlace() == 0){
+                            cell.setCellValue("DNF");
+                            averageScore += controller.getCurrentTrainees().size();
+                        }else{
+                            cell.setCellValue(score.getPlace());
+                            averageScore += score.getPlace();
+                        }
                         counter++;
                         isFound = true;
                         break;
@@ -950,7 +959,11 @@ public class DocumentGenerator {
             int totalPlace = 0;
             if(!traineeEventScores.isEmpty()) {
                 for (EventScore score : traineeEventScores) {
-                    totalPlace += score.getPlace();
+                    if(score.getPlace() == 0)
+                        totalPlace += traineeVector.size();
+                    else
+                        totalPlace += score.getPlace();
+
                     completedEventsTests++;
                 }
 
@@ -1093,6 +1106,14 @@ public class DocumentGenerator {
                     generateDistrictSummaries(districtTrainees, districtPhysPointValues, districtPercentCompletes,
                                                 districtClassRanks, districtFinalEvalPoints);
 
+            }
+
+            try {
+                Desktop.getDesktop().open(new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                        controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
+                        "\\District_Summaries\\"));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
 
             return;
@@ -1386,8 +1407,14 @@ public class DocumentGenerator {
                     boolean found = false;
                     for(EventScore score : eventScores)
                         if(score.getEventID() == event.getEventID()){
-                            cell.setCellValue(score.getPlace());
-                            eventSum += score.getPlace();
+                            if(score.getPlace() == 0){
+                                cell.setCellValue("DNF");
+                                eventSum += controller.getCurrentTrainees().size();
+                            }else{
+                                cell.setCellValue(score.getPlace());
+                                eventSum += score.getPlace();
+                            }
+
                             counter++;
                             found = true;
                             break;
@@ -1847,7 +1874,10 @@ public class DocumentGenerator {
             int totalPlace = 0;
             if(!traineeEventScores.isEmpty()) {
                 for (EventScore score : traineeEventScores)
-                    totalPlace += score.getPlace();
+                    if(score.getPlace() == 0)
+                        totalPlace += traineeVector.size();
+                    else
+                        totalPlace += score.getPlace();
 
             }
             if(traineeEventScores.size() != 0){
@@ -2276,6 +2306,15 @@ public class DocumentGenerator {
             CellStyle mainStyle = workbook.createCellStyle();
             mainStyle.setAlignment(HorizontalAlignment.CENTER);
 
+            CellStyle oddStyle = workbook.createCellStyle();
+            oddStyle.setAlignment(HorizontalAlignment.CENTER);
+            oddStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.index);
+            oddStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            CellStyle styleOdd = workbook.createCellStyle();
+            styleOdd.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.index);
+            styleOdd.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
             XSSFFont nameFont = workbook.createFont();
             nameFont.setBold(true);
             nameFont.setFontHeightInPoints((short)20);
@@ -2283,6 +2322,8 @@ public class DocumentGenerator {
 
             CellStyle titleStyle = workbook.createCellStyle();
             titleStyle.setFont(nameFont);
+
+            CellStyle nullStyle = workbook.createCellStyle();
 
             int rowCount = 1;
             int columnCount = 1;
@@ -2300,21 +2341,29 @@ public class DocumentGenerator {
             cell.setCellValue("District");
             cell.setCellStyle(headerStyle);
 
+            int counter = 0;
             for(Trainee trainee : trainees){
 
-                columnCount = 1;
+                columnCount = 0;
                 row = sheet.createRow(rowCount++);
+
+                cell = row.createCell(columnCount++, CellType.NUMERIC);
+                cell.setCellValue(counter + 1);
+                cell.setCellStyle(counter % 2 == 0 ? styleOdd : nullStyle);
+
                 cell = row.createCell(columnCount++, CellType.STRING);
                 cell.setCellValue(trainee.getFirstName() + " " + trainee.getLastName());
-                cell.setCellStyle(mainStyle);
+                cell.setCellStyle(counter % 2 == 0 ? oddStyle : mainStyle);
 
                 cell = row.createCell(columnCount++, CellType.STRING);
                 cell.setCellValue(trainee.getEmail() + ";");
-                cell.setCellStyle(mainStyle);
+                cell.setCellStyle(counter % 2 == 0 ? oddStyle : mainStyle);
 
                 cell = row.createCell(columnCount, CellType.STRING);
                 cell.setCellValue(trainee.getDistrictChoice());
-                cell.setCellStyle(mainStyle);
+                cell.setCellStyle(counter % 2 == 0 ? oddStyle : mainStyle);
+
+                counter++;
 
             }
 

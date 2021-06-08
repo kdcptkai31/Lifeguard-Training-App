@@ -1851,7 +1851,11 @@ public class EditImportView {
 
                     if(event.getEventID() == score.getEventID()) {
 
-                        traineeEventScoresList.add(event.getName() + " | " + getPlaceSuffix(score.getPlace()));
+                        if(score.getPlace() == 0)
+                            traineeEventScoresList.add(event.getName() + " | DNF" );
+                        else
+                            traineeEventScoresList.add(event.getName() + " | " + getPlaceSuffix(score.getPlace()));
+
                         break;
 
                     }
@@ -2167,7 +2171,12 @@ public class EditImportView {
             return;
 
         String str = traineeEventScoresListView.getSelectionModel().getSelectedItem();
+        if(str.contains("DNF")) {
+            eventPlaceTextField.setPromptText("0");
+            return;
+        }
         String[] strParts = str.split(" ");
+
         eventPlaceTextField.setPromptText(strParts[strParts.length - 1].substring(0, strParts[strParts.length - 1].length() - 2));
 
     }
@@ -2197,12 +2206,12 @@ public class EditImportView {
         if(selectedIndex == -1 || eventPlaceTextField.getText().isEmpty())
             return;
 
-        String[] strParts = traineeEventScoresListView.getSelectionModel().getSelectedItem().split(" ");
         if(!isInteger(eventPlaceTextField.getText()) || Integer.parseInt(eventPlaceTextField.getText()) < 0) {
             eventScoreErrorLabel.setVisible(true);
             return;
         }
 
+        String[] strParts = traineeEventScoresListView.getSelectionModel().getSelectedItem().split(" ");
         StringBuilder name = new StringBuilder();
         for(String str : strParts){
             if(!str.equals("|"))
