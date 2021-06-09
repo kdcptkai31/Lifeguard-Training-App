@@ -2610,6 +2610,9 @@ public class DocumentGenerator {
             int columnCount = 0;
             Row headerRow = sheet.createRow(rowCount++);
             Cell cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("CAP #");
+            cell.setCellStyle(bothStyle);
+            cell = headerRow.createCell(columnCount++, CellType.STRING);
             cell.setCellValue("FIRST NAME");
             cell.setCellStyle(style);
             cell = headerRow.createCell(columnCount++, CellType.STRING);
@@ -2634,6 +2637,8 @@ public class DocumentGenerator {
                 Row row = sheet.createRow(rowCount++);
                 columnCount = 0;
 
+                cell = row.createCell(columnCount++, CellType.NUMERIC);
+                cell.setCellValue(trainee.getCapNumber());
                 cell = row.createCell(columnCount++, CellType.STRING);
                 cell.setCellValue(trainee.getFirstName());
                 cell = row.createCell(columnCount++, CellType.STRING);
@@ -2744,10 +2749,8 @@ public class DocumentGenerator {
             }
 
             //Fits the columns to the input data
-            for(int i = 0; i < 5; i++)
+            for(int i = 0; i < 8; i++)
                 sheet.autoSizeColumn(i);
-            sheet.autoSizeColumn(6);
-            sheet.autoSizeColumn(7);
             sheet.autoSizeColumn(9);
 
             //Make title row
