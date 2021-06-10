@@ -228,7 +228,7 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
                   </TableView>
-                  <Label fx:id="addHoursErrorLabel" text="label" textFill="RED" visible="false">
+                  <Label fx:id="addHoursErrorLabel" text="*ERROR* Numbers ONLY" textFill="RED" visible="false">
                      <font>
                         <Font size="14.0" />
                      </font>

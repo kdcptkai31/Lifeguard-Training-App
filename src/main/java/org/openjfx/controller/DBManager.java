@@ -112,7 +112,7 @@ public class DBManager {
                 + "districtChoice TEXT,\n"
                 + "isLodging INTEGER,\n"
                 + "capNum INTEGER,\n"
-                + "hoursAttended INTEGER,\n"
+                + "hoursAttended REAL,\n"
                 + "image BLOB,\n"
                 + "isQuestionnaire1Complete INTEGER,\n"
                 + "isQuestionnaire2Complete INTEGER,\n"
@@ -1173,7 +1173,7 @@ public class DBManager {
 
             tmp.setCapNumber(rs.getInt("capNum"));
 
-            tmp.setHoursAttended(rs.getInt("hoursAttended"));
+            tmp.setHoursAttended(rs.getDouble("hoursAttended"));
             if(rs.getBinaryStream("image") == null)
                 tmp.setImage(null);
             else
@@ -1390,7 +1390,7 @@ public class DBManager {
             stmt.setString(9, tToAdd.getDistrictChoice());
             stmt.setInt(10, tToAdd.isLodging() ? 1 : 0);
             stmt.setInt(11, tToAdd.getCapNumber());
-            stmt.setInt(12, tToAdd.getHoursAttended());
+            stmt.setDouble(12, tToAdd.getHoursAttended());
             stmt.setInt(13, tToAdd.isQuestionnaire1Complete() ? 1 : 0);
             stmt.setInt(14, tToAdd.isQuestionnaire2Complete() ? 1 : 0);
             stmt.setInt(15, tToAdd.isActive() ? 1 : 0);
@@ -1469,7 +1469,7 @@ public class DBManager {
         try{
 
             PreparedStatement stmt = connection.prepareStatement(sql);
-            stmt.setInt(1, tToAdd.getHoursAttended());
+            stmt.setDouble(1, tToAdd.getHoursAttended());
             stmt.setInt(2, tToAdd.getId());
             stmt.executeUpdate();
 

@@ -24,7 +24,7 @@ public class Trainee{
     private EmergencyContact emergencyContact;
 
     private int capNumber;
-    private int hoursAttended;
+    private double hoursAttended;
     private Image image;
 
     //Extra Information
@@ -101,7 +101,7 @@ public class Trainee{
      */
     public Trainee(int id, String fName, String mName, String lName, String bDay, String city, String state,
                    String pNumber, String email, String dChoice, boolean isLodge, EmergencyContact ec, int capNum,
-                   int hAttended, Image imag, boolean isQ1Com, boolean isQ2Com, boolean isA, int year, int session){
+                   double hAttended, Image imag, boolean isQ1Com, boolean isQ2Com, boolean isA, int year, int session){
 
         this.id = id;
         firstName = fName;
@@ -147,7 +147,7 @@ public class Trainee{
      * @param session
      */
     public Trainee(String fName, String mName, String lName, String bDay, String city, String state,
-                   String pNumber, String email, String dChoice, boolean isLodge, EmergencyContact ec, int capNum, int hAttended,
+                   String pNumber, String email, String dChoice, boolean isLodge, EmergencyContact ec, int capNum, double hAttended,
                    boolean isQ1Com, boolean isQ2Com, boolean isA, int year, int session){
 
         this(0, fName, mName, lName, bDay, city, state, pNumber, email, dChoice, isLodge, ec, capNum, hAttended, null,
@@ -332,7 +332,7 @@ public class Trainee{
 
     public int getCapNumber() { return capNumber; }
 
-    public int getHoursAttended() {
+    public double getHoursAttended() {
         return hoursAttended;
     }
 
@@ -565,7 +565,7 @@ public class Trainee{
 
     public void setCapNumber(int num) { this.capNumber = num; }
 
-    public void setHoursAttended(int hoursAttended) {
+    public void setHoursAttended(double hoursAttended) {
         this.hoursAttended = hoursAttended;
     }
 

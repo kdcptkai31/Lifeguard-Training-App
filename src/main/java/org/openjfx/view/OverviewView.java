@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.lang3.math.NumberUtils.isCreatable;
+
 public class OverviewView {
 
     private Controller controller;
@@ -508,17 +510,15 @@ public class OverviewView {
     public void onSaveHoursClicked(){
 
         //Validate Entries
-        Set<Integer> hourValues = new HashSet<>();
+        Set<Double> hourValues = new HashSet<>();
         for(int i = 0; i < controller.getCurrentTrainees().size(); i++){
 
             String tmpCheck =  hoursColumn.getCellObservableValue(i).getValue();
-            if(isNotInteger(tmpCheck) || Integer.parseInt(tmpCheck) < 1) {
-
+            if(!isCreatable(tmpCheck) || Double.parseDouble(tmpCheck) < 1){
                 addHoursErrorLabel.setVisible(true);
                 return;
-
             }
-            hourValues.add(Integer.parseInt(tmpCheck));
+            hourValues.add(Double.parseDouble(tmpCheck));
 
         }
 
@@ -549,7 +549,7 @@ public class OverviewView {
             int counter = 0;
             for(Trainee trainee : controller.getCurrentTrainees()){
 
-                trainee.setHoursAttended(trainee.getHoursAttended() + Integer.parseInt(hoursColumn.getCellObservableValue(counter).getValue()));
+                trainee.setHoursAttended(trainee.getHoursAttended() + Double.parseDouble(hoursColumn.getCellObservableValue(counter).getValue()));
                 DBManager.updateTraineeHours(trainee);
                 counter++;
 

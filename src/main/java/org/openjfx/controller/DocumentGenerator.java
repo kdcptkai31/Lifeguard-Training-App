@@ -1856,6 +1856,13 @@ public class DocumentGenerator {
         //Gather data from trainees to create the correct placement/////////////////////////////////////////////////////////
         Vector<Trainee> traineeVector = DBManager.getAllTraineesFromSession(controller.getCurrentSession().getYear(),
                 controller.getCurrentSession().getSession());
+        class SortByLastName implements Comparator<Trainee>{
+            @Override
+            public int compare(Trainee o1, Trainee o2) {
+                return o1.getLastName().compareTo(o2.getLastName());
+            }
+        }
+        Objects.requireNonNull(traineeVector).sort(new SortByLastName());
 
         Vector<Double> traineeTotalScores = new Vector<>();
         Vector<Pair<Integer, Double>> averagePlacement = new Vector<>();

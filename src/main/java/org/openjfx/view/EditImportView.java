@@ -253,7 +253,7 @@ public class EditImportView {
         sectorDistrictsVector = new Vector<>();
         pendingRemovalsVector = new Vector<>();
 //        traineeListView.setCellFactory(stringListView -> new CenteredListViewCell());
-        traineeEventScoresListView.setCellFactory(stringListView -> new CenteredListViewCell());
+//        traineeEventScoresListView.setCellFactory(stringListView -> new CenteredListViewCell());
         traineeTestScoresListView.setCellFactory(stringListView -> new CenteredListViewCell());
 //        editEventsListView.setCellFactory(stringListView -> new CenteredListViewCell());
 //        editTestsListView.setCellFactory(stringListView -> new CenteredListViewCell());
