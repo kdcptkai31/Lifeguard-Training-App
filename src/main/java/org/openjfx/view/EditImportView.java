@@ -3402,7 +3402,7 @@ public class EditImportView {
                                             Integer.parseInt(sessionColumn.getCellObservableValue(i).getValue()),
                                             startDateColumn.getCellObservableValue(i).getValue() + "/" + yearTextField.getText(),
                                             endDateColumn.getCellObservableValue(i).getValue() + "/" + yearTextField.getText(),
-                                            1));
+                                            1, 0));
 
                 }
 

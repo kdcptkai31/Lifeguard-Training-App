@@ -7,6 +7,7 @@ public class Session {
     private String startDate;
     private String endDate;
     private int currentDay;
+    private int openedLast;
 
     //Default Constructor
     public Session(){}
@@ -19,13 +20,14 @@ public class Session {
      * @param eDate
      * @param currentDa
      */
-    public Session(int y, int s, String sDate, String eDate, int currentDa){
+    public Session(int y, int s, String sDate, String eDate, int currentDa, int openedLast){
 
         year = y;
         session = s;
         startDate = sDate;
         endDate = eDate;
         currentDay = currentDa;
+        this.openedLast = openedLast;
 
     }
 
@@ -40,6 +42,7 @@ public class Session {
         this.startDate = tmp.startDate;
         this.endDate = tmp.endDate;
         this.currentDay = tmp.currentDay;
+        this.openedLast = tmp.openedLast;
 
     }
 
@@ -57,6 +60,7 @@ public class Session {
         return endDate;
     }
     public int getCurrentDay() { return currentDay; }
+    public int getOpenedLast() { return openedLast; }
 
     //Setters
     public void setYear(int year) {
@@ -72,5 +76,6 @@ public class Session {
         this.endDate = endDate;
     }
     public void setCurrentDay(int num) { currentDay = num; }
+    public void setOpenedLast(int openedLast) { this.openedLast = openedLast; }
 
 }

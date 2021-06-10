@@ -39,6 +39,7 @@ public class DBManager {
                 + "startDate TEXT,\n"
                 + "endDate TEXT,\n"
                 + "currentDay INTEGER,\n"
+                + "openedLast INTEGER,\n"
                 + "PRIMARY KEY (year, session)"
                 + ");";
 
@@ -329,7 +330,7 @@ public class DBManager {
                     System.exit(1);
             }
             Class.forName("org.sqlite.JDBC");
-            return DriverManager.getConnection("jdbc:sqlite:Save_Files/app.db"); //src/main/database/
+            return DriverManager.getConnection("jdbc:sqlite:Save_Files/app.db");
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -868,7 +869,7 @@ public class DBManager {
             while(rs.next())
                 results.add(new Session(rs.getInt("year"), rs.getInt("session"),
                                         rs.getString("startDate"), rs.getString("endDate"),
-                                        rs.getInt("currentDay")));
+                                        rs.getInt("currentDay"), rs.getInt("openedLast")));
 
             return results;
 
@@ -898,22 +899,12 @@ public class DBManager {
             while(rs.next())
                 results.add(new Session(rs.getInt("year"), rs.getInt("session"),
                                         rs.getString("startDate"), rs.getString("endDate"),
-                                        rs.getInt("currentDay")));
+                                        rs.getInt("currentDay"), rs.getInt("openedLast")));
 
-            //Find newest session
-            Session maxSession = new Session(0, 0, "", "", 0);
-            for(int i = 0; i < results.size(); i++){
-
-                if(results.elementAt(i).getYear() >= maxSession.getYear()){
-                    if(results.elementAt(i).getSession() > maxSession.getSession())
-                        maxSession = results.elementAt(i);
-                }
-                if(results.elementAt(i).getYear() > maxSession.getYear())
-                    maxSession = results.elementAt(i);
-
-            }
-            if(maxSession.getYear() != 0 && maxSession.getSession() != 0)
-                return maxSession;
+            //Find last opened session
+            for(Session session : results)
+                if(session.getOpenedLast() == 1)
+                    return session;
 
         }catch (SQLException e){
             e.printStackTrace();
@@ -2119,7 +2110,7 @@ public class DBManager {
      */
     public static boolean addNewSession(int newYear, int newSession, String sDate, String eDate){
 
-        String sql = "INSERT INTO sessions(year, session, startDate, endDate, currentDay) VALUES(?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO sessions(year, session, startDate, endDate, currentDay, openedLast) VALUES(?, ?, ?, ?, ?, ?)";
 
         try{
             PreparedStatement stmt = connection.prepareStatement(sql);
@@ -2128,6 +2119,7 @@ public class DBManager {
             stmt.setString(3, sDate);
             stmt.setString(4, eDate);
             stmt.setInt(5, 1);
+            stmt.setInt(6, 0);
             stmt.executeUpdate();
             return true;
 
@@ -2159,6 +2151,28 @@ public class DBManager {
             return true;
 
         }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    public static boolean changeSessionOpenedLast(Session ses, int num){
+
+        String sql = "UPDATE sessions SET openedLast = ? WHERE year = ? AND session = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, num);
+            stmt.setInt(2, ses.getYear());
+            stmt.setInt(3, ses.getSession());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch (SQLException e){
             e.printStackTrace();
         }
 

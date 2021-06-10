@@ -35,6 +35,8 @@ public class Controller {
             currentSession.setSession(0);
             currentSession.setStartDate("x");
             currentSession.setEndDate("x");
+            currentSession.setCurrentDay(1);
+            currentSession.setOpenedLast(1);
 
         }else
             currentSession = tmp;
@@ -56,7 +58,7 @@ public class Controller {
      */
     public void updateCurrentSession(Session ses){
 
-        currentSession = ses;
+        setCurrentSession(ses);
         updateCurrentTrainees();
         updateCurrentComments();
         updateCurrentTests();
@@ -141,6 +143,12 @@ public class Controller {
     public Vector<Event> getCurrentEvents() {return currentEvents;}
 
     //Setters
-    public void setCurrentSession(Session ses){currentSession = ses;}
+    public void setCurrentSession(Session ses){
+
+        DBManager.changeSessionOpenedLast(currentSession, 0);
+        DBManager.changeSessionOpenedLast(ses, 1);
+        currentSession = ses;
+
+    }
 
 }
