@@ -1,5 +1,8 @@
 package org.openjfx.model;
 
+/**
+ * Represents a session object. Includes basic info about itself.
+ */
 public class Session {
 
     private int year;

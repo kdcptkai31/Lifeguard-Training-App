@@ -2,6 +2,10 @@ package org.openjfx.model;
 
 import org.openjfx.controller.DBManager;
 
+/**
+ * Represents an instructor comment. Holds information about the trainee, what happened, and what needs to happen in the
+ * future.
+ */
 public class Comment {
 
     private int traineeID; //Associated Trainee's ID
@@ -119,6 +123,10 @@ public class Comment {
 
     }
 
+    /**
+     * Defines what is output by printing a comment object.
+     * @return
+     */
     @Override
     public String toString(){
 

@@ -1,19 +1,23 @@
 package org.openjfx.controller;
 
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.Vector;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import org.openjfx.model.*;
 
-import java.util.Comparator;
-import java.util.Objects;
-import java.util.Vector;
-
+/**
+ * Controls the flow and update of data from the database to local memory.
+ * Maintains the DBManager throughout runtime
+ */
 public class Controller {
 
     private DBManager dbManager;
-    private Session currentSession;
 
+    private Session currentSession;
     private Vector<Trainee> currentTrainees;
     private Vector<Comment> currentComments;
     private Vector<Test> currentTests;
@@ -70,12 +74,7 @@ public class Controller {
      * Loads the current trainees from the db into memory.
      */
     public void updateCurrentTrainees(){
-        class SortByLastName implements Comparator<Trainee>{
-            @Override
-            public int compare(Trainee o1, Trainee o2) {
-                return o1.getLastName().compareTo(o2.getLastName());
-            }
-        }
+
         currentTrainees = DBManager.getAllTraineesFromSession(currentSession.getYear(), currentSession.getSession());
 
         Objects.requireNonNull(currentTrainees).removeIf(b -> !b.isActive());
@@ -143,12 +142,27 @@ public class Controller {
     public Vector<Event> getCurrentEvents() {return currentEvents;}
 
     //Setters
+
+    /**
+     * Finds the session last opened and sets the currentSession as that.
+     * @param ses
+     */
     public void setCurrentSession(Session ses){
 
         DBManager.changeSessionOpenedLast(currentSession, 0);
         DBManager.changeSessionOpenedLast(ses, 1);
         currentSession = ses;
 
+    }
+
+    /**
+     * Used to compare for sorting, sorts by last name first.
+     */
+    class SortByLastName implements Comparator<Trainee>{
+        @Override
+        public int compare(Trainee o1, Trainee o2) {
+            return o1.getLastName().compareTo(o2.getLastName());
+        }
     }
 
 }

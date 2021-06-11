@@ -1,8 +1,12 @@
 package org.openjfx.view;
 
+import java.io.File;
+import java.io.IOException;
+import static java.lang.Character.isDigit;
+import java.util.Vector;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -14,14 +18,9 @@ import org.openjfx.controller.DBManager;
 import org.openjfx.controller.LifeguardTrainingApplication;
 import org.openjfx.model.*;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.util.Vector;
-
-import static java.lang.Character.isDigit;
-
+/**
+ * Handles mapping the Reports fxml UI file to methods. Will only be used if there is no database to be found.
+ */
 public class SetUpView {
 
     private Controller controller;
@@ -101,9 +100,9 @@ public class SetUpView {
     private ObservableList<String> eventViewList;
     private Vector<String> pendingEventData;
 
-
-
-    //Constructor
+    /**
+     * Initializes all UI objects upon loading.
+     */
     @FXML
     protected void initialize(){
 

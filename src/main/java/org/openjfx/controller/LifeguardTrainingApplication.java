@@ -3,6 +3,10 @@ package org.openjfx.controller;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
+/**
+ * Launches the JavaFX application.
+ * Creates the window, initializes the SceneCoordinator.
+ */
 public class LifeguardTrainingApplication extends Application {
 
     private static SceneCoordinator coordinator;

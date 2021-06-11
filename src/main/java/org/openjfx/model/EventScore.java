@@ -1,5 +1,8 @@
 package org.openjfx.model;
 
+/**
+ * Represents a score of an event. Holds the associated event, trainee, and their placement.
+ */
 public class EventScore {
 
     private int eventID;

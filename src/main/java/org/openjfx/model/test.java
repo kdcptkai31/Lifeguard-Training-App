@@ -1,5 +1,8 @@
 package org.openjfx.model;
 
+/**
+ * Represents a test object. Includes its name, possible points, and if it is scored already.
+ */
 public class Test {
 
     private int testID;
@@ -60,6 +63,10 @@ public class Test {
 
     }
 
+    /**
+     * Prints the name of the test if the test object is output.
+     * @return
+     */
     @Override
     public String toString(){
 

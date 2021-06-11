@@ -1,0 +1,5 @@
+javafx.embed.swing
+org.openjfx
+org.openjfx.controller
+org.openjfx.model
+org.openjfx.view

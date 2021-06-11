@@ -29,7 +29,7 @@ import org.openjfx.model.Event;
 import org.openjfx.view.OverviewView;
 
 /**
- * This class creates Word documents or Excel documents, which are needed for operational or report purposes.
+ * Creates Word documents or Excel documents, which are needed for operational or report purposes.
  */
 public class DocumentGenerator {
 
@@ -380,10 +380,10 @@ public class DocumentGenerator {
         //END correct placement calculation/////////////////////////////////////////////////////////////////////////////////
 
         //Process Course Completed Percentage for each trainee
-        int eventCount = DBManager.getAllTestsFromSession(controller.getCurrentSession().getYear(),
-                                                          controller.getCurrentSession().getSession()).size();
-        int testCount = DBManager.getAllEventsFromSession(controller.getCurrentSession().getYear(),
-                                                          controller.getCurrentSession().getSession()).size();
+        int eventCount = Objects.requireNonNull(DBManager.getAllTestsFromSession(controller.getCurrentSession().getYear(),
+                controller.getCurrentSession().getSession())).size();
+        int testCount = Objects.requireNonNull(DBManager.getAllEventsFromSession(controller.getCurrentSession().getYear(),
+                controller.getCurrentSession().getSession())).size();
         if(eventCount > 0 && testCount > 0){
 
             int counter1 = 0;
@@ -481,9 +481,14 @@ public class DocumentGenerator {
 
     }
 
+
     /**
      * Generates a individual summary of the selected trainee, with scores, comments, and overall performance.
-     * @param
+     * @param trainee
+     * @param physicalEventPoints
+     * @param classRank
+     * @param percentComplete
+     * @param finalEvalPoints
      */
     private void generateIndividualSummary(Trainee trainee, double physicalEventPoints, int classRank,
                                           double percentComplete, int finalEvalPoints){
@@ -1186,6 +1191,7 @@ public class DocumentGenerator {
 
     }
 
+
     /**
      * Generates a district summary for the given district. If the given district is null, generate all summaries.
      * Trainee Listings are in order of rank.
@@ -1193,6 +1199,7 @@ public class DocumentGenerator {
      * @param physPointValues
      * @param percentCompletes
      * @param classRanks
+     * @param finalEvalPoints
      */
     private void generateDistrictSummaries(Vector<Trainee> trainees, Vector<Integer> physPointValues,
                                            Vector<Double> percentCompletes, Vector<Integer> classRanks,
@@ -2787,7 +2794,7 @@ public class DocumentGenerator {
     }
 
     /**
-     * Generates the Certificates for all trainees in the session.
+     * Generates the Certificates for all trainees in the session. Uses a template certificate file to insert the names.
      */
     public void generateCertificates() {
 

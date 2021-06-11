@@ -1,11 +1,16 @@
 package org.openjfx.controller;
 
+import java.io.IOException;
+import java.util.Objects;
+
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-
+/**
+ * Controls which fxml scenes are currently set in the window.
+ * Initializes the Controller.
+ */
 public class SceneCoordinator {
 
     private Stage window;
@@ -25,17 +30,17 @@ public class SceneCoordinator {
     public void showSetUpScene() throws IOException {
 
         this.window.setScene(new Scene(FXMLLoader.load(
-                                getClass().getClassLoader().getResource("org/openjfx/layout/setup.fxml"))));
+                Objects.requireNonNull(getClass().getClassLoader().getResource("org/openjfx/layout/setup.fxml")))));
     }
 
     /**
      * Fetches the overview scene.
-     * @throws Exception
+     * @throws IOException
      */
     public void showOverviewScene() throws IOException {
 
         this.window.setScene(new Scene(FXMLLoader.load(
-                                getClass().getClassLoader().getResource("org/openjfx/layout/overview.fxml"))));
+                Objects.requireNonNull(getClass().getClassLoader().getResource("org/openjfx/layout/overview.fxml")))));
 
     }
 
@@ -46,7 +51,7 @@ public class SceneCoordinator {
     public void showEditImportScene() throws IOException {
 
         this.window.setScene(new Scene(FXMLLoader.load(
-                                getClass().getClassLoader().getResource("org/openjfx/layout/editImport.fxml"))));
+                Objects.requireNonNull(getClass().getClassLoader().getResource("org/openjfx/layout/editImport.fxml")))));
 
     }
 
@@ -57,7 +62,7 @@ public class SceneCoordinator {
     public void showReportsScene() throws IOException {
 
         this.window.setScene(new Scene(FXMLLoader.load(
-                getClass().getClassLoader().getResource("org/openjfx/layout/reports.fxml"))));
+                Objects.requireNonNull(getClass().getClassLoader().getResource("org/openjfx/layout/reports.fxml")))));
 
     }
 
@@ -74,6 +79,10 @@ public class SceneCoordinator {
      */
     public Controller getController(){return controller;}
 
+    /**
+     *
+     * @return the stage.
+     */
     public Stage getStage(){return window;}
 
 }

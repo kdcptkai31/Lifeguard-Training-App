@@ -1,5 +1,9 @@
 package org.openjfx.view;
 
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -17,17 +21,16 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 
+import static org.apache.commons.lang3.math.NumberUtils.isCreatable;
+
 import org.openjfx.controller.Controller;
 import org.openjfx.controller.DBManager;
 import org.openjfx.controller.LifeguardTrainingApplication;
 import org.openjfx.model.*;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static org.apache.commons.lang3.math.NumberUtils.isCreatable;
-
+/**
+ * Handles mapping the Overview fxml UI file to methods.
+ */
 public class OverviewView {
 
     private Controller controller;
@@ -78,6 +81,9 @@ public class OverviewView {
     @FXML
     private Label addHoursErrorLabel;
 
+    /**
+     * Constructor that initializes the current session data.
+     */
     @FXML
     protected void initialize(){
 
@@ -372,8 +378,8 @@ public class OverviewView {
      * @param errorLabel
      * @param dialogWindow
      */
-    public void forwardButtonClicked(Label commentLabel, TextArea evalComment, TextField pointValueTextField,
-                                     Button forwardButton, Label errorLabel, Stage dialogWindow){
+    private void forwardButtonClicked(Label commentLabel, TextArea evalComment, TextField pointValueTextField,
+                                      Button forwardButton, Label errorLabel, Stage dialogWindow){
 
         //Save Evaluations
         if(evalIndex + 1 == controller.getCurrentTrainees().size()){
@@ -464,11 +470,17 @@ public class OverviewView {
 
     }
 
+
     /**
      * Used in final evaluations to move to the previous trainee's eval.
+     * @param commentLabel
+     * @param evalComment
+     * @param pointValueTextField
+     * @param forwardButton
+     * @param errorLabel
      */
-    public void backButtonClicked(Label commentLabel, TextArea evalComment, TextField pointValueTextField,
-                                  Button forwardButton, Label errorLabel){
+    private void backButtonClicked(Label commentLabel, TextArea evalComment, TextField pointValueTextField,
+                                   Button forwardButton, Label errorLabel){
 
         if(evalIndex < 1)
             return;
@@ -892,27 +904,6 @@ public class OverviewView {
         }
 
         return false;
-    }
-
-    static final class CenteredTestListViewCell extends ListCell<Test> { { setAlignment(Pos.BASELINE_CENTER); }
-
-        @Override protected void updateItem(Test item, boolean empty) {
-            super.updateItem(item, empty);
-            if(item != null)
-                setText(item.getName());
-            else
-                setText(null);
-        }
-    }
-    static final class CenteredEventListViewCell extends ListCell<Event> { { setAlignment(Pos.BASELINE_CENTER); }
-
-        @Override protected void updateItem(Event item, boolean empty) {
-            super.updateItem(item, empty);
-            if(item != null)
-                setText(item.getName());
-            else
-                setText(null);
-        }
     }
 
 }

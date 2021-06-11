@@ -4,7 +4,7 @@ import javafx.application.Application;
 import org.openjfx.controller.LifeguardTrainingApplication;
 
 /**
- * Launches the application.
+ * Launches the javafx application.
  */
 public class Main {
 

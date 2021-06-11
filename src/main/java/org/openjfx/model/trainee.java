@@ -1,11 +1,16 @@
 package org.openjfx.model;
 
+import java.net.URISyntaxException;
+import java.util.Objects;
+
 import javafx.scene.image.Image;
 
-import java.net.URISyntaxException;
-
 /**
- * Represents a Trainee, should include all personal information, as well as any comments on performance,
+ * Represents a Trainee, should include all personal information.
+ * There are 3 major types of trainee object:
+ * Initial Trainee: basic info collected from the first form.
+ * Q1 Trainee: Includes initial trainee data, also Questionnaire 1 data.
+ * Q2 Trainee: Includes initial trainee data, also Questionnaire 2 data.
  */
 public class Trainee{
 
@@ -257,6 +262,10 @@ public class Trainee{
 
     }
 
+    /**
+     * Prints the full name, if applicable.
+     * @return
+     */
     @Override
     public String toString(){
 
@@ -494,18 +503,22 @@ public class Trainee{
         return isDisabled;
     }
 
+    /**
+     * Returns the default image if the store pfp is null.
+     * @return
+     */
     public Image getActualImage(){
 
         if(image == null){
 
-        try {
+            try {
 
-            return new Image(getClass().getClassLoader().getResource("org/openjfx/images/blankpfp.png").toURI().toString(),
+                return new Image(Objects.requireNonNull(getClass().getClassLoader().getResource("org/openjfx/images/blankpfp.png")).toURI().toString(),
                             0, 187, true, true);
 
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
 
         }else
             return image;

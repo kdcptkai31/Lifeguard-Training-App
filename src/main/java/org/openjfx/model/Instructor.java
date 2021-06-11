@@ -1,13 +1,12 @@
 package org.openjfx.model;
 
-import javafx.embed.swing.SwingFXUtils;
+import java.util.Objects;
+
 import javafx.scene.image.Image;
 
-import javax.imageio.ImageIO;
-
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-
+/**
+ * Represents an instructor. Includeds their basic info.
+ */
 public class Instructor {
 
     private int year;
@@ -63,7 +62,7 @@ public class Instructor {
 
             try {
 
-                return new Image(getClass().getClassLoader().getResource("org/openjfx/images/blankpfp.png").toURI().toString(),
+                return new Image(Objects.requireNonNull(getClass().getClassLoader().getResource("org/openjfx/images/blankpfp.png")).toURI().toString(),
                         0, 187, true, true);
 
             } catch (Exception e) {

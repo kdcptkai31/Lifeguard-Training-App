@@ -1,5 +1,8 @@
 package org.openjfx.model;
 
+/**
+ * Represents a District object. Holds its information.
+ */
 public class District {
 
     private int year;

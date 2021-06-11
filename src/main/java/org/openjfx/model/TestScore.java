@@ -1,5 +1,8 @@
 package org.openjfx.model;
 
+/**
+ * Represents a test's score. Holds the corresponding trainee, test, and score.
+ */
 public class TestScore {
 
     private int testID;

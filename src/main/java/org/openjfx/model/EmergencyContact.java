@@ -1,5 +1,8 @@
 package org.openjfx.model;
 
+/**
+ * Represents an Emergency Contact object. Full information about the associated Trainee's contact.
+ */
 public class EmergencyContact{
 
     //Information

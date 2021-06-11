@@ -1,12 +1,5 @@
 package org.openjfx.controller;
 
-import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.image.Image;
-
-import org.openjfx.model.*;
-import org.openjfx.model.Event;
-
-import javax.imageio.ImageIO;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.sql.*;
@@ -14,6 +7,20 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.Vector;
 
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.image.Image;
+
+import javax.imageio.ImageIO;
+
+import org.openjfx.model.*;
+import org.openjfx.model.Event;
+
+/**
+ * Maintains the database connection throughout runtime.
+ * Connection is established at initialization.
+ * All query methods are static for use anywhere.
+ * Singleton Class.
+ */
 public class DBManager {
 
     private static Connection connection = getConnection();
@@ -29,6 +36,7 @@ public class DBManager {
 
     /**
      * Creates needed tables in the database if they do not exist already.
+     * If the app.db file is missing or removed, it will be recreated, along with default entries.
      */
     private static void checkIfDatabaseExists(){
 
@@ -68,6 +76,7 @@ public class DBManager {
             e.printStackTrace();
         }
 
+        //Creates a new Sector table
         String sqlSectors = "CREATE TABLE IF NOT EXISTS sectors (\n"
                 + "sectorID INTEGER,\n"
                 + "year INTEGER,\n"
@@ -281,7 +290,7 @@ public class DBManager {
             e.printStackTrace();
         }
 
-        //Adds
+        //Creates default values
         String sqlFindDefaultTrainee = "SELECT * FROM trainees WHERE tid = 1";
         try{
 
@@ -324,6 +333,7 @@ public class DBManager {
 
         try{
 
+            //Creates the directory if not existing
             File file = new File(System.getProperty("user.dir") + "\\Save_Files\\");
             if(!file.exists()){
                 if(!file.mkdir())
@@ -502,7 +512,7 @@ public class DBManager {
                 throw new Exception("Bad name");
             else if(names.size() == 1)
                 sql.append("AND lastName = ?");
-            else if(names.size() >= 2)
+            else
                 sql.append("AND lastName = ? AND firstName = ?");
 
             PreparedStatement stmt = connection.prepareStatement(sql.toString());
@@ -514,7 +524,6 @@ public class DBManager {
             ResultSet rs = stmt.executeQuery();
             if(rs.next())
                 return rs.getInt("tid");
-
 
         }catch (Exception e){
             e.printStackTrace();
@@ -667,7 +676,6 @@ public class DBManager {
             ResultSet rs = stmt.executeQuery();
             return getTestsHelper(rs);
 
-
         }catch (SQLException e){
             e.printStackTrace();
         }
@@ -697,7 +705,6 @@ public class DBManager {
 
             return getTestScoresHelper(rs);
 
-
         }catch(SQLException e){
             e.printStackTrace();
         }
@@ -722,7 +729,6 @@ public class DBManager {
             ResultSet rs = stmt.executeQuery();
 
             return getTestScoresHelper(rs);
-
 
         }catch(SQLException e){
             e.printStackTrace();
@@ -785,7 +791,6 @@ public class DBManager {
             ResultSet rs = stmt.executeQuery();
             return getEventsHelper(rs);
 
-
         }catch (SQLException e){
             e.printStackTrace();
         }
@@ -814,7 +819,6 @@ public class DBManager {
             ResultSet rs = stmt.executeQuery();
 
             return getEventScoreHelper(rs);
-
 
         }catch(SQLException e){
             e.printStackTrace();
@@ -1010,7 +1014,6 @@ public class DBManager {
 
             return results;
 
-
         }catch (SQLException e){
             e.printStackTrace();
         }
@@ -1121,6 +1124,7 @@ public class DBManager {
     /*
     ****************************** HELPERS ***************************************
      */
+
 
     /**
      * Helper function to reduce repetition of code for turning the result set of trainees into a vector.
@@ -1397,11 +1401,10 @@ public class DBManager {
                                              tToAdd.getYear(), tToAdd.getSession());
             if(tToAdd.getEmergencyContact() != null){
 
-                tToAdd.getEmergencyContact().setTraineeID(tmp.getId());
+                tToAdd.getEmergencyContact().setTraineeID(Objects.requireNonNull(tmp).getId());
                 addEmergencyContact(tToAdd.getEmergencyContact());
 
             }
-
 
             return true;
 
@@ -1453,6 +1456,11 @@ public class DBManager {
 
     }
 
+    /**
+     * Updates the given trainee with their new attendance hour value.
+     * @param tToAdd
+     * @return
+     */
     public static boolean updateTraineeHours(Trainee tToAdd){
 
         String sql = "UPDATE trainees SET hoursAttended = ? WHERE tid = ?";
@@ -1465,7 +1473,6 @@ public class DBManager {
             stmt.executeUpdate();
 
             return true;
-
 
         }catch(SQLException e){
             e.printStackTrace();
@@ -2374,7 +2381,6 @@ public class DBManager {
             stmt.setInt(5, iToAdd.getYear());
             stmt.setInt(6, iToAdd.getSession());
             stmt.setString(7, oldName);
-
             stmt.executeUpdate();
 
             return true;

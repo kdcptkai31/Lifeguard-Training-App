@@ -1,9 +1,6 @@
 package org.openjfx.view;
 
-import java.awt.*;
-import java.io.File;
 import java.io.IOException;
-
 import java.util.Comparator;
 import java.util.Vector;
 import java.util.concurrent.Executors;
@@ -31,6 +28,9 @@ import org.openjfx.controller.DocumentGenerator;
 import org.openjfx.controller.LifeguardTrainingApplication;
 import org.openjfx.model.Session;
 
+/**
+ * Handles mapping the Reports fxml UI file to methods.
+ */
 public class ReportsView {
 
     private Controller controller;
@@ -81,7 +81,9 @@ public class ReportsView {
     @FXML
     private Button attendanceButton;
 
-
+    /**
+     * Initializes the page with all current data, and creates the document generator.
+     */
     @FXML
     protected void initialize(){
 
@@ -104,6 +106,9 @@ public class ReportsView {
 
     }
 
+    /**
+     * Calls the generate trainee profiles method, and handles loading UI.
+     */
     public void onProfilesClicked(){
 
         disableButtons();
@@ -130,6 +135,9 @@ public class ReportsView {
 
     }
 
+    /**
+     * Calls the generate Avery list method, and handles loading UI.
+     */
     public void onAveryListClicked(){
 
         disableButtons();
@@ -154,6 +162,9 @@ public class ReportsView {
 
     }
 
+    /**
+     * Calls the generate uniform info method, and handles loading UI.
+     */
     public void onUniformClicked(){
 
         disableButtons();
@@ -178,6 +189,9 @@ public class ReportsView {
 
     }
 
+    /**
+     * Calls the generate current rankings method, and handles loading UI.
+     */
     public void onCurrentRankingsClicked(){
 
         disableButtons();
@@ -202,6 +216,9 @@ public class ReportsView {
 
     }
 
+    /**
+     * Calls the generate roster method, and handles loading UI.
+     */
     public void onRosterClicked(){
 
         disableButtons();
@@ -226,6 +243,9 @@ public class ReportsView {
 
     }
 
+    /**
+     * Calls the generate emergency contact roster method, and handles loading UI.
+     */
     public void onEmergencyContactRosterClicked(){
 
         disableButtons();
@@ -250,6 +270,9 @@ public class ReportsView {
 
     }
 
+    /**
+     * Calls the generate certificates method, and handles loading UI.
+     */
     public void onCertificatesClicked(){
 
         disableButtons();
@@ -274,6 +297,9 @@ public class ReportsView {
 
     }
 
+    /**
+     * Calls the generate individual summary method, and handles loading UI.
+     */
     public void onIndividualSumClicked(){
 
         disableButtons();
@@ -299,6 +325,9 @@ public class ReportsView {
 
     }
 
+    /**
+     * Calls the generate district summary method, and handles loading UI.
+     */
     public void onDistrictSumClicked(){
 
         disableButtons();
@@ -324,6 +353,9 @@ public class ReportsView {
 
     }
 
+    /**
+     * Calls the generate test analysis method, and handles loading UI.
+     */
     public void onTestAnalysisClicked(){
 
         disableButtons();
@@ -349,6 +381,9 @@ public class ReportsView {
 
     }
 
+    /**
+     * Calls the generate attendance method, and handles loading UI.
+     */
     public void onAttendanceClicked(){
 
         disableButtons();
@@ -374,6 +409,9 @@ public class ReportsView {
 
     }
 
+    /**
+     * Calls the generate trainee profiles method, and handles loading UI.
+     */
     public void onEmailListClicked(){
 
         disableButtons();
@@ -399,6 +437,9 @@ public class ReportsView {
 
     }
 
+    /**
+     * Calls the generate lodging list method, and handles loading UI.
+     */
     public void onLodgingListClicked(){
 
         disableButtons();

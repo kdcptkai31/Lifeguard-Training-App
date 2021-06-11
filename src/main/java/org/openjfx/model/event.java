@@ -1,5 +1,8 @@
 package org.openjfx.model;
 
+/**
+ * Represents an event object. Including its name, notes, and if it is scored.
+ */
 public class Event {
 
     private int eventID;
@@ -10,7 +13,6 @@ public class Event {
     private int session;
 
     //Constructors
-
     /**
      * Default Constructor
      */
@@ -50,6 +52,10 @@ public class Event {
 
     }
 
+    /**
+     * Defines what is output by printing a event object.
+     * @return
+     */
     @Override
     public String toString(){
 

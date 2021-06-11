@@ -1,5 +1,8 @@
 package org.openjfx.model;
 
+/**
+ * Represents a sector object. Mainly holds the name of itself.
+ */
 public class Sector {
 
     private int sectorID;
@@ -40,6 +43,10 @@ public class Sector {
 
     }
 
+    /**
+     * Prints the name of the session if the object is output.
+     * @return
+     */
     @Override
     public String toString(){
 

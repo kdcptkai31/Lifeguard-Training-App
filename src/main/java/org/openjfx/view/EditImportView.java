@@ -1,6 +1,7 @@
 package org.openjfx.view;
 
 import java.io.*;
+import static java.lang.Character.isDigit;
 import java.net.URISyntaxException;
 import java.util.*;
 
@@ -36,8 +37,9 @@ import org.openjfx.controller.DBManager;
 import org.openjfx.controller.LifeguardTrainingApplication;
 import org.openjfx.model.*;
 
-import static java.lang.Character.isDigit;
-
+/**
+ * Handles mapping the Edit Import fxml UI file to methods.
+ */
 public class EditImportView {
 
     private Controller controller;
@@ -235,7 +237,9 @@ public class EditImportView {
     @FXML
     private Button addSectorButton;
 
-
+    /**
+     * Constructor which runs each time this fxml page is loaded. Fills the fields with current session data.
+     */
     @FXML
     protected void initialize() {
 
@@ -754,7 +758,7 @@ public class EditImportView {
     /**
      * Refreshes the page's data with the most current data from controller.
      */
-    public void allOtherTabRefresh(){
+    private void allOtherTabRefresh(){
 
         editDistrictVector = DBManager.getAllDistrictsFromSession(controller.getCurrentSession().getYear(),
                                                                     controller.getCurrentSession().getSession());
@@ -1075,7 +1079,7 @@ public class EditImportView {
     /**
      * Refreshes the page's data with the most current data from Controller
      */
-    public void eventInstructorTestTabRefresh(){
+    private void eventInstructorTestTabRefresh(){
 
         instructorPFPImageView.setImage(defaultImage);
         newInstructorCheckBox.setSelected(true);
@@ -1354,7 +1358,7 @@ public class EditImportView {
 
                 Vector<TestScore> testScoresToChange = DBManager.getAllTestScoresFromTestID(tmp.getTestID());
                 double ratio = editTestVector.get(selectedIndex).getPoints() * 1.0 / tmp.getPoints();
-                for(TestScore score : testScoresToChange){
+                for(TestScore score : Objects.requireNonNull(testScoresToChange)){
 
                     score.setScore((int)Math.ceil(score.getScore() / ratio));
                     DBManager.updateTestScore(score);
@@ -1409,11 +1413,11 @@ public class EditImportView {
         holdsEditQuestionnaireData = new Trainee();
         try {
             traineePFPImageView.setPreserveRatio(true);
-            traineePFPImageView.setImage(new Image(getClass().getClassLoader().getResource("org/openjfx/images/blankpfp.png").toURI().toString(),
+            traineePFPImageView.setImage(new Image(Objects.requireNonNull(getClass().getClassLoader().getResource("org/openjfx/images/blankpfp.png")).toURI().toString(),
                     0, 250, true, true));
         } catch (URISyntaxException e) {
             e.printStackTrace();
-        };
+        }
         yearLabel.setText(String.valueOf(controller.getCurrentSession().getYear()));
         sessionLabel.setText("Session " + controller.getCurrentSession().getSession());
         datesLabel.setText(controller.getCurrentSession().getStartDate() + " - " + controller.getCurrentSession().getEndDate());
@@ -1514,7 +1518,6 @@ public class EditImportView {
         ObservableList<Trainee> inactiveTraineesOL = FXCollections.observableArrayList();
         inactiveTraineesOL.setAll(inactiveTrainees);
         inactiveTraineesListView.setItems(inactiveTraineesOL);
-
 
         Label tableViewInstructions = new Label("Catch up the missed test scores!");
         tableViewInstructions.setFont(new Font("System", 14));
@@ -2230,7 +2233,7 @@ public class EditImportView {
             }
         }
 
-        DBManager.updateEventScore(new EventScore(tmp.getEventID(), traineeEventScores.elementAt(0).getTraineeID(),
+        DBManager.updateEventScore(new EventScore(Objects.requireNonNull(tmp).getEventID(), traineeEventScores.elementAt(0).getTraineeID(),
                 Integer.parseInt(eventPlaceTextField.getText())));
         int index = traineeListView.getSelectionModel().getSelectedIndex();
         traineeTabRefresh();
@@ -2272,7 +2275,7 @@ public class EditImportView {
             }
         }
 
-        DBManager.updateTestScore(new TestScore(tmp.getTestID(), traineeTestScores.elementAt(0).getTraineeID(),
+        DBManager.updateTestScore(new TestScore(Objects.requireNonNull(tmp).getTestID(), traineeTestScores.elementAt(0).getTraineeID(),
                 Integer.parseInt(testScoreTextField.getText())));
         int index = traineeListView.getSelectionModel().getSelectedIndex();
         traineeTabRefresh();
@@ -2485,7 +2488,6 @@ public class EditImportView {
                 isOpenWaterLGCheckBox, h8, isPoolLGCheckBox, h9, isEMTCheckBox, h10, isOtherMedicalCheckBox, h11,
                 isFirstJobCheckBox, h12, h13);
 
-
         //Initialize Q2 contents
         VBox q2VBox = new VBox();
         q2VBox.setSpacing(5);
@@ -2609,7 +2611,6 @@ public class EditImportView {
 
         //Checks and then saves data
         boolean finalIsUpdate = isUpdate;
-        Trainee finalTmp = tmp;
         saveButton.setOnAction(e ->{
 
             //Validate Q1 Fields
@@ -2979,7 +2980,6 @@ public class EditImportView {
      */
     public void onAddTraineeClicked(){
 
-
         boolean isUpdate = false;
         Trainee tmp = null;
         if(addTraineeButton.getText().equals("Update Trainee")){
@@ -3088,13 +3088,11 @@ public class EditImportView {
             DBManager.addExistingTraineeQuestionnaire1Data(holdsEditQuestionnaireData);
         }
 
-
         //Updates Q2 Data if needed
         if(holdsEditQuestionnaireData.isQuestionnaire2Complete()){
             System.out.println("ADD Q2");
             DBManager.addExistingTraineeQuestionnaire2Data(holdsEditQuestionnaireData);
         }
-
 
         //Updates PFP if needed
         if(!traineePFPImageView.getImage().equals(defaultImage)) {
@@ -3111,7 +3109,7 @@ public class EditImportView {
     }
 
     /**
-     * Save the comment .csv data to the db if valid.
+     * Save the comment .csv data to the db if valid. Finds the matching trainee to link it to.
      */
     private void onAddCommentsClicked(){
 
@@ -3186,7 +3184,7 @@ public class EditImportView {
 
             e.printStackTrace();
             Alert error = new Alert(Alert.AlertType.ERROR, "There was a problem loading " +
-                    selectedFile.getName() + " into the Comment database.\nDouble check you selected the right file.",
+                    selectedFile.getName() + " into the Comment database.\nDouble check you selected the right file OR that the data in the file fits the correct data type.",
                     ButtonType.CLOSE);
             error.showAndWait();
             importComboBox.getSelectionModel().selectFirst();
@@ -3486,7 +3484,7 @@ public class EditImportView {
 
             e.printStackTrace();
             Alert error = new Alert(Alert.AlertType.ERROR, "There was a problem loading " +
-                    selectedFile.getName() + " into the Trainee database.\nDouble check you selected the right file.",
+                    selectedFile.getName() + " into the Trainee database.\nDouble check you selected the right file OR that the data in the file fits the correct data type.",
                     ButtonType.CLOSE);
             error.showAndWait();
             importComboBox.getSelectionModel().selectFirst();
@@ -3606,7 +3604,7 @@ public class EditImportView {
         } catch (Exception e) {
             e.printStackTrace();
             Alert error = new Alert(Alert.AlertType.ERROR, "There was a problem loading " +
-                    selectedFile.getName() + " into the Trainee database.\nDouble check you selected the right file.",
+                    selectedFile.getName() + " into the Trainee database.\nDouble check you selected the right file OR that the data in the file fits the correct data type.",
                     ButtonType.CLOSE);
             error.showAndWait();
             importComboBox.getSelectionModel().selectFirst();
@@ -3721,7 +3719,7 @@ public class EditImportView {
         } catch (Exception e) {
             e.printStackTrace();
             Alert error = new Alert(Alert.AlertType.ERROR, "There was a problem loading " +
-                    selectedFile.getName() + " into the Trainee database.\nDouble check you selected the right file.",
+                    selectedFile.getName() + " into the Trainee database.\nDouble check you selected the right file OR that the data in the file fits the correct data type.",
                     ButtonType.CLOSE);
             error.showAndWait();
             importComboBox.getSelectionModel().selectFirst();
@@ -3738,7 +3736,6 @@ public class EditImportView {
         int selectedIndex = traineeListView.getSelectionModel().getSelectedIndex();
         if(selectedIndex == -1)
             return;
-
 
         //Initialize Dialog box contents
         final Stage dialog = new Stage();
@@ -4000,9 +3997,6 @@ public class EditImportView {
      */
     private String getStringResponse(String str){
 
-//        String responses[] = {"Almost every day", "A few times (2-4) per week",
-//                "About once every week", "Once every few weeks", "NA / Never"};
-
         switch (str){
             case "Almost every day": return "Every day";
             case "A few times (2-4) per week": return "2-4 /week";
@@ -4156,6 +4150,9 @@ public class EditImportView {
 
     }
 
+    /**
+     * Used to center the text in the table.
+     */
     static final class CenteredListViewCell extends ListCell<String> { { setAlignment(Pos.BASELINE_CENTER); }
 
         @Override protected void updateItem(String item, boolean empty) {
@@ -4164,6 +4161,9 @@ public class EditImportView {
         }
     }
 
+    /**
+     * Used to center the text in the table.
+     */
     static final class CenteredTraineeListViewCell extends ListCell<Trainee> { { setAlignment(Pos.BASELINE_CENTER); }
 
         @Override protected void updateItem(Trainee item, boolean empty) {
