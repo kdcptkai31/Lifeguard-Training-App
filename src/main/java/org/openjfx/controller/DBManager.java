@@ -1902,6 +1902,31 @@ public class DBManager {
 
     }
 
+    /**
+     * Unscores the given test.
+     * @param tToUpdate
+     * @return
+     */
+    public static boolean testUnscore(Test tToUpdate){
+
+        String sql = "UPDATE tests SET isScored = 0 WHERE testID = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, tToUpdate.getTestID());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
     /*
      ****************************** TEST SCORES ***************************************
      */
@@ -2045,6 +2070,30 @@ public class DBManager {
 
     }
 
+    /**
+     * Unscores the given event.
+     * @param eToUpdate
+     * @return
+     */
+    public static boolean eventUnscore(Event eToUpdate){
+
+        String sql = "UPDATE events SET isScored = 0 WHERE eventID = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, eToUpdate.getEventID());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
     /*
      ****************************** EVENT SCORES ***************************************
      */

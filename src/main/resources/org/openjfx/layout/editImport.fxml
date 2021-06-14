@@ -613,6 +613,11 @@
                                        </font>
                                     </Label>
                                     <ListView fx:id="editEventsListView" onMouseClicked="#onEditEventListViewClicked" prefHeight="200.0" prefWidth="200.0" />
+                                    <Label text="* is scored" textFill="#efb748">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font>
+                                    </Label>
                                     <CheckBox fx:id="newEventCheckBox" mnemonicParsing="false" selected="true" text="Make a New Event" textFill="#efb748">
                                        <font>
                                           <Font name="System Bold" size="14.0" />
@@ -650,6 +655,11 @@
                                                 <Font name="System Bold" size="12.0" />
                                              </font>
                                           </Button>
+                                          <Button mnemonicParsing="false" onMouseClicked="#onUnScoreEventClicked" text="Un-Score Event">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Button>
                                        </children>
                                     </HBox>
                                     <Label fx:id="editEventErrorLabel" text="*Error* Enter Valid Name" textFill="RED" visible="false">
@@ -670,6 +680,11 @@
                                        </font>
                                     </Label>
                                     <ListView fx:id="editTestsListView" onMouseClicked="#onEditTestListViewClicked" prefHeight="200.0" prefWidth="200.0" />
+                                    <Label text="* is scored" textFill="#efb748">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font>
+                                    </Label>
                                     <CheckBox fx:id="newTestCheckBox" mnemonicParsing="false" selected="true" text="Make a New Test" textFill="#efb748">
                                        <font>
                                           <Font name="System Bold" size="14.0" />
@@ -703,6 +718,11 @@
                                              </font>
                                           </Button>
                                           <Button mnemonicParsing="false" onMouseClicked="#onDeleteTestClicked" text="Delete Test">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Button>
+                                          <Button mnemonicParsing="false" onMouseClicked="#onUnScoreTestClicked" text="Un-Score Test">
                                              <font>
                                                 <Font name="System Bold" size="12.0" />
                                              </font>

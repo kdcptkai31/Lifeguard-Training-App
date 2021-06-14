@@ -1094,10 +1094,23 @@ public class EditImportView {
 
         ObservableList<String> instructorOL = FXCollections.observableArrayList();
 
-        for(Event event : editEventVector)
-            eventOL.add(event.getName());
-        for(Test test : editTestVector)
-            testOL.add(test.getName() + " | " + test.getPoints());
+        for(Event event : editEventVector){
+
+            if(event.isScored())
+                eventOL.add("* " + event.getName());
+            else
+                eventOL.add(event.getName());
+
+        }
+
+        for(Test test : editTestVector){
+
+            if(test.isScored())
+                testOL.add("* " + test.getName() + " | " + test.getPoints());
+            else
+                testOL.add(test.getName() + " | " + test.getPoints());
+        }
+
         for(Instructor instructor : Objects.requireNonNull(editInstructorVector))
             instructorOL.add(instructor.getName());
 
@@ -1136,6 +1149,54 @@ public class EditImportView {
         Event tmp = editEventVector.get(selectedIndex);
         editEventNameTextField.setPromptText(tmp.getName());
         editEventNotesTextField.setPromptText(tmp.getNotes());
+
+    }
+
+    /**
+     * Deletes all associated scores of the selected event, if selected.
+     */
+    public void onUnScoreEventClicked(){
+
+        int selectedIndex = editEventsListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1 || !editEventVector.get(selectedIndex).isScored())
+            return;
+
+        String str = "Are you sure you want to delete all placements associated with "
+                + editEventVector.get(selectedIndex).getName() + "?";
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, str, ButtonType.YES, ButtonType.CANCEL);
+        alert.showAndWait();
+
+        if(alert.getResult() == ButtonType.CANCEL)
+            return;
+
+        DBManager.deleteAllEventScoresOfAnEvent(editEventVector.get(selectedIndex).getEventID());
+        DBManager.eventUnscore(editEventVector.get(selectedIndex));
+        controller.updateCurrentEvents();
+        eventInstructorTestTabRefresh();
+
+    }
+
+    /**
+     * Deletes all associates scores of the selected test, if selected.
+     */
+    public void onUnScoreTestClicked(){
+
+        int selectedIndex = editTestsListView.getSelectionModel().getSelectedIndex();
+        if(selectedIndex == -1 || !editTestVector.get(selectedIndex).isScored())
+            return;
+
+        String str = "Are you sure you want to delete all scores associated with "
+                + editTestVector.get(selectedIndex).getName() + "?";
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, str, ButtonType.YES, ButtonType.CANCEL);
+        alert.showAndWait();
+
+        if(alert.getResult() == ButtonType.CANCEL)
+            return;
+
+        DBManager.deleteAllTestScoresOfATest(editTestVector.get(selectedIndex).getTestID());
+        DBManager.testUnscore(editTestVector.get(selectedIndex));
+        controller.updateCurrentTests();
+        eventInstructorTestTabRefresh();
 
     }
 
