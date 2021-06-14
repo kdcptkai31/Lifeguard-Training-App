@@ -1608,18 +1608,23 @@ public class EditImportView {
         maxScoreColumn.setCellValueFactory(new PropertyValueFactory<>("maxScore"));
         testTableView.getColumns().addAll(examColumn, scoreColumn, maxScoreColumn);
 
-        Label hoursLabel = new Label();
-        hoursLabel.setFont(new Font("System", 14));
-        hoursLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #efb748;");
-        hoursLabel.setAlignment(Pos.CENTER);
-        TextField hoursTextField = new TextField();
-        hoursTextField.setPromptText("New cumulative value");
-        hoursTextField.setAlignment(Pos.CENTER);
-        HBox hoursHBox = new HBox();
-        hoursHBox.setAlignment(Pos.CENTER);
-        hoursHBox.setSpacing(5);
-        hoursHBox.getChildren().addAll(hoursLabel, hoursTextField);
-        hoursHBox.setVisible(false);
+
+        TableView<AddHoursData> hoursTableView = new TableView<>();
+        hoursTableView.layout();
+        hoursTableView.setEditable(true);
+        hoursTableView.setMaxHeight(150);
+        TableColumn<AddHoursData, String> dayColumn = new TableColumn<>("Missing Day");
+        dayColumn.setEditable(false);
+        dayColumn.setSortable(false);
+        dayColumn.setCellValueFactory(new PropertyValueFactory<>("day"));
+        dayColumn.setMinWidth(130);
+        TableColumn<AddHoursData, String> hoursColumn = new TableColumn<>("Attendance Hours");
+        hoursColumn.setEditable(true);
+        hoursColumn.setSortable(false);
+        hoursColumn.setCellValueFactory(new PropertyValueFactory<>("enteredHours"));
+        hoursColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        hoursColumn.setMinWidth(130);
+        hoursTableView.getColumns().addAll(dayColumn, hoursColumn);
 
         //Populates the table with the selected trainee's relevant data
         inactiveTraineesListView.setOnMouseClicked(event -> {
@@ -1659,9 +1664,19 @@ public class EditImportView {
             testTableView.setItems(data);
             testTableView.setPlaceholder(new Label("No missing test scores"));
 
-            hoursLabel.setText("Current Hours: " + selectedTrainee.getHoursAttended());
-            hoursHBox.setVisible(true);
-
+            //Fill possibly needed attendance hours table view
+            Vector<AttendanceDay> traineeDays = DBManager.getAllAttendanceDaysFromTID(selectedTrainee.getId());
+            int maxDay = 0;
+            for(AttendanceDay day : Objects.requireNonNull(traineeDays)) {
+                if (day.getDay() > maxDay)
+                    maxDay = day.getDay();
+            }
+            int neededDays = controller.getCurrentSession().getCurrentDay() - 1 - maxDay;
+            hoursTableView.setPlaceholder(new Label("No missing attenedance days"));
+            ObservableList<AddHoursData> hoursData = FXCollections.observableArrayList();
+            for(int i = 0; i < neededDays; i++)
+                hoursData.add(new AddHoursData("Day " + ++maxDay, "10"));
+            hoursTableView.setItems(hoursData);
 
         });
 
@@ -1678,7 +1693,20 @@ public class EditImportView {
                     testTableView.getSelectionModel().select(focusedIndex + 1);
                 });
             }
+        });
 
+        //Save description as above, only for the hours table view
+        hoursColumn.setOnEditCommit((TableColumn.CellEditEvent<AddHoursData, String> t) -> {
+
+           t.getTableView().getItems().get(t.getTablePosition().getRow()).setEnteredHours(t.getNewValue());
+           int focusedIndex = hoursTableView.getSelectionModel().getSelectedIndex();
+           if(focusedIndex + 1 < t.getTableView().getItems().size()){
+
+               Platform.runLater(() -> {
+                   hoursTableView.edit(focusedIndex + 1, hoursColumn);
+                   hoursTableView.getSelectionModel().select(focusedIndex + 1);
+               });
+           }
         });
 
         Label missedEventsLabel = new Label("All missed events by this trainee\nwill be set to last place by" +
@@ -1715,20 +1743,20 @@ public class EditImportView {
                 }
 
             }
-            if(hoursTextField.getText().isEmpty() || !isInteger(hoursTextField.getText()) ||
-                    Integer.parseInt(hoursTextField.getText()) < selectedTrainee.getHoursAttended() ||
-                    Integer.parseInt(hoursTextField.getText()) > 100){
+            for(int i = 0; i < hoursTableView.getItems().size(); i++){
 
-                activateErrorLabel.setVisible(true);
-                return;
+                String tmp = hoursColumn.getCellObservableValue(i).getValue();
+                if(tmp.isEmpty() || !isDouble(tmp) || Double.parseDouble(tmp) < 0){
+                    activateErrorLabel.setVisible(true);
+                    return;
+                }
 
             }
 
+            //Save New Data
             Vector<Test> tests = new Vector<>(Objects.requireNonNull(
                             DBManager.getAllTestsFromSession(controller.getCurrentSession().getYear(),
                             controller.getCurrentSession().getSession())));
-
-            //Save New Data
             for(int i = 0; i < testTableView.getItems().size(); i++){
 
                 int testID = -1;
@@ -1743,9 +1771,15 @@ public class EditImportView {
 
             }
 
-            selectedTrainee.setHoursAttended(Integer.parseInt(hoursTextField.getText()));
-            selectedTrainee.setActive(true);
-            DBManager.updateTraineeHours(selectedTrainee);
+            for(int i = 0; i < hoursTableView.getItems().size(); i++){
+
+                String tmp = dayColumn.getCellObservableValue(i).getValue();
+                DBManager.addAttendanceDay(new AttendanceDay(selectedTrainee.getId(),
+                        Integer.parseInt(String.valueOf(tmp.charAt(tmp.length() - 1))),
+                        Double.parseDouble(hoursColumn.getCellObservableValue(i).getValue())));
+
+            }
+
             DBManager.setTraineeActive(selectedTrainee);
 
             dialog.close();
@@ -1756,7 +1790,7 @@ public class EditImportView {
 
         cancelButton.setOnMouseClicked(event -> dialog.close());
 
-        dialogVBox.getChildren().addAll(label, inactiveTraineesListView, tableViewInstructions, testTableView, hoursHBox,
+        dialogVBox.getChildren().addAll(label, inactiveTraineesListView, tableViewInstructions, testTableView, hoursTableView,
                                         missedEventsLabel, activateErrorLabel, buttonHBox);
 
         //Set dialog box style
@@ -1765,7 +1799,7 @@ public class EditImportView {
         dialogVBox.setAlignment(Pos.CENTER);
         dialogVBox.setSpacing(10);
         dialogVBox.setStyle("-fx-background-color: #3476f7;");
-        Scene dialogScene = new Scene(dialogVBox, 300, 700);
+        Scene dialogScene = new Scene(dialogVBox, 300, 900);
         dialog.setScene(dialogScene);
         dialog.showAndWait();
 
@@ -3298,7 +3332,7 @@ public class EditImportView {
                         new EmergencyContact(record.get(13), record.get(14), record.get(15),
                                 record.get(16), record.get(17), record.get(18),
                                 record.get(19)), -1,
-                        0, false, false, true, 2222, Integer.parseInt(record.get(2))));
+                        false, false, true, 2222, Integer.parseInt(record.get(2))));
 
             parser.close();
 
@@ -4190,6 +4224,28 @@ public class EditImportView {
     }
 
     /**
+     * Checks if the given string is a double.
+     * @param s
+     * @return true if successful, false if not.
+     */
+    private static boolean isDouble(String s){
+
+        if(s.equals(""))
+            return false;
+
+        s = s.trim();
+
+        try{
+            Double.parseDouble(s);
+        }catch (NumberFormatException e){
+            return false;
+        }
+
+        return true;
+
+    }
+
+    /**
      * Returns the given placement as a string with the correct suffix behind it.
      * @param place
      * @return true if successful, false if not.
@@ -4290,6 +4346,31 @@ public class EditImportView {
         public void setExamName(String s){examName.set(s);}
         public void setEnteredScore(String s){enteredScore.set(s);}
         public void setMaxScore(String s){maxScore.set(s);}
+
+    }
+
+    /**
+     * Used to hold the table view data for the reactivate trainees.
+     */
+    public class AddHoursData{
+
+        SimpleStringProperty day;
+        SimpleStringProperty enteredHours;
+
+        AddHoursData(String day, String enteredHours){
+
+            this.day = new SimpleStringProperty(day);
+            this.enteredHours = new SimpleStringProperty(enteredHours);
+
+        }
+
+        //Getters
+        public String getDay(){return day.get();}
+        public String getEnteredHours(){return enteredHours.get();}
+
+        //Setters
+        public void setDay(String s){day.set(s);}
+        public void setEnteredHours(String s){enteredHours.set(s);}
 
     }
 

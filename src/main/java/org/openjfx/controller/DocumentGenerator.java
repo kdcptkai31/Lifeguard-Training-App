@@ -2250,7 +2250,7 @@ public class DocumentGenerator {
 
             //Makes header row
             int rowCount = 1;
-            int columnCount = 1;
+            int columnCount = 0;
             Row headerRow = sheet.createRow(rowCount);
             Cell cell = headerRow.createCell(columnCount++, CellType.STRING);
             cell.setCellValue("FIRST NAME");
@@ -2261,8 +2261,15 @@ public class DocumentGenerator {
             cell = headerRow.createCell(columnCount++, CellType.STRING);
             cell.setCellValue("DISTRICT");
             cell.setCellStyle(headerStyle);
+            for(int i = 0; i < 8; i++){
+
+                cell = headerRow.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue("Day " + (i + 1));
+                cell.setCellStyle(headerStyle);
+
+            }
             cell = headerRow.createCell(columnCount, CellType.STRING);
-            cell.setCellValue("HOURS");
+            cell.setCellValue("TOTAL HOURS");
             cell.setCellStyle(headerStyle);
 
             class SortByLastName implements Comparator<Trainee>{
@@ -2282,7 +2289,7 @@ public class DocumentGenerator {
             for(Trainee trainee : trainees){
 
                 Row row = sheet.createRow(++rowCount);
-                columnCount = 1;
+                columnCount = 0;
                 cell = row.createCell(columnCount++, CellType.STRING);
                 if(swapper)
                     cell.setCellStyle(fnStyleOdd);
@@ -2304,25 +2311,50 @@ public class DocumentGenerator {
                     cell.setCellStyle(lnStyleEven);
                 cell.setCellValue(trainee.getDistrictChoice().split(" - ")[0]);
 
+                Vector<AttendanceDay> days = DBManager.getAllAttendanceDaysFromTID(trainee.getId());
+                double totalHours = 0;
+                for(AttendanceDay day : Objects.requireNonNull(days)){
+
+                    cell = row.createCell(columnCount++, CellType.STRING);
+                    if(swapper)
+                        cell.setCellStyle(hoursOdd);
+                    else
+                        cell.setCellStyle(hoursEven);
+                    cell.setCellValue(day.getHours());
+                    totalHours += day.getHours();
+
+                }
+
+                for(int i = 0; i < 8 - days.size(); i++){
+
+                    cell = row.createCell(columnCount++, CellType.STRING);
+                    if(swapper)
+                        cell.setCellStyle(hoursOdd);
+                    else
+                        cell.setCellStyle(hoursEven);
+                    cell.setCellValue("N/A");
+
+                }
+
                 cell = row.createCell(columnCount, CellType.NUMERIC);
                 if(swapper)
                     cell.setCellStyle(hoursOdd);
                 else
                     cell.setCellStyle(hoursEven);
-                cell.setCellValue(trainee.getHoursAttended());
+                cell.setCellValue(totalHours);
 
                 swapper ^= true;
 
             }
 
-            for(int i = 1; i < 5; i++)
+            for(int i = 0; i < 12; i++)
                 sheet.autoSizeColumn(i);
 
             //Make title row
             Row row = sheet.createRow(0);
-            cell = row.createCell(1, CellType.STRING);
+            cell = row.createCell(0, CellType.STRING);
             cell.setCellValue(controller.getCurrentSession().getYear() + " Session " + controller.getCurrentSession().getSession() +
-                    " Attendance List");
+                    " Attendance List " + controller.getCurrentSession().getStartDate() + " - " + controller.getCurrentSession().getEndDate());
             cell.setCellStyle(titleStyle);
 
             //Saves the file

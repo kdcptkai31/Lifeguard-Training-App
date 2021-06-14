@@ -561,8 +561,8 @@ public class OverviewView {
             int counter = 0;
             for(Trainee trainee : controller.getCurrentTrainees()){
 
-                trainee.setHoursAttended(trainee.getHoursAttended() + Double.parseDouble(hoursColumn.getCellObservableValue(counter).getValue()));
-                DBManager.updateTraineeHours(trainee);
+                DBManager.addAttendanceDay(new AttendanceDay(trainee.getId(), controller.getCurrentSession().getCurrentDay(),
+                        Double.parseDouble(hoursColumn.getCellObservableValue(counter).getValue())));
                 counter++;
 
             }

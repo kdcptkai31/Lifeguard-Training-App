@@ -122,7 +122,6 @@ public class DBManager {
                 + "districtChoice TEXT,\n"
                 + "isLodging INTEGER,\n"
                 + "capNum INTEGER,\n"
-                + "hoursAttended REAL,\n"
                 + "image BLOB,\n"
                 + "isQuestionnaire1Complete INTEGER,\n"
                 + "isQuestionnaire2Complete INTEGER,\n"
@@ -290,20 +289,20 @@ public class DBManager {
             e.printStackTrace();
         }
 
-//        //Creates a new Attendance table
-//        String sqlAttendance = "CREATE TABLE IF NOT EXISTS attendance (\n"
-//                + "traineeID INTEGER,\n"
-//                + "day INTEGER,\n"
-//                + "hours REAL,\n"
-//                + "PRIMARY KEY (traineeID, day)"
-//                + ");";
-//
-//        try{
-//            Statement stmt = connection.createStatement();
-//            stmt.execute(sqlAttendance);
-//        }catch (SQLException e){
-//            e.printStackTrace();
-//        }
+        //Creates a new Attendance table
+        String sqlAttendance = "CREATE TABLE IF NOT EXISTS attendance (\n"
+                + "traineeID INTEGER,\n"
+                + "day INTEGER,\n"
+                + "hours REAL,\n"
+                + "PRIMARY KEY (traineeID, day)"
+                + ");";
+
+        try{
+            Statement stmt = connection.createStatement();
+            stmt.execute(sqlAttendance);
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
 
         //Creates default values
         String sqlFindDefaultTrainee = "SELECT * FROM trainees WHERE tid = 1";
@@ -314,7 +313,7 @@ public class DBManager {
             if(!rs.next()){
 
                 addInitialTrainee(new Trainee(null, null, null, null, null, null,
-                        null, null, null, false, null, -1, -1,
+                        null, null, null, false, null, -1,
                         false, false, false, -1, -1));
 
             }
@@ -546,6 +545,38 @@ public class DBManager {
 
         //Default value
         return 1;
+
+    }
+
+    /*
+     ****************************** Attendance ***************************************
+     */
+
+    /**
+     * Gets each attendance day for the given traineeID., if any.
+     * @param tID
+     * @return null if unsuccessful, vector of AttendanceDays if successful
+     */
+    public static Vector<AttendanceDay> getAllAttendanceDaysFromTID(int tID){
+
+        String sql = "SELECT * FROM attendance WHERE traineeID = ?";
+
+        try{
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, tID);
+            ResultSet rs = stmt.executeQuery();
+
+            Vector<AttendanceDay> results = new Vector<>();
+            while(rs.next())
+                results.add(new AttendanceDay(tID, rs.getInt("day"), rs.getDouble("hours")));
+
+            return results;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return null;
 
     }
 
@@ -1183,7 +1214,6 @@ public class DBManager {
 
             tmp.setCapNumber(rs.getInt("capNum"));
 
-            tmp.setHoursAttended(rs.getDouble("hoursAttended"));
             if(rs.getBinaryStream("image") == null)
                 tmp.setImage(null);
             else
@@ -1372,7 +1402,7 @@ public class DBManager {
 
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT INTO trainees(tid, firstName, middleName, lastName, birthDate, city, state, "
-                + "phoneNumber, email, districtChoice, isLodging, capNum, hoursAttended, image, isQuestionnaire1Complete, "
+                + "phoneNumber, email, districtChoice, isLodging, capNum, image, isQuestionnaire1Complete, "
                 + "isQuestionnaire2Complete, isActive, year, session, shirtSize, shortSize, swimSuitSize, "
                 + "isReturningTrainee, whyReturning, whyBeStateLG, whatWantLearnTraining, isJG, jgInfo, "
                 + "isOpenWaterLG, openWaterLGInfo, isPoolLG, poolLGInfo, isEMT, emtInfo, "
@@ -1380,7 +1410,7 @@ public class DBManager {
                 + "anyExtraInfo, expectedBiggestTrainingChallengeInfo, preparationInfo, medicalConfidence, "
                 + "cprConfidence, physicalConfidence, mentalConfidence, preTrainingSeminarsAttended, "
                 + "organizedSwimPoloFreq, personalSwimFreq, gymFreq, oceanSwimFreq, runningFreq, surfingFreq, "
-                + "isDisabled) VALUES(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, null, ?, ?, ?, ?, ?, null, null, null, null, "
+                + "isDisabled) VALUES(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, null, ?, ?, ?, ?, ?, null, null, null, null, "
                 + "null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "
                 + "null, null, null, null, null, null, null, null, null, null, null, null, null, null)");
 
@@ -1400,12 +1430,11 @@ public class DBManager {
             stmt.setString(9, tToAdd.getDistrictChoice());
             stmt.setInt(10, tToAdd.isLodging() ? 1 : 0);
             stmt.setInt(11, tToAdd.getCapNumber());
-            stmt.setDouble(12, tToAdd.getHoursAttended());
-            stmt.setInt(13, tToAdd.isQuestionnaire1Complete() ? 1 : 0);
-            stmt.setInt(14, tToAdd.isQuestionnaire2Complete() ? 1 : 0);
-            stmt.setInt(15, tToAdd.isActive() ? 1 : 0);
-            stmt.setInt(16, tToAdd.getYear());
-            stmt.setInt(17, tToAdd.getSession());
+            stmt.setInt(12, tToAdd.isQuestionnaire1Complete() ? 1 : 0);
+            stmt.setInt(13, tToAdd.isQuestionnaire2Complete() ? 1 : 0);
+            stmt.setInt(14, tToAdd.isActive() ? 1 : 0);
+            stmt.setInt(15, tToAdd.getYear());
+            stmt.setInt(16, tToAdd.getSession());
             stmt.executeUpdate();
 
             //Skips the EC addition if it doesn't exist
@@ -1459,32 +1488,6 @@ public class DBManager {
             stmt.setInt(12, tToAdd.getYear());
             stmt.setInt(13, tToAdd.getSession());
             stmt.setInt(14, tToAdd.getId());
-            stmt.executeUpdate();
-
-            return true;
-
-        }catch(SQLException e){
-            e.printStackTrace();
-        }
-
-        return false;
-
-    }
-
-    /**
-     * Updates the given trainee with their new attendance hour value.
-     * @param tToAdd
-     * @return
-     */
-    public static boolean updateTraineeHours(Trainee tToAdd){
-
-        String sql = "UPDATE trainees SET hoursAttended = ? WHERE tid = ?";
-
-        try{
-
-            PreparedStatement stmt = connection.prepareStatement(sql);
-            stmt.setDouble(1, tToAdd.getHoursAttended());
-            stmt.setInt(2, tToAdd.getId());
             stmt.executeUpdate();
 
             return true;
@@ -1674,6 +1677,37 @@ public class DBManager {
             return true;
 
         }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+    /*
+     ****************************** Attendance ***************************************
+     */
+
+    /**
+     * Adds an attendance day to the attendance table.
+     * @param aToAdd
+     * @return true if successful, false if not.
+     */
+    public static boolean addAttendanceDay(AttendanceDay aToAdd){
+
+        String sql = "INSERT INTO attendance (traineeID, day, hours) VALUES (?, ?, ?)";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, aToAdd.getTraineeID());
+            stmt.setInt(2, aToAdd.getDay());
+            stmt.setDouble(3, aToAdd.getHours());
+            stmt.executeUpdate();
+
+            return true;
+
+        }catch (SQLException e){
             e.printStackTrace();
         }
 

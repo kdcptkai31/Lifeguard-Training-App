@@ -29,7 +29,6 @@ public class Trainee{
     private EmergencyContact emergencyContact;
 
     private int capNumber;
-    private double hoursAttended;
     private Image image;
 
     //Extra Information
@@ -97,7 +96,6 @@ public class Trainee{
      * @param dChoice
      * @param isLodge
      * @param ec
-     * @param hAttended
      * @param isQ1Com
      * @param isQ2Com
      * @param isA
@@ -106,7 +104,7 @@ public class Trainee{
      */
     public Trainee(int id, String fName, String mName, String lName, String bDay, String city, String state,
                    String pNumber, String email, String dChoice, boolean isLodge, EmergencyContact ec, int capNum,
-                   double hAttended, Image imag, boolean isQ1Com, boolean isQ2Com, boolean isA, int year, int session){
+                   Image imag, boolean isQ1Com, boolean isQ2Com, boolean isA, int year, int session){
 
         this.id = id;
         firstName = fName;
@@ -121,7 +119,6 @@ public class Trainee{
         isLodging = isLodge;
         emergencyContact = ec;
         this.capNumber = capNum;
-        hoursAttended = hAttended;
         image = imag;
         isQuestionnaire1Complete = isQ1Com;
         isQuestionnaire2Complete = isQ2Com;
@@ -144,7 +141,6 @@ public class Trainee{
      * @param dChoice
      * @param isLodge
      * @param ec
-     * @param hAttended
      * @param isQ1Com
      * @param isQ2Com
      * @param isA
@@ -152,10 +148,10 @@ public class Trainee{
      * @param session
      */
     public Trainee(String fName, String mName, String lName, String bDay, String city, String state,
-                   String pNumber, String email, String dChoice, boolean isLodge, EmergencyContact ec, int capNum, double hAttended,
+                   String pNumber, String email, String dChoice, boolean isLodge, EmergencyContact ec, int capNum,
                    boolean isQ1Com, boolean isQ2Com, boolean isA, int year, int session){
 
-        this(0, fName, mName, lName, bDay, city, state, pNumber, email, dChoice, isLodge, ec, capNum, hAttended, null,
+        this(0, fName, mName, lName, bDay, city, state, pNumber, email, dChoice, isLodge, ec, capNum, null,
                 isQ1Com, isQ2Com, isA, year, session);
 
     }
@@ -340,10 +336,6 @@ public class Trainee{
     }
 
     public int getCapNumber() { return capNumber; }
-
-    public double getHoursAttended() {
-        return hoursAttended;
-    }
 
     public Image getImage() {return image;}
 
@@ -577,10 +569,6 @@ public class Trainee{
     }
 
     public void setCapNumber(int num) { this.capNumber = num; }
-
-    public void setHoursAttended(double hoursAttended) {
-        this.hoursAttended = hoursAttended;
-    }
 
     public void setImage(Image i){image = i;}
 
