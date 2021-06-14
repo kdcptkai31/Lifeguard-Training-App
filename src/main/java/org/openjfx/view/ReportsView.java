@@ -80,6 +80,9 @@ public class ReportsView {
     private Button testAnalysisButton;
     @FXML
     private Button attendanceButton;
+    @FXML
+    private Button overallSumButton;
+
 
     /**
      * Initializes the page with all current data, and creates the document generator.
@@ -464,6 +467,31 @@ public class ReportsView {
         executor.shutdown();
     }
 
+    public void onOverallSumClicked(){
+
+        disableButtons();
+        loadingLabel.setVisible(true);
+        loadingGif.setVisible(true);
+
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        Runnable task = () -> {
+
+            documentGenerator.preProcessOverallSummary();
+            ScheduledExecutorService executor1 = Executors.newSingleThreadScheduledExecutor();
+            Runnable task1 = () -> {
+                enableButtons();
+                loadingLabel.setVisible(false);
+                loadingGif.setVisible(false);
+            };
+            executor1.schedule(task1, 1, TimeUnit.MILLISECONDS);
+            executor1.shutdown();
+
+        };
+        executor.schedule(task, 1, TimeUnit.MILLISECONDS);
+        executor.shutdown();
+
+    }
+
     /**
      * Navigates to the Overview page.
      */
@@ -611,6 +639,7 @@ public class ReportsView {
         profilesButton.setDisable(true);
         rosterButton.setDisable(true);
         ecRosterButton.setDisable(true);
+        overallSumButton.setDisable(true);
 
     }
 
@@ -632,6 +661,7 @@ public class ReportsView {
         profilesButton.setDisable(false);
         rosterButton.setDisable(false);
         ecRosterButton.setDisable(false);
+        overallSumButton.setDisable(false);
 
     }
 

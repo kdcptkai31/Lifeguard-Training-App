@@ -290,6 +290,21 @@ public class DBManager {
             e.printStackTrace();
         }
 
+//        //Creates a new Attendance table
+//        String sqlAttendance = "CREATE TABLE IF NOT EXISTS attendance (\n"
+//                + "traineeID INTEGER,\n"
+//                + "day INTEGER,\n"
+//                + "hours REAL,\n"
+//                + "PRIMARY KEY (traineeID, day)"
+//                + ");";
+//
+//        try{
+//            Statement stmt = connection.createStatement();
+//            stmt.execute(sqlAttendance);
+//        }catch (SQLException e){
+//            e.printStackTrace();
+//        }
+
         //Creates default values
         String sqlFindDefaultTrainee = "SELECT * FROM trainees WHERE tid = 1";
         try{
