@@ -646,7 +646,7 @@ public class OverviewView {
             for(int i = 0; i < controller.getCurrentTrainees().size(); i++){
 
                 String tmpCheck = scoreColumn.getCellObservableValue(i).getValue();
-                if(isNotInteger(tmpCheck) || Integer.parseInt(tmpCheck) < 0 || Integer.parseInt(tmpCheck) > maxTestScore){
+                if(!isDouble(tmpCheck) || Double.parseDouble(tmpCheck) < 0 || Double.parseDouble(tmpCheck) > maxTestScore){
 
                     addScoresErrorLabel.setText("*ERROR* Enter valid scores less than or equal to " + maxTestScore);
                     addScoresErrorLabel.setVisible(true);
@@ -661,7 +661,7 @@ public class OverviewView {
             for(int i = 0; i < controller.getCurrentTrainees().size(); i++)
                 DBManager.addTestScore(new TestScore(selectedTest.getTestID(),
                                                      controller.getCurrentTrainees().elementAt(i).getId(),
-                                                   Integer.parseInt(scoreColumn.getCellObservableValue(i).getValue())));
+                                                   Double.parseDouble(scoreColumn.getCellObservableValue(i).getValue())));
 
             DBManager.testScoredUpdate(selectedTest);
             controller.updateCurrentTests();
@@ -904,6 +904,28 @@ public class OverviewView {
         }
 
         return false;
+    }
+
+    /**
+     * Checks if the given string is a double.
+     * @param s
+     * @return true if successful, false if not.
+     */
+    private static boolean isDouble(String s){
+
+        if(s.equals(""))
+            return false;
+
+        s = s.trim();
+
+        try{
+            Double.parseDouble(s);
+        }catch (NumberFormatException e){
+            return false;
+        }
+
+        return true;
+
     }
 
 }

@@ -7,7 +7,7 @@ public class TestScore {
 
     private int testID;
     private int traineeID;
-    private int score;
+    private double score;
 
     /**
      * Constructor
@@ -15,7 +15,7 @@ public class TestScore {
      * @param trainID
      * @param scr
      */
-    public TestScore(int tID, int trainID, int scr){
+    public TestScore(int tID, int trainID, double scr){
 
         testID = tID;
         traineeID = trainID;
@@ -32,7 +32,7 @@ public class TestScore {
         return traineeID;
     }
 
-    public int getScore() {
+    public double getScore() {
         return score;
     }
 
@@ -45,7 +45,7 @@ public class TestScore {
         this.traineeID = traineeID;
     }
 
-    public void setScore(int score) {
+    public void setScore(double score) {
         this.score = score;
     }
 }

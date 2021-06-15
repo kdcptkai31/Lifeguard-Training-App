@@ -1438,7 +1438,7 @@ public class DocumentGenerator {
                 else
                     cell.setCellValue(new BigDecimal(eventSum / counter).round(new MathContext(4)).doubleValue());
 
-                int traineeTotalPoints = physPointValues.get(i);
+                double traineeTotalPoints = physPointValues.get(i);
                 cell = row.createCell(columnCount++, CellType.NUMERIC);
                 cell.setCellValue(physPointValues.get(i));
                 cell.setCellStyle(i % 2 == 0 ? centerStyleEven : centerStyleOdd);
@@ -1928,7 +1928,7 @@ public class DocumentGenerator {
                 else
                     cell.setCellValue(new BigDecimal(eventSum / counter).round(new MathContext(4)).doubleValue());
 
-                int traineeTotalPoints = physPointValues.get(i);
+                double traineeTotalPoints = physPointValues.get(i);
                 cell = row.createCell(columnCount++, CellType.NUMERIC);
                 cell.setCellValue(physPointValues.get(i));
                 cell.setCellStyle(i % 2 == 0 ? centerStyleEven : centerStyleOdd);
@@ -2077,10 +2077,6 @@ public class DocumentGenerator {
             cell.setCellValue("Standard Deviation");
             cell.setCellStyle(headerStyle);
 
-            cell = headerRow.createCell(columnCount, CellType.STRING);
-            cell.setCellValue("Interquartile Range");
-            cell.setCellStyle(headerStyle);
-
             //Calculate and print out each test's statistics
             Row row;
             Vector<Test> tests = Objects.requireNonNull(DBManager.getAllTestsFromSession(currentSession.getYear(),
@@ -2143,12 +2139,8 @@ public class DocumentGenerator {
                 cell.setCellValue(new BigDecimal(median).round(new MathContext(4)).doubleValue());
                 cell.setCellStyle(counter % 2 == 0 ? centerStyleEven : centerStyleOdd);
 
-                cell = row.createCell(columnCount++, CellType.NUMERIC);
-                cell.setCellValue(new BigDecimal(standardDeviation).round(new MathContext(4)).doubleValue());
-                cell.setCellStyle(counter % 2 == 0 ? centerStyleEven : centerStyleOdd);
-
                 cell = row.createCell(columnCount, CellType.NUMERIC);
-                cell.setCellValue(new BigDecimal(iqr).round(new MathContext(4)).doubleValue());
+                cell.setCellValue(new BigDecimal(standardDeviation).round(new MathContext(4)).doubleValue());
                 cell.setCellStyle(counter % 2 == 0 ? centerStyleEven : centerStyleOdd);
 
                 counter++;

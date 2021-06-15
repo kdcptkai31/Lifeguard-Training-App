@@ -241,7 +241,7 @@ public class DBManager {
         String sqlTestScores = "CREATE TABLE IF NOT EXISTS testScores (\n"
                 + "testID INTEGER,\n"
                 + "traineeID INTEGER,\n"
-                + "score INTEGER,\n"
+                + "score REAL,\n"
                 + "FOREIGN KEY(testID) REFERENCES tests(testID),\n"
                 + "FOREIGN KEY(traineeID) REFERENCES trainees(tid),\n"
                 + "PRIMARY KEY (testID, traineeID)"
@@ -1343,7 +1343,7 @@ public class DBManager {
         Vector<TestScore> results = new Vector<>();
         while(rs.next())
             results.add(new TestScore(rs.getInt("testID"), rs.getInt("traineeID"),
-                    rs.getInt("score")));
+                    rs.getDouble("score")));
 
         return results;
 
@@ -1986,7 +1986,7 @@ public class DBManager {
      * @return true if successful, false if not.
      */
     public static boolean addTestScore(TestScore tsToAdd){
-
+        System.out.println(tsToAdd.getScore());
         String sql = "INSERT INTO testScores (testID, traineeID, score) VALUES (?, ?, ?)";
 
         try{
@@ -1994,7 +1994,7 @@ public class DBManager {
             PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setInt(1, tsToAdd.getTestID());
             stmt.setInt(2, tsToAdd.getTraineeID());
-            stmt.setInt(3, tsToAdd.getScore());
+            stmt.setDouble(3, tsToAdd.getScore());
             stmt.executeUpdate();
 
             return true;
@@ -2019,7 +2019,7 @@ public class DBManager {
         try{
 
             PreparedStatement stmt = connection.prepareStatement(sql);
-            stmt.setInt(1, tsToAdd.getScore());
+            stmt.setDouble(1, tsToAdd.getScore());
             stmt.setInt(2, tsToAdd.getTestID());
             stmt.setInt(3, tsToAdd.getTraineeID());
             stmt.executeUpdate();
