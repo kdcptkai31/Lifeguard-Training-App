@@ -73,8 +73,6 @@ public class ReportsView {
 
     //Deliverables
     @FXML
-    private Button individualSumButton;
-    @FXML
     private Button districtSumButton;
     @FXML
     private Button testAnalysisButton;
@@ -301,35 +299,8 @@ public class ReportsView {
     }
 
     /**
-     * Calls the generate individual summary method, and handles loading UI.
-     */
-    public void onIndividualSumClicked(){
-
-        disableButtons();
-        loadingLabel.setVisible(true);
-        loadingGif.setVisible(true);
-
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        Runnable task = () -> {
-            //Makes them all with the given null value
-            documentGenerator.preProcessIndividualSummaries(null);
-            ScheduledExecutorService executor1 = Executors.newSingleThreadScheduledExecutor();
-            Runnable task1 = () -> {
-                enableButtons();
-                loadingLabel.setVisible(false);
-                loadingGif.setVisible(false);
-            };
-            executor1.schedule(task1, 1, TimeUnit.MILLISECONDS);
-            executor1.shutdown();
-
-        };
-        executor.schedule(task, 1, TimeUnit.MILLISECONDS);
-        executor.shutdown();
-
-    }
-
-    /**
-     * Calls the generate district summary method, and handles loading UI.
+     * Calls the generate district summary method, and handles loading UI. Also generates individual summaries for each
+     * trainee and saves them in the cooresponding district summary folder.
      */
     public void onDistrictSumClicked(){
 
@@ -341,18 +312,21 @@ public class ReportsView {
         Runnable task = () -> {
             //Makes them all with the given null value
             documentGenerator.preProcessDistrictSummaries(null);
-            ScheduledExecutorService executor1 = Executors.newSingleThreadScheduledExecutor();
-            Runnable task1 = () -> {
-                enableButtons();
-                loadingLabel.setVisible(false);
-                loadingGif.setVisible(false);
-            };
-            executor1.schedule(task1, 1, TimeUnit.MILLISECONDS);
-            executor1.shutdown();
+            documentGenerator.preProcessIndividualSummaries(null);
+
 
         };
         executor.schedule(task, 1, TimeUnit.MILLISECONDS);
         executor.shutdown();
+
+        ScheduledExecutorService executor1 = Executors.newSingleThreadScheduledExecutor();
+        Runnable task1 = () -> {
+            enableButtons();
+            loadingLabel.setVisible(false);
+            loadingGif.setVisible(false);
+        };
+        executor1.schedule(task1, 5000, TimeUnit.MILLISECONDS);
+        executor1.shutdown();
 
     }
 
@@ -631,7 +605,6 @@ public class ReportsView {
         attendanceButton.setDisable(true);
         testAnalysisButton.setDisable(true);
         districtSumButton.setDisable(true);
-        individualSumButton.setDisable(true);
         certificatesButton.setDisable(true);
         currentRankingsButton.setDisable(true);
         uniformInfoButton.setDisable(true);
@@ -653,7 +626,6 @@ public class ReportsView {
         attendanceButton.setDisable(false);
         testAnalysisButton.setDisable(false);
         districtSumButton.setDisable(false);
-        individualSumButton.setDisable(false);
         certificatesButton.setDisable(false);
         currentRankingsButton.setDisable(false);
         uniformInfoButton.setDisable(false);

@@ -861,7 +861,7 @@ public class EditImportView {
 
             }
             DBManager.addDistrict(tmp);
-            eventInstructorTestTabRefresh();
+            allOtherTabRefresh();
 
             //Update District
         }else{
@@ -898,7 +898,7 @@ public class EditImportView {
                 tmp.setSupervisorEmail(editSupervisorEmailTextField.getPromptText());
 
             DBManager.updateDistrict(tmp, oldName);
-            eventInstructorTestTabRefresh();
+            allOtherTabRefresh();
             editDistrictsListView.getSelectionModel().select(selectedIndex);
             onEditDistrictListViewClicked();
 
@@ -2348,8 +2348,8 @@ public class EditImportView {
 
         String[] strParts = traineeTestScoresListView.getSelectionModel().getSelectedItem().split(" ");
         int maxNum = Integer.parseInt(strParts[strParts.length - 1].split("/")[1]);
-        if(!isInteger(testScoreTextField.getText()) || Integer.parseInt(testScoreTextField.getText()) < 0 ||
-            Integer.parseInt(testScoreTextField.getText()) > maxNum){
+        if(!isDouble(testScoreTextField.getText()) || Double.parseDouble(testScoreTextField.getText()) < 0 ||
+            Double.parseDouble(testScoreTextField.getText()) > maxNum){
             testScoreErrorLabel.setVisible(true);
             return;
         }
@@ -2371,7 +2371,7 @@ public class EditImportView {
         }
 
         DBManager.updateTestScore(new TestScore(Objects.requireNonNull(tmp).getTestID(), traineeTestScores.elementAt(0).getTraineeID(),
-                Integer.parseInt(testScoreTextField.getText())));
+                Double.parseDouble(testScoreTextField.getText())));
         int index = traineeListView.getSelectionModel().getSelectedIndex();
         traineeTabRefresh();
         traineeListView.getSelectionModel().select(index);
@@ -3914,6 +3914,18 @@ public class EditImportView {
             DBManager.deleteAllEventScoresOfATrainee(tmpTrainee.getId());
             DBManager.deleteAllOfATraineeComments(tmpTrainee.getId());
 
+            Vector<Trainee> trainees = DBManager.getAllTraineesFromSession(destinationSession.getYear(),
+                                                                            destinationSession.getSession());
+            Objects.requireNonNull(trainees).sort(new SortByLastName());
+            int counter = 1;
+            for(Trainee trainee : trainees){
+
+                trainee.setCapNumber(counter);
+                DBManager.updateTrainee(trainee);
+                counter++;
+
+            }
+
             dialog.close();
             controller.updateCurrentTrainees();
             controller.updateCurrentComments();
@@ -4083,6 +4095,16 @@ public class EditImportView {
         sessionLabel.setScaleX(1);
         sessionLabel.setScaleY(1);
 
+    }
+
+    /**
+     * Used to compare for sorting, sorts by last name first.
+     */
+    class SortByLastName implements Comparator<Trainee>{
+        @Override
+        public int compare(Trainee o1, Trainee o2) {
+            return o1.getLastName().compareTo(o2.getLastName());
+        }
     }
 
     /**

@@ -500,11 +500,14 @@ public class DocumentGenerator {
         Vector<EventScore> eventScores = DBManager.getAllEventScoresFromTraineeID(trainee.getId());
         Vector<Comment> comments = DBManager.getAllCommentsFromTID(trainee.getId());
 
-        File checkCertDir = new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
+        String districtNameNoSpace = trainee.getDistrictChoice().split(" - ")[0].replaceAll("\\s", "_");
+
+        File otherCheckDir = new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
                 controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
-                "\\IndividualSummaries\\");
-        if(!checkCertDir.exists()){
-            if(!checkCertDir.mkdir())
+                "\\District_Summaries\\" + districtNameNoSpace + "_Individual_Summaries\\");
+
+        if(!otherCheckDir.exists()){
+            if(!otherCheckDir.mkdir())
                 System.exit(1);
         }
 
@@ -841,9 +844,12 @@ public class DocumentGenerator {
 
             FileOutputStream fileOut = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Year_" +
                     controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
-                    "\\IndividualSummaries\\" + trainee.getLastName() + "_" + trainee.getFirstName() + "_Report.xlsx");
+                    "\\District_Summaries\\" + districtNameNoSpace + "_Individual_Summaries\\" + trainee.getLastName()
+                    + "_" + trainee.getFirstName() + "_Report.xlsx");
             workbook.write(fileOut);
             fileOut.close();
+
+            System.out.println(trainee.getFullName() + " Complete");
 
         }catch (Exception e){
             e.printStackTrace();
@@ -1507,6 +1513,8 @@ public class DocumentGenerator {
             workbook.write(tmp);
             tmp.close();
             workbook.close();
+
+            System.out.println(districtName + " Complete");
 
         }catch (Exception e){
             e.printStackTrace();
@@ -3317,7 +3325,7 @@ public class DocumentGenerator {
 
             File checkCertDir = new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
                     controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
-                    "\\Certificates\\");
+                    "\\District_Summaries\\");
             if(!checkCertDir.exists()){
                 if(!checkCertDir.mkdir())
                     System.exit(1);
@@ -3330,6 +3338,15 @@ public class DocumentGenerator {
             Vector<Trainee> currentTrainees = new Vector<>(controller.getCurrentTrainees());
 
             for(int i = 0; i < controller.getCurrentTrainees().size(); i++){
+
+                String districtNameNoSpace = controller.getCurrentTrainees().get(i).getDistrictChoice().split(" - ")[0].replaceAll("\\s", "_");
+                File otherDir = new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
+                        controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
+                        "\\District_Summaries\\" + districtNameNoSpace + "_Certificates\\");
+                if(!otherDir.exists()){
+                    if(!otherDir.mkdir())
+                        System.exit(1);
+                }
 
                 for (XWPFParagraph p : doc.getParagraphs()) {
                     List<XWPFRun> runs = p.getRuns();
@@ -3349,8 +3366,8 @@ public class DocumentGenerator {
 
                 FileOutputStream tmp = new FileOutputStream(System.getProperty("user.dir") + "\\Reports\\Year_" +
                         controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
-                        "\\Certificates\\" + currentTrainees.get(i).getLastName() + "_" + currentTrainees.get(i).getFirstName()
-                        + "_Cert.docx");
+                        "\\District_Summaries\\" + districtNameNoSpace + "_Certificates\\" +
+                        currentTrainees.get(i).getLastName() + "_" + currentTrainees.get(i).getFirstName() + "_Cert.docx");
 
                 doc.write(tmp);
                 tmp.close();
@@ -3359,7 +3376,7 @@ public class DocumentGenerator {
 
             Desktop.getDesktop().open(new File(System.getProperty("user.dir") + "\\Reports\\Year_" +
                     controller.getCurrentSession().getYear() + "_Session_" + controller.getCurrentSession().getSession() +
-                    "\\Certificates\\"));
+                    "\\District_Summaries\\"));
 
         }catch (IOException | InvalidFormatException e){
             e.printStackTrace();

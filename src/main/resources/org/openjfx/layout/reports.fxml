@@ -276,16 +276,6 @@
                      <font>
                         <Font name="System Bold" size="14.0" />
                      </font></Button>
-                  <Button fx:id="individualSumButton" mnemonicParsing="false" onMouseClicked="#onIndividualSumClicked" style="-fx-text-fill: #efb748; -fx-background-color: #3476f7;" text="Individual Summaries">
-                     <effect>
-                        <InnerShadow />
-                     </effect>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                     <font>
-                        <Font name="System Bold" size="14.0" />
-                     </font></Button>
                   <Button fx:id="overallSumButton" layoutX="129.0" layoutY="192.0" mnemonicParsing="false" onMouseClicked="#onOverallSumClicked" style="-fx-text-fill: #efb748; -fx-background-color: #3476f7;" text="Overall Summary">
                      <effect>
                         <InnerShadow />
