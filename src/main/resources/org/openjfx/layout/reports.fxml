@@ -16,7 +16,7 @@
     <top>
         <HBox alignment="TOP_CENTER" spacing="10.0" style="-fx-background-color: FCE2AF;">
             <children>
-                <ImageView fitHeight="144.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
+                <ImageView fitHeight="114.0" fitWidth="125.0" pickOnBounds="true" preserveRatio="true">
                     <image>
                         <Image url="@../images/dprSeal.png" />
                     </image>
@@ -24,12 +24,15 @@
                         <Insets left="-150.0" top="3.0" />
                     </HBox.margin>
                 </ImageView>
-                <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="150.0" prefWidth="200.0" spacing="10.0">
+                <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="122.0" prefWidth="200.0" spacing="10.0">
                     <children>
                         <Label text="Duty Training App">
                             <font>
                                 <Font name="System Bold" size="18.0" />
                             </font>
+                     <VBox.margin>
+                        <Insets top="-5.0" />
+                     </VBox.margin>
                         </Label>
                         <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#onChangeSessionClicked" onMouseEntered="#onMouseEnteredSession" onMouseExited="#onMouseExitedSession" prefHeight="50.0" prefWidth="200.0" spacing="20.0">
                             <children>
@@ -46,7 +49,7 @@
                         <Cursor fx:constant="HAND" />
                      </cursor>
                      <VBox.margin>
-                        <Insets top="-10.0" />
+                        <Insets top="-20.0" />
                      </VBox.margin>
                         </HBox>
                   <Label fx:id="datesLabel" text="insert dates">
@@ -61,7 +64,7 @@
                 </VBox>
                 <Button fx:id="overviewButton" alignment="CENTER" focusTraversable="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onMouseClicked="#onOverviewButtonClicked" prefHeight="80.0" prefWidth="200.0" style="-fx-background-color: #084079; -fx-text-fill: #efb748;" text="Overview">
                     <HBox.margin>
-                        <Insets left="85.0" top="45.0" />
+                        <Insets left="85.0" top="20.0" />
                     </HBox.margin>
                     <font>
                         <Font name="Gill Sans MT Bold" size="24.0" />
@@ -74,7 +77,7 @@
                     </cursor></Button>
                 <Button fx:id="editImportButton" focusTraversable="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onMouseClicked="#onEditImportClicked" prefHeight="80.0" prefWidth="200.0" style="-fx-background-color: #084079; -fx-text-fill: #efb748;" text="Edit/Import">
                     <HBox.margin>
-                        <Insets left="30.0" top="45.0" />
+                        <Insets left="30.0" top="20.0" />
                     </HBox.margin>
                     <font>
                         <Font name="Gill Sans MT Bold" size="24.0" />
@@ -87,7 +90,7 @@
                     </cursor></Button>
                 <Button fx:id="reportsButton" focusTraversable="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onMouseClicked="#onReportsClicked" prefHeight="80.0" prefWidth="200.0" style="-fx-background-color: #084079; -fx-text-fill: #efb748;" text="Reports" underline="true">
                     <HBox.margin>
-                        <Insets left="30.0" right="-120.0" top="45.0" />
+                        <Insets left="30.0" right="-120.0" top="20.0" />
                     </HBox.margin>
                     <font>
                         <Font name="Gill Sans MT Bold" size="24.0" />
@@ -120,7 +123,7 @@
                         <Font name="System Bold" size="18.0" />
                      </font>
                      <VBox.margin>
-                        <Insets top="50.0" />
+                        <Insets top="30.0" />
                      </VBox.margin>
                   </Label>
                   <Button fx:id="averyListButton" mnemonicParsing="false" onMouseClicked="#onAveryListClicked" style="-fx-background-color: #3476f7; -fx-text-fill: #efb748;" text="Avery List">
@@ -250,7 +253,7 @@
                <children>
                   <Label text="Deliverables" textFill="#efb748" underline="true">
                      <VBox.margin>
-                        <Insets top="50.0" />
+                        <Insets top="30.0" />
                      </VBox.margin>
                      <font>
                         <Font name="System Bold" size="18.0" />

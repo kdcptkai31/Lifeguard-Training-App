@@ -2441,9 +2441,7 @@ public class EditImportView {
         ComboBox<String> shortSizeComboBox = new ComboBox<>();
         shortSizeComboBox.setPromptText("Short Size");
         shortSizeComboBox.getItems().addAll("S", "M", "L", "XL", "XXL");
-        HBox h2 = new HBox(shirtSizeLabel, shirtSizeComboBox, shortSizeLabel, shortSizeComboBox);
-        h2.setAlignment(Pos.CENTER);
-        h2.setSpacing(5);
+
 
         Label swimSuitSizeLabel = new Label("Swim Suit Size: ");
         swimSuitSizeLabel.setStyle("-fx-text-fill: #efb748; -fx-font-weight: bold;");
@@ -2453,8 +2451,9 @@ public class EditImportView {
                 "Female - Onesie 30", "Female - Onesie 32", "Female - Onesie 34", "Female - Onesie  36",
                 "Female - Onesie 38", "Male - Racing Suit 26", "Male - Racing Suit 28", "Male - Racing Suit 30",
                 "Male - Racing Suit 32", "Male - Racing Suit 34", "Male - Racing Suit 36", "Male - Racing Suit 38");
-        HBox h3 = new HBox(swimSuitSizeLabel, swimSuitSizeComboBox);
-        h3.setAlignment(Pos.CENTER);
+        HBox h2 = new HBox(shirtSizeLabel, shirtSizeComboBox, shortSizeLabel, shortSizeComboBox, swimSuitSizeLabel, swimSuitSizeComboBox);
+        h2.setAlignment(Pos.CENTER);
+        h2.setSpacing(5);
 
         CheckBox isReturningCheckBox = new CheckBox("Returning Trainee?");
         isReturningCheckBox.setStyle("-fx-text-fill: #efb748; -fx-font-weight: bold;");
@@ -2471,15 +2470,14 @@ public class EditImportView {
         whyBeStateLGLabel.setStyle("-fx-text-fill: #efb748; -fx-font-weight: bold;");
         TextField whyBeStateLGTextField = new TextField();
         whyBeStateLGTextField.setPromptText("Why be State LG?");
-        HBox h5 = new HBox(whyBeStateLGLabel, whyBeStateLGTextField);
-        h5.setAlignment(Pos.CENTER);
 
-        Label whatLearnTrainingLabel = new Label("What they want to learn: ");
+
+        Label whatLearnTrainingLabel = new Label(" What they want to learn: ");
         whatLearnTrainingLabel.setStyle("-fx-text-fill: #efb748; -fx-font-weight: bold;");
         TextField whatLearnInTrainingTextField = new TextField();
         whatLearnInTrainingTextField.setPromptText("What they want to learn?");
-        HBox h6 = new HBox(whatLearnTrainingLabel, whatLearnInTrainingTextField);
-        h6.setAlignment(Pos.CENTER);
+        HBox h5 = new HBox(whyBeStateLGLabel, whyBeStateLGTextField, whatLearnTrainingLabel, whatLearnInTrainingTextField);
+        h5.setAlignment(Pos.CENTER);
 
         CheckBox isJGCheckBox = new CheckBox("Jr. Lifeguard?");
         isJGCheckBox.setStyle("-fx-text-fill: #efb748; -fx-font-weight: bold;");
@@ -2579,7 +2577,7 @@ public class EditImportView {
 
         }
 
-        q1VBox.getChildren().addAll(q1dataLabel, h2, h3, isReturningCheckBox, h4, h5, h6, isJGCheckBox, h7,
+        q1VBox.getChildren().addAll(q1dataLabel, h2, isReturningCheckBox, h4, h5, isJGCheckBox, h7,
                 isOpenWaterLGCheckBox, h8, isPoolLGCheckBox, h9, isEMTCheckBox, h10, isOtherMedicalCheckBox, h11,
                 isFirstJobCheckBox, h12, h13);
 
@@ -2596,15 +2594,13 @@ public class EditImportView {
         expectedChallengeLabel.setStyle("-fx-text-fill: #efb748; -fx-font-weight: bold;");
         TextField expectedChallengeTextField = new TextField();
         expectedChallengeTextField.setPromptText("Expected challenges?");
-        HBox h14 = new HBox(expectedChallengeLabel, expectedChallengeTextField);
-        h14.setAlignment(Pos.CENTER);
 
-        Label prepInfoLabel = new Label("Preparation: ");
+        Label prepInfoLabel = new Label(" Preparation: ");
         prepInfoLabel.setStyle("-fx-text-fill: #efb748; -fx-font-weight: bold;");
         TextField prepInfoTextField = new TextField();
         prepInfoTextField.setPromptText("What have they done to prep?");
-        HBox h15 = new HBox(prepInfoLabel, prepInfoTextField);
-        h15.setAlignment(Pos.CENTER);
+        HBox h14 = new HBox(expectedChallengeLabel, expectedChallengeTextField, prepInfoLabel, prepInfoTextField);
+        h14.setAlignment(Pos.CENTER);
 
         Label confidenceLabel = new Label("Confidence Ratings:");
         confidenceLabel.setStyle("-fx-text-fill: #efb748; -fx-font-weight: bold;");
@@ -2619,9 +2615,6 @@ public class EditImportView {
         ComboBox<Integer> cprComboBox = new ComboBox<>();
         cprComboBox.setPromptText("Pick");
         cprComboBox.getItems().addAll(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-        HBox h16 = new HBox(firstAidLabel, firstAidComboBox, cprLabel, cprComboBox);
-        h16.setAlignment(Pos.CENTER);
-        h16.setSpacing(5);
 
         Label physicalLabel = new Label("Physical: ");
         physicalLabel.setStyle("-fx-text-fill: #efb748; -fx-font-weight: bold;");
@@ -2633,9 +2626,10 @@ public class EditImportView {
         ComboBox<Integer> mentalComboBox = new ComboBox<>();
         mentalComboBox.setPromptText("Pick");
         mentalComboBox.getItems().addAll(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-        HBox h17 = new HBox(physicalLabel, physicalComboBox, mentalLabel, mentalComboBox);
-        h17.setAlignment(Pos.CENTER);
-        h17.setSpacing(5);
+
+        HBox h16 = new HBox(firstAidLabel, firstAidComboBox, cprLabel, cprComboBox, physicalLabel, physicalComboBox, mentalLabel, mentalComboBox);
+        h16.setAlignment(Pos.CENTER);
+        h16.setSpacing(5);
 
         Label trainingCountLabel = new Label("# of Pre-Trainings Attended: ");
         trainingCountLabel.setStyle("-fx-text-fill: #efb748; -fx-font-weight: bold;");
@@ -3059,11 +3053,11 @@ public class EditImportView {
 
         }
 
-        q2VBox.getChildren().addAll(q2dataLabel, h14, h15, confidenceLabel, h16, h17, h18, frequencyLabel, h19, h20, h21,
+        q2VBox.getChildren().addAll(q2dataLabel, h14, confidenceLabel, h16, h18, frequencyLabel, h19, h20, h21,
                                     isDisabledCheckBox, errorLabel, h22);
 
         dialogVBox.getChildren().addAll(q1VBox, q2VBox);
-        Scene dialogScene = new Scene(dialogVBox, 440, 925);
+        Scene dialogScene = new Scene(dialogVBox, 600, 800);
         dialog.setScene(dialogScene);
         //dialog.setResizable(false);
         dialog.show();
