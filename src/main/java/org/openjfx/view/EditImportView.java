@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import java.util.*;
 
 import javafx.application.Platform;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -3369,7 +3370,7 @@ public class EditImportView {
 
             //Initialize Dialog box contents for session inputs.
             final Stage dialog = new Stage();
-            dialog.setTitle("Import - Create Needed Sessions");
+            dialog.setTitle("Create Needed Sessions");
             dialog.initModality(Modality.APPLICATION_MODAL);
             dialog.initOwner(LifeguardTrainingApplication.getCoordinator().getStage());
             VBox dialogVBox = new VBox();
@@ -3397,15 +3398,31 @@ public class EditImportView {
             startDateColumn.setSortable(false);
             startDateColumn.setCellValueFactory(new PropertyValueFactory<>("startDate"));
             startDateColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+
             TableColumn<AddSessionsData, String> endDateColumn = new TableColumn<>("End Date");
             endDateColumn.setEditable(true);
             endDateColumn.setSortable(false);
             endDateColumn.setCellValueFactory(new PropertyValueFactory<>("endDate"));
             endDateColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-            newSessionsTableView.getColumns().addAll(sessionColumn, startDateColumn, endDateColumn);
+
+            TableColumn<AddSessionsData, String> isWeekendColumn = new TableColumn<>("Weekends?");
+            isWeekendColumn.setEditable(true);
+            isWeekendColumn.setSortable(false);
+            isWeekendColumn.setCellValueFactory(new PropertyValueFactory<>("isWeekends"));
+            isWeekendColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+
+            TableColumn<AddSessionsData, String> firstDayOfWeekColumn = new TableColumn<>("1st Day, Day of Week");
+            firstDayOfWeekColumn.setEditable(true);
+            firstDayOfWeekColumn.setSortable(false);
+            firstDayOfWeekColumn.setCellValueFactory(new PropertyValueFactory<>("firstDayOfWeek"));
+            firstDayOfWeekColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+
+            newSessionsTableView.getColumns().addAll(sessionColumn, startDateColumn, endDateColumn, isWeekendColumn,
+                    firstDayOfWeekColumn);
             ObservableList<AddSessionsData> data = FXCollections.observableArrayList();
             for(Integer sessionNum : sessionChoices)
-                data.add(new AddSessionsData(String.valueOf(sessionNum), "mm/dd", "mm/dd"));
+                data.add(new AddSessionsData(String.valueOf(sessionNum), "mm/dd", "mm/dd",
+                        "yes or no", "day of week"));
             newSessionsTableView.setItems(data);
 
             //Action event where the user presses enter to enter that cell, which then increments the edit focus to the
@@ -3415,9 +3432,7 @@ public class EditImportView {
                 t.getTableView().getItems().get(t.getTablePosition().getRow()).setStartDate(t.getNewValue());
                 int index = newSessionsTableView.getSelectionModel().getSelectedIndex();
 
-                Platform.runLater(() -> {
-                    newSessionsTableView.edit(index, endDateColumn);
-                });
+                Platform.runLater(() -> newSessionsTableView.edit(index, endDateColumn));
             });
 
             //Action event where the user presses enter to enter that cell, which then increments the edit focus to the
@@ -3425,6 +3440,23 @@ public class EditImportView {
             endDateColumn.setOnEditCommit((TableColumn.CellEditEvent<AddSessionsData, String> t) -> {
 
                 t.getTableView().getItems().get(t.getTablePosition().getRow()).setEndDate(t.getNewValue());
+                int index = newSessionsTableView.getSelectionModel().getSelectedIndex();
+
+                Platform.runLater(() -> newSessionsTableView.edit(index, isWeekendColumn));
+
+            });
+
+            isWeekendColumn.setOnEditCommit((TableColumn.CellEditEvent<AddSessionsData, String> t) -> {
+
+                t.getTableView().getItems().get(t.getTablePosition().getRow()).setIsWeekends(t.getNewValue());
+                int index = newSessionsTableView.getSelectionModel().getSelectedIndex();
+
+                Platform.runLater(() -> newSessionsTableView.edit(index, firstDayOfWeekColumn));
+            });
+
+            firstDayOfWeekColumn.setOnEditCommit((TableColumn.CellEditEvent<AddSessionsData, String> t) -> {
+
+                t.getTableView().getItems().get(t.getTablePosition().getRow()).setFirstDayOfWeek(t.getNewValue());
                 int index = newSessionsTableView.getSelectionModel().getSelectedIndex();
                 if(index + 1 < sessionChoices.size()){
 
@@ -3459,18 +3491,16 @@ public class EditImportView {
             dialogVBox.setSpacing(10);
             dialogVBox.setStyle("-fx-background-color: #3476f7;");
 
-            newSessionsTableView.setMaxWidth(205);
+            newSessionsTableView.setMaxWidth(425);
             newSessionsTableView.setMaxHeight(300);
             VBox.setMargin(label, new Insets(10, 0, 0, 10));
             VBox.setMargin(buttonHBox, new Insets(10));
 
-            Scene dialogScene = new Scene(dialogVBox, 300, 550);
+            Scene dialogScene = new Scene(dialogVBox, 450, 550);
             dialog.setScene(dialogScene);
 
             //Button Events
             sessionButton.setOnMouseClicked(event -> {
-                sessionButton.setDisable(true);
-                cancelButton.setDisable(true);
 
                 //Verify needed data entries
                 if(yearTextField.getText().isEmpty() || !isGoodYear(yearTextField.getText())){
@@ -3481,19 +3511,37 @@ public class EditImportView {
                 for(int i = 0; i < sessionChoices.size(); i++){
 
                     if(!isGoodHalfDate(startDateColumn.getCellObservableValue(i).getValue()) ||
-                       !isGoodHalfDate(endDateColumn.getCellObservableValue(i).getValue())){
+                       !isGoodHalfDate(endDateColumn.getCellObservableValue(i).getValue()) ||
+                        !isYesOrNo(isWeekendColumn.getCellObservableValue(i).getValue()) ||
+                        !controller.isDayOfWeek(firstDayOfWeekColumn.getCellObservableValue(i).getValue())){
                         addSessionsErrorLabel.setVisible(true);
                         return;
-                    }else
-                        pendingSessions.add(new Session(Integer.parseInt(yearTextField.getText()),
-                                            Integer.parseInt(sessionColumn.getCellObservableValue(i).getValue()),
-                                            startDateColumn.getCellObservableValue(i).getValue() + "/" + yearTextField.getText(),
-                                            endDateColumn.getCellObservableValue(i).getValue() + "/" + yearTextField.getText(),
-                                            1, 0));
+                    }else{
+
+                        if(firstDayOfWeekColumn.getCellObservableValue(i).getValue().charAt(0) == 'y')
+                            pendingSessions.add(new Session(Integer.parseInt(yearTextField.getText()),
+                                    Integer.parseInt(sessionColumn.getCellObservableValue(i).getValue()),
+                                    startDateColumn.getCellObservableValue(i).getValue() + "/" + yearTextField.getText(),
+                                    endDateColumn.getCellObservableValue(i).getValue() + "/" + yearTextField.getText(),
+                                    1, 0, true, "Weekend"));
+                        else
+                            pendingSessions.add(new Session(Integer.parseInt(yearTextField.getText()),
+                                    Integer.parseInt(sessionColumn.getCellObservableValue(i).getValue()),
+                                    startDateColumn.getCellObservableValue(i).getValue() + "/" + yearTextField.getText(),
+                                    endDateColumn.getCellObservableValue(i).getValue() + "/" + yearTextField.getText(),
+                                    1, 0, false,
+                                    controller.getDayOfWeek(firstDayOfWeekColumn.getCellObservableValue(i).getValue())));
+
+                    }
 
                 }
 
                 //Verified, save data now
+                Platform.runLater(() -> {
+                    sessionButton.setDisable(true);
+                    cancelButton.setDisable(true);
+
+                });
                 //Adds the session if it is not found
                 Vector<Session> existingSessions = DBManager.getAllSessions();
                 for(Session newSes : pendingSessions){
@@ -3517,7 +3565,7 @@ public class EditImportView {
                     //Add Session and copy over Event, Test, and District data from current session.
                     if(!isFound) {
                         DBManager.addNewSession(newSes.getYear(), newSes.getSession(), newSes.getStartDate(),
-                                newSes.getEndDate());
+                                newSes.getEndDate(), newSes.isWeekends(), newSes.getFirstDay());
                         for(Event copyEvent : controller.getCurrentEvents())
                             DBManager.addEvent(new Event(copyEvent.getName(), "", false, newSes.getYear(),
                                     newSes.getSession()));
@@ -4284,6 +4332,18 @@ public class EditImportView {
     }
 
     /**
+     * Returns true if the string starts with a y or n.
+     * @param str
+     * @return
+     */
+    private boolean isYesOrNo(String str){
+
+        str = str.toLowerCase().trim();
+        return str.charAt(0) == 'y' || str.charAt(0) == 'n';
+
+    }
+
+    /**
      * Used to center the text in the table.
      */
     static final class CenteredListViewCell extends ListCell<String> { { setAlignment(Pos.BASELINE_CENTER); }
@@ -4316,12 +4376,16 @@ public class EditImportView {
         SimpleStringProperty session;
         SimpleStringProperty startDate;
         SimpleStringProperty endDate;
+        SimpleStringProperty isWeekends;
+        SimpleStringProperty firstDayOfWeek;
 
-        AddSessionsData(String session, String startDate, String endDate){
+        AddSessionsData(String session, String startDate, String endDate, String isWeekends, String firstDayOfWeek){
 
             this.session = new SimpleStringProperty(session);
             this.startDate = new SimpleStringProperty(startDate);
             this.endDate = new SimpleStringProperty(endDate);
+            this.isWeekends = new SimpleStringProperty(isWeekends);
+            this.firstDayOfWeek = new SimpleStringProperty(firstDayOfWeek);
 
         }
 
@@ -4329,10 +4393,14 @@ public class EditImportView {
         public String getSession(){return session.get();}
         public String getStartDate(){return startDate.get();}
         public String getEndDate(){return endDate.get();}
+        public String getIsWeekends(){return isWeekends.get();}
+        public String getFirstDayOfWeek(){return firstDayOfWeek.get();}
         //Setters
         public void setSession(String s){session.set(s);}
         public void setStartDate(String s){startDate.set(s);}
         public void setEndDate(String s){endDate.set(s);}
+        public void setIsWeekends(String s){isWeekends.set(s);}
+        public void setFirstDayOfWeek(String s){firstDayOfWeek.set(s);}
 
     }
 

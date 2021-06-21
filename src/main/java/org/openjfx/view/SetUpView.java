@@ -36,6 +36,10 @@ public class SetUpView {
     private TextField endDateTextField;
     @FXML
     private Label yearSessionErrorLabel;
+    @FXML
+    private CheckBox isWeekendsCheckBox;
+    @FXML
+    private TextField dayOfWeekTextField;
 
     //Add Districts
     @FXML
@@ -412,16 +416,32 @@ public class SetUpView {
 
         //If this was a mistake, leave, if not, continue
         if(alert.getResult() == ButtonType.CANCEL || !(isGoodYear(yearTextField.getText()) && isGoodSession(sessionTextField.getText()) &&
-                isGoodDate(startDateTextField.getText()) && isGoodDate(endDateTextField.getText())))
+                isGoodDate(startDateTextField.getText()) && isGoodDate(endDateTextField.getText()))) {
+            yearSessionErrorLabel.setVisible(true);
             return;
+        }
 
-        Session tmp = new Session(Integer.parseInt(yearTextField.getText().trim()), Integer.parseInt(sessionTextField.getText().trim()),
-                                  startDateTextField.getText() + "/" + yearTextField.getText().trim(),
-                                  endDateTextField.getText() + "/" + yearTextField.getText().trim(), 1, 0);
+        if(!isWeekendsCheckBox.isSelected() && (dayOfWeekTextField.getText().isEmpty() || !controller.isDayOfWeek(dayOfWeekTextField.getText()))){
+            yearSessionErrorLabel.setVisible(true);
+            return;
+        }
+
+        Session tmp;
+        if(isWeekendsCheckBox.isSelected())
+            tmp = new Session(Integer.parseInt(yearTextField.getText().trim()), Integer.parseInt(sessionTextField.getText().trim()),
+                    startDateTextField.getText() + "/" + yearTextField.getText().trim(),
+                    endDateTextField.getText() + "/" + yearTextField.getText().trim(), 1, 0,
+                    true, "Weekends");
+        else
+            tmp = new Session(Integer.parseInt(yearTextField.getText().trim()), Integer.parseInt(sessionTextField.getText().trim()),
+                    startDateTextField.getText() + "/" + yearTextField.getText().trim(),
+                    endDateTextField.getText() + "/" + yearTextField.getText().trim(), 1, 0,
+                    false, controller.getDayOfWeek(dayOfWeekTextField.getText()));
 
         //Save the entered data in the database
         //Save Year and Session
-        if(!DBManager.addNewSession(tmp.getYear(), tmp.getSession(), tmp.getStartDate(), tmp.getEndDate())) {
+        if(!DBManager.addNewSession(tmp.getYear(), tmp.getSession(), tmp.getStartDate(), tmp.getEndDate(), tmp.isWeekends(),
+                tmp.getFirstDay())) {
             System.out.println("COULD NOT ADD SESSION");
             System.exit(1);
         }

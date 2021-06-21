@@ -11,6 +11,8 @@ public class Session {
     private String endDate;
     private int currentDay;
     private int openedLast;
+    private boolean isWeekends;
+    private String firstDay;
 
     //Default Constructor
     public Session(){}
@@ -23,7 +25,7 @@ public class Session {
      * @param eDate
      * @param currentDa
      */
-    public Session(int y, int s, String sDate, String eDate, int currentDa, int openedLast){
+    public Session(int y, int s, String sDate, String eDate, int currentDa, int openedLast, boolean isWeekends, String firstDay){
 
         year = y;
         session = s;
@@ -31,6 +33,8 @@ public class Session {
         endDate = eDate;
         currentDay = currentDa;
         this.openedLast = openedLast;
+        this.isWeekends = isWeekends;
+        this.firstDay = firstDay;
 
     }
 
@@ -46,6 +50,8 @@ public class Session {
         this.endDate = tmp.endDate;
         this.currentDay = tmp.currentDay;
         this.openedLast = tmp.openedLast;
+        this.isWeekends = tmp.isWeekends;
+        this.firstDay = tmp.firstDay;
 
     }
 
@@ -64,6 +70,8 @@ public class Session {
     }
     public int getCurrentDay() { return currentDay; }
     public int getOpenedLast() { return openedLast; }
+    public boolean isWeekends() { return isWeekends; }
+    public String getFirstDay() { return firstDay; }
 
     //Setters
     public void setYear(int year) {
@@ -80,5 +88,7 @@ public class Session {
     }
     public void setCurrentDay(int num) { currentDay = num; }
     public void setOpenedLast(int openedLast) { this.openedLast = openedLast; }
+    public void setIsWeekends(boolean isWeekends) { this.isWeekends = isWeekends; }
+    public void setFirstDay(String firstDay) { this.firstDay = firstDay; }
 
 }

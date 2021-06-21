@@ -165,4 +165,83 @@ public class Controller {
         }
     }
 
+    /**
+     * Determines if the entered day is a valid day of the week.
+     * @param str
+     * @return
+     */
+    public boolean isDayOfWeek(String str){
+
+        String[] days = {"monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"};
+        str = str.toLowerCase().trim();
+        for (String day : days) {
+            if (str.equals(day))
+                return true;
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Returns the day of the week in correct casing format.
+     * @param str
+     * @return
+     */
+    public String getDayOfWeek(String str){
+
+        str = str.toLowerCase().trim();
+
+        switch (str) {
+            case "monday":
+                return "Monday";
+            case "tuesday":
+                return "Tuesday";
+            case "wednesday":
+                return "Wednesday";
+            case "thursday":
+                return "Thursday";
+            case "friday":
+                return "Friday";
+            case "saturday":
+                return "Saturday";
+            case "sunday":
+                return "Sunday";
+            default:
+                return "ERROR";
+        }
+
+    }
+
+    /**
+     * Returns the next day of the week, for the given day of the week.
+     * @param str
+     * @return
+     */
+    public String getNextDayOfWeek(String str){
+
+        str = str.toLowerCase().trim();
+
+        switch (str) {
+            case "monday":
+                return "Tuesday";
+            case "tuesday":
+                return "Wednesday";
+            case "wednesday":
+                return "Thursday";
+            case "thursday":
+                return "Friday";
+            case "friday":
+                return "Saturday";
+            case "saturday":
+                return "Sunday";
+            case "sunday":
+                return "Monday";
+            default:
+                return "ERROR";
+        }
+
+
+    }
+
 }

@@ -14,7 +14,7 @@ public class LifeguardTrainingApplication extends Application {
 
     //Constants
     final private static int defaultWidth = 1200;
-    final private static int defaultHeight = 800;
+    final private static int defaultHeight = 850;
 
     @Override
     public void start(Stage window) {

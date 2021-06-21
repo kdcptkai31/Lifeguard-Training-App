@@ -2261,13 +2261,57 @@ public class DocumentGenerator {
             cell = headerRow.createCell(columnCount++, CellType.STRING);
             cell.setCellValue("DISTRICT");
             cell.setCellStyle(headerStyle);
-            for(int i = 0; i < 8; i++){
+
+            if(controller.getCurrentSession().isWeekends()){
 
                 cell = headerRow.createCell(columnCount++, CellType.STRING);
-                cell.setCellValue("Day " + (i + 1));
+                cell.setCellValue("Saturday " +
+                        getPlaceSuffix(Integer.parseInt(controller.getCurrentSession().getStartDate().split("/")[1])));
+                cell.setCellStyle(headerStyle);
+
+                for(int i = 0; i < 3; i++){
+
+                    cell = headerRow.createCell(columnCount++, CellType.STRING);
+                    cell.setCellValue("Sunday");
+                    cell.setCellStyle(headerStyle);
+
+                    cell = headerRow.createCell(columnCount++, CellType.STRING);
+                    cell.setCellValue("Saturday");
+                    cell.setCellStyle(headerStyle);
+
+                }
+
+                cell = headerRow.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue("Sunday " +
+                        getPlaceSuffix(Integer.parseInt(controller.getCurrentSession().getEndDate().split("/")[1])));
+                cell.setCellStyle(headerStyle);
+
+            }else{
+
+                String dayOfWeek = controller.getCurrentSession().getFirstDay();
+
+                cell = headerRow.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue( dayOfWeek + " " +
+                        getPlaceSuffix(Integer.parseInt(controller.getCurrentSession().getStartDate().split("/")[1])));
+                cell.setCellStyle(headerStyle);
+
+                for(int i = 0; i < 6; i++){
+
+                    dayOfWeek = controller.getNextDayOfWeek(dayOfWeek);
+                    cell = headerRow.createCell(columnCount++, CellType.STRING);
+                    cell.setCellValue(dayOfWeek);
+                    cell.setCellStyle(headerStyle);
+
+                }
+
+                dayOfWeek = controller.getNextDayOfWeek(dayOfWeek);
+                cell = headerRow.createCell(columnCount++, CellType.STRING);
+                cell.setCellValue( dayOfWeek + " " +
+                        getPlaceSuffix(Integer.parseInt(controller.getCurrentSession().getEndDate().split("/")[1])));
                 cell.setCellStyle(headerStyle);
 
             }
+
             cell = headerRow.createCell(columnCount, CellType.STRING);
             cell.setCellValue("TOTAL HOURS");
             cell.setCellStyle(headerStyle);
@@ -3426,6 +3470,28 @@ public class DocumentGenerator {
             return (double)array.get(array.size() / 2).getScore();
 
         return (double)(array.get((array.size() - 1) / 2).getScore() + array.get(array.size() / 2).getScore()) / 2.0;
+
+    }
+
+    /**
+     * Returns the given placement as a string with the correct suffix behind it.
+     * @param place
+     * @return true if successful, false if not.
+     */
+    private String getPlaceSuffix(int place){
+
+        int j = place % 10;
+        int k = place % 100;
+        if (j == 1 && k != 11) {
+            return place + "st";
+        }
+        if (j == 2 && k != 12) {
+            return place + "nd";
+        }
+        if (j == 3 && k != 13) {
+            return place + "rd";
+        }
+        return place + "th";
 
     }
 

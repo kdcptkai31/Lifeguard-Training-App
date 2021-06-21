@@ -48,6 +48,8 @@ public class DBManager {
                 + "endDate TEXT,\n"
                 + "currentDay INTEGER,\n"
                 + "openedLast INTEGER,\n"
+                + "isWeekends INTEGER,\n"
+                + "firstDay TEXT,\n"
                 + "PRIMARY KEY (year, session)"
                 + ");";
 
@@ -919,7 +921,8 @@ public class DBManager {
             while(rs.next())
                 results.add(new Session(rs.getInt("year"), rs.getInt("session"),
                                         rs.getString("startDate"), rs.getString("endDate"),
-                                        rs.getInt("currentDay"), rs.getInt("openedLast")));
+                                        rs.getInt("currentDay"), rs.getInt("openedLast"),
+                                        1 == rs.getInt("isWeekends"), rs.getString("firstDay")));
 
             return results;
 
@@ -949,7 +952,8 @@ public class DBManager {
             while(rs.next())
                 results.add(new Session(rs.getInt("year"), rs.getInt("session"),
                                         rs.getString("startDate"), rs.getString("endDate"),
-                                        rs.getInt("currentDay"), rs.getInt("openedLast")));
+                                        rs.getInt("currentDay"), rs.getInt("openedLast"),
+                                        1 == rs.getInt("isWeekends"), rs.getString("firstDay")));
 
             //Find last opened session
             for(Session session : results)
@@ -2213,9 +2217,9 @@ public class DBManager {
      * @param eDate
      * @return true if successful, false if not.
      */
-    public static boolean addNewSession(int newYear, int newSession, String sDate, String eDate){
+    public static boolean addNewSession(int newYear, int newSession, String sDate, String eDate, boolean isWeekends, String fDay){
 
-        String sql = "INSERT INTO sessions(year, session, startDate, endDate, currentDay, openedLast) VALUES(?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO sessions(year, session, startDate, endDate, currentDay, openedLast, isWeekends, firstDay) VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
 
         try{
             PreparedStatement stmt = connection.prepareStatement(sql);
@@ -2225,6 +2229,8 @@ public class DBManager {
             stmt.setString(4, eDate);
             stmt.setInt(5, 1);
             stmt.setInt(6, 0);
+            stmt.setInt(7, isWeekends ? 1 : 0);
+            stmt.setString(8, fDay);
             stmt.executeUpdate();
             return true;
 
