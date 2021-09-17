@@ -1847,19 +1847,62 @@ public class EditImportView {
         if(selectedIndex == -1)
             return;
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "You are about to set " +
-                controller.getCurrentTrainees().get(selectedIndex).getFullName() + " as INACTIVE.\nThis means they will "
-                + "be removed from all rankings and lists, however their info will persist on reports.\nMAKE SURE TO GIVE TODAY'S ATTENDANCE BEFORE INACTIVATING ANYONE!",
-                ButtonType.APPLY, ButtonType.CANCEL);
+        final Stage dialog = new Stage();
+        dialog.setTitle("Trainee Inactivation");
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.initOwner(LifeguardTrainingApplication.getCoordinator().getStage());
+        VBox dialogVBox = new VBox();
+        dialogVBox.setStyle("-fx-background: #3476f7;");
+        dialogVBox.setAlignment(Pos.CENTER);
+        dialogVBox.setSpacing(10);
 
-        alert.showAndWait();
-        //If this was a mistake, leave, if not, continue
-        if (alert.getResult() == ButtonType.CANCEL)
-            return;
+        Label commentLabel = new Label();
+        commentLabel.setStyle("-fx-text-fill: #efb748; -fx-font-size: 16; -fx-font-weight: bold;");
+        commentLabel.setAlignment(Pos.CENTER);
+        commentLabel.setText("You are about to set " + controller.getCurrentTrainees().get(selectedIndex).getFullName() +
+                " as INACTIVE. This means they will be removed from all rankings and lists, however their info will persist"
+                + " on reports.\n MAKE SURE TO GIVE TODAY'S ATTENDANCE BEFORE INACTIVATING ANYONE!");
+        commentLabel.setWrapText(true);
+        commentLabel.setTextAlignment(TextAlignment.CENTER);
+        commentLabel.setPadding(new Insets(5));
 
-        DBManager.setTraineeInactive(controller.getCurrentTrainees().get(selectedIndex));
-        controller.updateCurrentTrainees();
-        traineeTabRefresh();
+        TextArea finalComment = new TextArea();
+        finalComment.setWrapText(true);
+        finalComment.setPromptText("Why were they inactivated?");
+
+        Button applyButton = new Button("Apply");
+        Button cancelButton = new Button("Cancel");
+        applyButton.setOnMouseClicked(e ->{
+
+            if(finalComment.getText().isEmpty())
+                finalComment.setPromptText("MISSING COMMENT DETAILS");
+            else{
+
+                Session currentSession = controller.getCurrentSession();
+                int thisDay = currentSession.getCurrentDay();
+                DBManager.addComment(new Comment("", "", "", controller.getCurrentTrainees().get(selectedIndex).getFullName(),
+                        "Inactivation Reason", finalComment.getText(), "Removed from session", "", currentSession.getYear(),
+                        currentSession.getSession(), thisDay == 1 ? 1 : thisDay - 1));
+                DBManager.setTraineeInactive(controller.getCurrentTrainees().get(selectedIndex));
+                dialog.close();
+                controller.updateCurrentTrainees();
+                controller.updateCurrentComments();
+                traineeTabRefresh();
+            }
+
+        });
+        cancelButton.setOnMouseClicked(e -> dialog.close());
+
+
+        HBox buttonHBox = new HBox(cancelButton, applyButton);
+        buttonHBox.setAlignment(Pos.CENTER);
+        buttonHBox.setSpacing(50);
+
+        dialogVBox.getChildren().addAll(commentLabel, finalComment, buttonHBox);
+        Scene dialogScene = new Scene(dialogVBox, 400, 400);
+        dialog.setScene(dialogScene);
+        dialog.show();
+        cancelButton.requestFocus();
 
     }
 

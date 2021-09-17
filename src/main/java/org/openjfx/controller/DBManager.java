@@ -422,6 +422,61 @@ public class DBManager {
     }
 
     /**
+     * Returns all trainees from a given year.
+     * @param year
+     * @return
+     */
+    public static Vector<Trainee> getAllTraineesFromYear(int year){
+
+        String sql = "SELECT * FROM trainees WHERE year = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, year);
+            ResultSet rs = stmt.executeQuery();
+
+            return getTraineesHelper(rs);
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    /**
+     * Feteches and returns the names of each column in the trainee table.
+     * @return
+     */
+    public static Vector<String> getTraineeTableColumnNames(){
+
+        String sql = "SELECT * FROM trainees WHERE tid = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, 1);
+            ResultSet rs = stmt.executeQuery();
+            ResultSetMetaData rsmd = rs.getMetaData();
+
+            Vector<String> results = new Vector<>();
+            for(int i = 1; i <= rsmd.getColumnCount(); i++)
+                results.add(rsmd.getColumnName(i));
+
+            return results;
+
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    /**
      * Returns all trainees from a given year, session, and district.
      * @param year
      * @param session
@@ -611,6 +666,31 @@ public class DBManager {
 
 
         }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    /**
+     * Returns all comments from a specific year.
+     * @param year
+     * @return
+     */
+    public static Vector<Comment> getAllCommentsFromYear(int year){
+
+        String sql = "SELECT * FROM comments WHERE year = ?";
+
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, year);
+            ResultSet rs = stmt.executeQuery();
+
+            return getCommentsHelper(rs);
+
+        }catch (Exception e){
             e.printStackTrace();
         }
 
@@ -923,6 +1003,37 @@ public class DBManager {
                                         rs.getString("startDate"), rs.getString("endDate"),
                                         rs.getInt("currentDay"), rs.getInt("openedLast"),
                                         1 == rs.getInt("isWeekends"), rs.getString("firstDay")));
+
+            return results;
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    /**
+     * Returns all sessions from a given year.
+     * @param year
+     * @return
+     */
+    public static Vector<Session> getAllSessionsFromYear(int year){
+
+        String sql = "SELECT * FROM sessions WHERE year = ?";
+        try{
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, year);
+            ResultSet rs = stmt.executeQuery();
+
+            Vector<Session> results = new Vector<>();
+            while(rs.next())
+                results.add(new Session(rs.getInt("year"), rs.getInt("session"),
+                        rs.getString("startDate"), rs.getString("endDate"),
+                        rs.getInt("currentDay"), rs.getInt("openedLast"),
+                        1 == rs.getInt("isWeekends"), rs.getString("firstDay")));
 
             return results;
 

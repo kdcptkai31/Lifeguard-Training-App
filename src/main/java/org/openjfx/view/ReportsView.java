@@ -81,6 +81,10 @@ public class ReportsView {
     @FXML
     private Button overallSumButton;
 
+    //Export Data
+    @FXML
+    private Button exportButton;
+
 
     /**
      * Initializes the page with all current data, and creates the document generator.
@@ -359,6 +363,37 @@ public class ReportsView {
     }
 
     /**
+     * Calls the export data method, and handles loading UI.
+     */
+    public void onExportClicked(){
+
+        disableButtons();
+        loadingLabel.setVisible(true);
+        loadingGif.setVisible(true);
+
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        Runnable task = () -> {
+
+          documentGenerator.exportData();
+          ScheduledExecutorService executor1 = Executors.newSingleThreadScheduledExecutor();
+          Runnable task1 = () -> {
+
+            enableButtons();
+            loadingLabel.setVisible(false);
+            loadingGif.setVisible(false);
+
+          };
+          executor1.schedule(task1, 1, TimeUnit.MILLISECONDS);
+          executor1.shutdown();
+
+        };
+
+        executor.schedule(task, 1, TimeUnit.MILLISECONDS);
+        executor.shutdown();
+
+    }
+
+    /**
      * Calls the generate attendance method, and handles loading UI.
      */
     public void onAttendanceClicked(){
@@ -613,6 +648,7 @@ public class ReportsView {
         rosterButton.setDisable(true);
         ecRosterButton.setDisable(true);
         overallSumButton.setDisable(true);
+        exportButton.setDisable(true);
 
     }
 
@@ -634,6 +670,7 @@ public class ReportsView {
         rosterButton.setDisable(false);
         ecRosterButton.setDisable(false);
         overallSumButton.setDisable(false);
+        exportButton.setDisable(false);
 
     }
 

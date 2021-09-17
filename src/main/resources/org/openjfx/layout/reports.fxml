@@ -300,6 +300,25 @@
                      <font>
                         <Font name="System Bold" size="14.0" />
                      </font></Button>
+                  <Label layoutX="158.0" layoutY="40.0" text="Export Data" textFill="#efb748" underline="true">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets top="20.0" />
+                     </VBox.margin>
+                  </Label>
+                  <Button fx:id="exportButton" layoutX="140.0" layoutY="82.0" mnemonicParsing="false" onMouseClicked="#onExportClicked" style="-fx-background-color: #3476f7; -fx-text-fill: #efb748;" text="Export">
+                     <effect>
+                        <InnerShadow />
+                     </effect>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Button>
                </children></VBox>
          </children>
       </HBox>

@@ -312,8 +312,6 @@ public class OverviewView {
         if(finalEvals.size() == 0)
             return;
 
-        System.out.print("HERE");
-
         final Stage dialog = new Stage();
         dialog.setTitle("Final Evaluations");
         dialog.initModality(Modality.APPLICATION_MODAL);
