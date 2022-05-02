@@ -1791,11 +1791,14 @@ public class DocumentGenerator {
             pointsPossibleStyle.setFont(pointsPossibleFont);
 
             int rowCount = 2;
-            int columnCount = 1;
+            int columnCount = 0;
 
             //Makes header row
             Row headerRow = sheet.createRow(rowCount++);
             Cell cell = headerRow.createCell(columnCount++, CellType.STRING);
+            cell.setCellValue("Cap#");
+            cell.setCellStyle(headerStyle);
+            cell = headerRow.createCell(columnCount++, CellType.STRING);
             cell.setCellValue("First");
             cell.setCellStyle(headerStyle);
             cell = headerRow.createCell(columnCount++, CellType.STRING);
@@ -1844,7 +1847,10 @@ public class DocumentGenerator {
 
             //Make points possible row
             Row row = sheet.createRow(rowCount++);
-            columnCount = 1;
+            columnCount = 0;
+            cell = row.createCell(columnCount++);
+            cell.setCellStyle(pointsPossibleStyle);
+
             cell = row.createCell(columnCount++, CellType.STRING);
             cell.setCellValue("Points Possible");
             cell.setCellStyle(pointsPossibleStyle);
@@ -1892,8 +1898,12 @@ public class DocumentGenerator {
             //Fill columns with each trainee's data
             for(int i = 0; i < trainees.size(); i++){
 
-                columnCount = 1;
+                columnCount = 0;
                 row = sheet.createRow(rowCount++);
+                cell = row.createCell(columnCount++, CellType.NUMERIC);
+                cell.setCellValue(trainees.get(i).getCapNumber());
+                cell.setCellStyle(i % 2 == 0 ? centerStyleEven : centerStyleOdd);
+
                 cell = row.createCell(columnCount++, CellType.STRING);
                 cell.setCellValue(trainees.get(i).getFirstName());
                 cell.setCellStyle(i % 2 == 0 ? centerStyleEven : centerStyleOdd);
